@@ -19,6 +19,7 @@ extension MyRegex {
         var formattedDeadline = deadline
         formattedDeadline = fullwidthToHalfwidth(formattedDeadline) ?? formattedDeadline // 全角文字を半角文字へ変換
         formattedDeadline = removeStrings(str: formattedDeadline) // 余計な文字列を削除
+        formattedDeadline = createTonightDate_Str(str: formattedDeadline) // 入力内容が「今夜」であれば、"yyyy年MM月dd日19時00分00秒"へ変換する
         formattedDeadline = replace(str: formattedDeadline) // 来年や明日などの文字列を変換する
         formattedDeadline = addFirstDay(str: formattedDeadline) // 文字列が「月」で終わる場合、「01日」を追加する。
         return formattedDeadline
@@ -97,7 +98,20 @@ extension MyRegex {
         return deadline_Date
     }
 
-
+    // 入力内容が「今夜」であれば、"yyyy年MM月dd日19時00分00秒"へ変換する
+    func createTonightDate_Str(str: String) -> String {
+        if matchOrNot(dateString: str, regex: "^今夜$") {
+            let dateFormatter = DateFormatter()
+            dateFormatter.calendar = Calendar(identifier: .gregorian)
+            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
+            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+            dateFormatter.dateFormat = "yyyy年MM月dd日"
+            let tonight = dateFormatter.string(from: Date()) + "19時00分00秒"
+            return tonight
+        } else {
+            return str
+        }
+    }
 }
 
 
