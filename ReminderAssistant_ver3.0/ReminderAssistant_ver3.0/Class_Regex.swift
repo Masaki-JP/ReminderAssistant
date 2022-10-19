@@ -18,6 +18,7 @@ extension MyRegex {
     func getFormattedDeadline(deadline: String) -> String {
         var formattedDeadline = deadline
         formattedDeadline = fullwidthToHalfwidth(formattedDeadline) ?? formattedDeadline // 全角文字を半角文字へ変換
+        formattedDeadline = convertKanjiToNum(str: formattedDeadline)
         formattedDeadline = removeStrings(str: formattedDeadline) // 余計な文字列を削除
         formattedDeadline = createTonightDate_Str(str: formattedDeadline) // 入力内容が「今夜」であれば、"yyyy年MM月dd日19時00分00秒"へ変換する
         formattedDeadline = replace(str: formattedDeadline) // 時半や来年や明日などの文字列を変換する
@@ -222,6 +223,43 @@ extension MyRegex {
         return dateFormatter.string(from: date)
     }
 
+    // 漢字を数字に変換する
+    func convertKanjiToNum(str: String) -> String {
+        var newStr = str
+        newStr = newStr.replacingOccurrences(of: "三十一", with: "31")
+        newStr = newStr.replacingOccurrences(of: "三十", with: "30")
+        newStr = newStr.replacingOccurrences(of: "二十九", with: "29")
+        newStr = newStr.replacingOccurrences(of: "二十八", with: "28")
+        newStr = newStr.replacingOccurrences(of: "二十七", with: "27")
+        newStr = newStr.replacingOccurrences(of: "二十六", with: "26")
+        newStr = newStr.replacingOccurrences(of: "二十五", with: "25")
+        newStr = newStr.replacingOccurrences(of: "二十四", with: "24")
+        newStr = newStr.replacingOccurrences(of: "二十三", with: "23")
+        newStr = newStr.replacingOccurrences(of: "二十二", with: "22")
+        newStr = newStr.replacingOccurrences(of: "二十一", with: "21")
+        newStr = newStr.replacingOccurrences(of: "二十", with: "20")
+        newStr = newStr.replacingOccurrences(of: "十九", with: "19")
+        newStr = newStr.replacingOccurrences(of: "十八", with: "18")
+        newStr = newStr.replacingOccurrences(of: "十七", with: "17")
+        newStr = newStr.replacingOccurrences(of: "十六", with: "16")
+        newStr = newStr.replacingOccurrences(of: "十五", with: "15")
+        newStr = newStr.replacingOccurrences(of: "十四", with: "14")
+        newStr = newStr.replacingOccurrences(of: "十三", with: "13")
+        newStr = newStr.replacingOccurrences(of: "十二", with: "12")
+        newStr = newStr.replacingOccurrences(of: "十一", with: "11")
+        newStr = newStr.replacingOccurrences(of: "十", with: "10")
+        newStr = newStr.replacingOccurrences(of: "九", with: "9")
+        newStr = newStr.replacingOccurrences(of: "八", with: "8")
+        newStr = newStr.replacingOccurrences(of: "七", with: "7")
+        newStr = newStr.replacingOccurrences(of: "六", with: "6")
+        newStr = newStr.replacingOccurrences(of: "五", with: "5")
+        newStr = newStr.replacingOccurrences(of: "四", with: "4")
+        newStr = newStr.replacingOccurrences(of: "三", with: "3")
+        newStr = newStr.replacingOccurrences(of: "二", with: "2")
+        newStr = newStr.replacingOccurrences(of: "一", with: "1")
+        newStr = newStr.replacingOccurrences(of: "零", with: "0")
+        return newStr
+    }
 }
 
 
