@@ -15,7 +15,7 @@ struct ContentView: View {
     let eventStore = EventStore()
 
     // タイトルと期限の定義
-    @State var title_TextField = "Test by MyReminder_2210"
+    @State var title_TextField = ""
     @State var deadline_TextField = ""
 
     // アラート関連の変数と関数の定義
@@ -38,14 +38,16 @@ struct ContentView: View {
 
                 VStack(alignment: .leading) {
                     Text("Title").font(.title3).bold()
-                    TextField("プレースホルダー", text: $title_TextField)
+                    TextField("買い物に行く", text: $title_TextField)
                         .textFieldStyle(.roundedBorder)
-                        .frame(width: 300)
+                        .frame(width: 280)
+                        .modifier(TextFieldClearButton(text: $title_TextField))
                         .padding(.bottom)
                     Text("Deadline").font(.title3).bold()
                     TextField("2018年4月15日10時10分", text: $deadline_TextField)
                         .textFieldStyle(.roundedBorder)
-                        .frame(width: 300)
+                        .frame(width: 280)
+                        .modifier(TextFieldClearButton(text: $deadline_TextField))
                         .padding(.bottom)
                 }
 
@@ -55,12 +57,14 @@ struct ContentView: View {
                     }
                 } label: {
                     Text("リマインダーを作成")
+                        .bold()
                         .padding(.all)
-                        .frame(width: 300)
+                        .frame(width: 280)
                         .font(.title2)
                         .foregroundColor(.white)
                         .background(.pink)
                         .cornerRadius(10)
+                        .padding(.top)
                 }
                 Text("ReminderAssistant ver 3.0")
             }
@@ -81,6 +85,32 @@ struct ContentView: View {
 
     }
 
+
+
+
+
+    struct TextFieldClearButton: ViewModifier {
+
+        @Binding var text: String
+
+        func body(content: Content) -> some View {
+            ZStack(alignment: .trailing)
+            {
+                content
+                if !text.isEmpty {
+                    Button(
+                        action: {
+                            self.text = ""
+                        })
+                    {
+                        Image(systemName: "delete.left")
+                            .foregroundColor(Color(UIColor.opaqueSeparator))
+                    }
+                    .padding(.trailing, 8)
+                }
+            }
+        }
+    }
 
 
 
