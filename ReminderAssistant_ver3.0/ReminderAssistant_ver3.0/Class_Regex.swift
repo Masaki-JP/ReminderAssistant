@@ -20,7 +20,7 @@ extension MyRegex {
         formattedDeadline = fullwidthToHalfwidth(formattedDeadline) ?? formattedDeadline // 全角文字を半角文字へ変換
         formattedDeadline = removeStrings(str: formattedDeadline) // 余計な文字列を削除
         formattedDeadline = createTonightDate_Str(str: formattedDeadline) // 入力内容が「今夜」であれば、"yyyy年MM月dd日19時00分00秒"へ変換する
-        formattedDeadline = replace(str: formattedDeadline) // 来年や明日などの文字列を変換する
+        formattedDeadline = replace(str: formattedDeadline) // 時半や来年や明日などの文字列を変換する
         formattedDeadline = addFirstDay(str: formattedDeadline) // 文字列が「月」で終わる場合、「01日」を追加する。
         return formattedDeadline
     }
@@ -153,6 +153,9 @@ extension MyRegex {
 
         var newStr = str
         let today = Date()
+
+        // 時半を変換する
+        newStr = newStr.replacingOccurrences(of: "時半", with: "時30分")
 
         // 早朝、朝、昼、正午、夜、晩を変換する。
         newStr = newStr.replacingOccurrences(of: "早朝", with: "07時00分")
