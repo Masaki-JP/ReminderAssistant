@@ -17,12 +17,13 @@ extension MyRegex {
     // 期限の整形
     func getFormattedDeadline(deadline: String) -> String {
         var formattedDeadline = deadline
-        formattedDeadline = fullwidthToHalfwidth(formattedDeadline) ?? formattedDeadline // 全角文字を半角文字へ変換
-        formattedDeadline = convertKanjiToNum(str: formattedDeadline)
-        formattedDeadline = removeStrings(str: formattedDeadline) // 余計な文字列を削除
+        formattedDeadline = fullwidthToHalfwidth(formattedDeadline) ?? formattedDeadline // 全角文字を半角文字へ変換する。
+        formattedDeadline = convertKanjiToNum(str: formattedDeadline) // 零から三十一までの漢字を数字に変換する
+        formattedDeadline = removeStrings(str: formattedDeadline) // 余計な文字列を削除する
         formattedDeadline = createTonightDate_Str(str: formattedDeadline) // 入力内容が「今夜」であれば、"yyyy年MM月dd日19時00分"へ変換する
         formattedDeadline = replace(str: formattedDeadline) // 時半や来年や明日などの文字列を変換する
         formattedDeadline = addFirstDay(str: formattedDeadline) // 文字列が「月」で終わる場合、「01日」を追加する。
+        formattedDeadline = createStringDateFromRelativeTimeSpecification(Str: formattedDeadline) // 〇日後や0時間後を変換する。
         return formattedDeadline
     }
 
@@ -112,6 +113,261 @@ extension MyRegex {
         } else {
             return str
         }
+    }
+
+    // 「〇年〇ヶ月後」を"yyyy年MM月dd日"を作成する関数
+    func convert1(str: String) -> String {
+
+        guard let dateSpecification = getOnlyOneMatchString(str: str, regex: "^[1-9][0-9]{0,2}年[1-9][0-9]{0,2}ヶ月後")
+        else { return str }
+
+        let dateSpecificationArray = dateSpecification.components(separatedBy: "年")
+        let years = Int(dateSpecificationArray[0])!
+        let months = Int(dateSpecificationArray[1].replacingOccurrences(of: "ヶ月後", with: ""))!
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.calendar = Calendar(identifier: .gregorian)
+        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
+        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+        dateFormatter.dateFormat = "yyyy年MM月dd日"
+
+        var day = dateFormatter.calendar.date(byAdding: .year, value: years, to: Date())!
+        day = dateFormatter.calendar.date(byAdding: .month, value: months, to: day)!
+
+        let newStr = str.replacingOccurrences(of: dateSpecification, with: dateFormatter.string(from: day))
+
+        return newStr
+    }
+    // 「〇年半後」を"yyyy年MM月dd日"を作成する関数
+    func convert2(str: String) -> String {
+        guard let dateSpecification = getOnlyOneMatchString(str: str, regex: "^[1-9][0-9]{0,2}年半後") else { return str }
+
+        let years = Int(dateSpecification.replacingOccurrences(of: "年半後", with: ""))!
+        let months = 6
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.calendar = Calendar(identifier: .gregorian)
+        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
+        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+        dateFormatter.dateFormat = "yyyy年MM月dd日"
+
+        var day = dateFormatter.calendar.date(byAdding: .year, value: years, to: Date())!
+        day = dateFormatter.calendar.date(byAdding: .month, value: months, to: day)!
+
+        let newStr = str.replacingOccurrences(of: dateSpecification, with: dateFormatter.string(from: day))
+
+        return newStr
+    }
+    // 「〇年後」を"yyyy年MM月dd日"を作成する関数
+    func convert3(str: String) -> String {
+        guard let dateSpecification = getOnlyOneMatchString(str: str, regex: "^[1-9][0-9]{0,2}年後") else { return str }
+
+        let year = Int(dateSpecification.replacingOccurrences(of: "年後", with: ""))!
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.calendar = Calendar(identifier: .gregorian)
+        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
+        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+        dateFormatter.dateFormat = "yyyy年MM月dd日"
+
+        let day = dateFormatter.calendar.date(byAdding: .year, value: year, to: Date())!
+
+        let newStr = str.replacingOccurrences(of: dateSpecification, with: dateFormatter.string(from: day))
+
+        return newStr
+    }
+    // 「半年後」を"yyyy年MM月dd日"を作成する関数
+    func convert4(str: String) -> String {
+        guard let dateSpecification = getOnlyOneMatchString(str: str, regex: "^半年後") else { return str }
+
+        let months = 6
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.calendar = Calendar(identifier: .gregorian)
+        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
+        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+        dateFormatter.dateFormat = "yyyy年MM月dd日"
+
+        let day = dateFormatter.calendar.date(byAdding: .month, value: months, to: Date())!
+
+        let newStr = str.replacingOccurrences(of: dateSpecification, with: dateFormatter.string(from: day))
+
+        return newStr
+    }
+    // 「〇ヶ月半後」を"yyyy年MM月dd日"を作成する関数
+    func convert5(str: String) -> String {
+        guard let dateSpecification = getOnlyOneMatchString(str: str, regex: "^[1-9][0-9]{0,3}ヶ月半後") else { return str }
+
+        let months = Int(dateSpecification.replacingOccurrences(of: "ヶ月半後", with: ""))!
+        let days = 15
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.calendar = Calendar(identifier: .gregorian)
+        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
+        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+        dateFormatter.dateFormat = "yyyy年MM月dd日"
+
+        var day = dateFormatter.calendar.date(byAdding: .month, value: months, to: Date())!
+        day = dateFormatter.calendar.date(byAdding: .day, value: days, to: day)!
+
+        let newStr = str.replacingOccurrences(of: dateSpecification, with: dateFormatter.string(from: day))
+
+        return newStr
+    }
+    // 「〇ヶ月後」を"yyyy年MM月dd日"を作成する関数
+    func convert6(str: String) -> String {
+        guard let dateSpecification = getOnlyOneMatchString(str: str, regex: "^[1-9][0-9]{0,3}ヶ月後") else { return str }
+
+        let months = Int(dateSpecification.replacingOccurrences(of: "ヶ月後", with: ""))!
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.calendar = Calendar(identifier: .gregorian)
+        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
+        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+        dateFormatter.dateFormat = "yyyy年MM月dd日"
+
+        let day = dateFormatter.calendar.date(byAdding: .month, value: months, to: Date())!
+
+        let newStr = str.replacingOccurrences(of: dateSpecification, with: dateFormatter.string(from: day))
+
+        return newStr
+    }
+    // 「半月後」を"yyyy年MM月dd日"を作成する関数
+    func convert7(str: String) -> String {
+        guard let dateSpecification = getOnlyOneMatchString(str: str, regex: "^半月後") else { return str }
+
+        let days = 15
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.calendar = Calendar(identifier: .gregorian)
+        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
+        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+        dateFormatter.dateFormat = "yyyy年MM月dd日"
+
+        let day = dateFormatter.calendar.date(byAdding: .day, value: days, to: Date())!
+
+        let newStr = str.replacingOccurrences(of: dateSpecification, with: dateFormatter.string(from: day))
+
+        return newStr
+    }
+    // 「〇週間後」を"yyyy年MM月dd日"を作成する関数
+    func convert8(str: String) -> String {
+        guard let dateSpecification = getOnlyOneMatchString(str: str, regex: "^[1-9][0-9]{0,3}週間後") else { return str }
+
+        let days = 7 * Int(dateSpecification.replacingOccurrences(of: "週間後", with: ""))!
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.calendar = Calendar(identifier: .gregorian)
+        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
+        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+        dateFormatter.dateFormat = "yyyy年MM月dd日"
+
+        let day = dateFormatter.calendar.date(byAdding: .day, value: days, to: Date())!
+
+        let newStr = str.replacingOccurrences(of: dateSpecification, with: dateFormatter.string(from: day))
+
+        return newStr
+    }
+    // 「〇日後」を"yyyy年MM月dd日"を作成する関数
+    func convert9(str: String) -> String {
+
+        guard let dateSpecification = getOnlyOneMatchString(str: str, regex: "^[1-9][0-9]{0,3}日後") else { return str }
+
+        let days = Int(dateSpecification.replacingOccurrences(of: "日後", with: ""))!
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.calendar = Calendar(identifier: .gregorian)
+        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
+        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+        dateFormatter.dateFormat = "yyyy年MM月dd日"
+
+        let day = dateFormatter.calendar.date(byAdding: .day, value: days, to: Date())!
+
+        let newStr = str.replacingOccurrences(of: dateSpecification, with: dateFormatter.string(from: day))
+
+        return newStr
+    }
+    // 〇時間〇分後から"yyyy年MM月dd日HH時mm分"を作成する関数
+    func convert10(str: String) -> String {
+        if matchOrNot(dateString: str, regex: "^[1-9][0-9]{0,3}時間[1-9][0-9]{0,3}分後$") {
+            let newStr = str.replacingOccurrences(of: "分後", with: "")
+            let times = newStr.components(separatedBy: "時間")
+            let dateFormatter = DateFormatter()
+            dateFormatter.calendar = Calendar(identifier: .gregorian)
+            dateFormatter.timeZone = TimeZone(identifier: "ja_Jp")
+            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+            var day = dateFormatter.calendar.date(byAdding: .hour, value: Int(times[0])!, to: Date())
+            day = dateFormatter.calendar.date(byAdding: .minute, value: Int(times[1])!, to: day!)
+            dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分"
+            return dateFormatter.string(from: day!)
+        } else {
+            return str
+        }
+    }
+    // 〇時間半後から"yyyy年MM月dd日HH時mm分"を作成する関数
+    func convert11(str: String) -> String {
+        if matchOrNot(dateString: str, regex: "^[1-9][0-9]{0,3}時間半後$") {
+            let time = Int(str.replacingOccurrences(of: "時間半後", with: ""))!
+            let dateFormatter = DateFormatter()
+            dateFormatter.calendar = Calendar(identifier: .gregorian)
+            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
+            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+            var day = dateFormatter.calendar.date(byAdding: .hour, value: time, to: Date())
+            day = dateFormatter.calendar.date(byAdding: .minute, value: 30, to: day!)
+            dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分"
+            return dateFormatter.string(from: day!)
+        } else {
+            return str
+        }
+    }
+    // 〇時間後から"yyyy年MM月dd日HH時mm分"を作成する関数
+    func convert12(str: String) -> String {
+        if matchOrNot(dateString: str, regex: "^[1-9][0-9]{0,3}時間後$") {
+            let time = Int(str.replacingOccurrences(of: "時間後", with: ""))!
+            let dateFormatter = DateFormatter()
+            dateFormatter.calendar = Calendar(identifier: .gregorian)
+            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
+            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+            let day = dateFormatter.calendar.date(byAdding: .hour, value: time, to: Date())!
+            dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分"
+            return dateFormatter.string(from: day)
+        } else {
+            return str
+        }
+    }
+    // 〇分後から"yyyy年MM月dd日HH時mm分"を作成する関数
+    func convert13(str: String) -> String {
+        if matchOrNot(dateString: str, regex: "^[1-9][0-9]{0,3}分後$") {
+            let time = Int(str.replacingOccurrences(of: "分後", with: ""))!
+            let dateFormatter = DateFormatter()
+            dateFormatter.calendar = Calendar(identifier: .gregorian)
+            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
+            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+            let day = dateFormatter.calendar.date(byAdding: .minute, value: time, to: Date())!
+            dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分"
+            return dateFormatter.string(from: day)
+        } else {
+            return str
+        }
+    }
+
+    // convert1~convert13までを同時に行う
+    func createStringDateFromRelativeTimeSpecification(Str: String) -> String {
+        var newStr = Str
+        newStr = convert1(str: newStr)
+        newStr = convert2(str: newStr)
+        newStr = convert3(str: newStr)
+        newStr = convert4(str: newStr)
+        newStr = convert5(str: newStr)
+        newStr = convert6(str: newStr)
+        newStr = convert7(str: newStr)
+        newStr = convert8(str: newStr)
+        newStr = convert9(str: newStr)
+        newStr = convert10(str: newStr)
+        newStr = convert11(str: newStr)
+        newStr = convert12(str: newStr)
+        newStr = convert13(str: newStr)
+        return newStr
     }
 }
 
@@ -204,7 +460,7 @@ extension MyRegex {
 
     // 文字列が正規表現に当てはまるか否か
     func matchOrNot(dateString: String, regex: String) -> Bool {
-        guard let regex = try? NSRegularExpression(pattern: regex, options: []) else {fatalError()}
+        guard let regex = try? NSRegularExpression(pattern: regex, options: []) else { fatalError() }
         let results = regex.matches(in: dateString, options: [], range: NSRange(0..<dateString.count))
         if !(results.isEmpty) {
             return true
@@ -259,6 +515,37 @@ extension MyRegex {
         newStr = newStr.replacingOccurrences(of: "一", with: "1")
         newStr = newStr.replacingOccurrences(of: "零", with: "0")
         return newStr
+    }
+
+    // 「か月、ヵ月、カ月、ケ月、箇月」を「ヶ月」に変換する
+    func convertCorrectMonthSpecification(str: String) -> String {
+        var newStr = str
+        newStr = newStr.replacingOccurrences(of: "か月", with: "ヶ月")
+        newStr = newStr.replacingOccurrences(of: "ヵ月", with: "ヶ月")
+        newStr = newStr.replacingOccurrences(of: "カ月", with: "ヶ月")
+        newStr = newStr.replacingOccurrences(of: "ケ月", with: "ヶ月")
+        newStr = newStr.replacingOccurrences(of: "箇月", with: "ヶ月")
+        return newStr
+    }
+
+    // 指定された正規表現で抽出された文字列を返す。抽出された文字列が複数の場合、もしくは抽出されなかった場合はnilを返す。
+    func getOnlyOneMatchString(str: String, regex: String) -> String? {
+
+        var newStr = str
+        let regex = try! NSRegularExpression(pattern: regex, options: [])
+        let results = regex.matches(in: newStr, options: [], range: NSRange(0..<newStr.count))
+
+        if results.isEmpty {
+            return nil
+        } else if results.count >= 2 {
+            return nil
+        } else {
+            let start = newStr.index(newStr.startIndex, offsetBy: results[0].range(at: 0).location)
+            let end = newStr.index(start, offsetBy: results[0].range(at: 0).length)
+            newStr = String(newStr[start..<end])
+            return newStr
+        }
+
     }
 }
 
