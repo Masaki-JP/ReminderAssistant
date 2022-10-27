@@ -24,6 +24,7 @@ extension MyRegex {
         formattedDeadline = replace(str: formattedDeadline) // 時半や来年や明日などの文字列を変換する
         formattedDeadline = addFirstDay(str: formattedDeadline) // 文字列が「月」で終わる場合、「01日」を追加する。
         formattedDeadline = createStringDateFromRelativeTimeSpecification(Str: formattedDeadline) // 〇日後や0時間後を変換する。
+        formattedDeadline = createStringDateFromDayOfTheWeekSpecification(str: formattedDeadline) // 日曜日や次の水曜日を"yyyy年MM月dd日"に変換する。
         return formattedDeadline
     }
 
@@ -351,7 +352,7 @@ extension MyRegex {
         }
     }
 
-    // convert1~convert13までを同時に行う
+    // convert1~convert13までを行う
     func createStringDateFromRelativeTimeSpecification(Str: String) -> String {
         var newStr = Str
         newStr = convert1(str: newStr)
@@ -367,6 +368,164 @@ extension MyRegex {
         newStr = convert11(str: newStr)
         newStr = convert12(str: newStr)
         newStr = convert13(str: newStr)
+        return newStr
+    }
+
+    // 文字列に〇曜日があれば、〇曜に変換し、文字列を返す。
+    func convertA(str: String) -> String {
+        guard !str.contains("日曜日") else {
+            return str.replacingOccurrences(of: "日曜日", with: "日曜")
+        }
+        guard !str.contains("月曜日") else {
+            return str.replacingOccurrences(of: "月曜日", with: "月曜")
+        }
+        guard !str.contains("火曜日") else {
+            return str.replacingOccurrences(of: "火曜日", with: "火曜")
+        }
+        guard !str.contains("水曜日") else {
+            return str.replacingOccurrences(of: "水曜日", with: "水曜")
+        }
+        guard !str.contains("木曜日") else {
+            return str.replacingOccurrences(of: "木曜日", with: "木曜")
+        }
+        guard !str.contains("金曜日") else {
+            return str.replacingOccurrences(of: "金曜日", with: "金曜")
+        }
+        guard !str.contains("土曜日") else {
+            return str.replacingOccurrences(of: "土曜日", with: "土曜")
+        }
+        return str
+    }
+
+    // 文字列に次〇曜があるならば、〇曜に変換し、文字列を返す。
+    func convertB(str: String) -> String {
+        guard !str.contains("次日曜") else {
+            return str.replacingOccurrences(of: "次日曜", with: "日曜")
+        }
+        guard !str.contains("次月曜") else {
+            return str.replacingOccurrences(of: "次月曜", with: "月曜")
+        }
+        guard !str.contains("次火曜") else {
+            return str.replacingOccurrences(of: "次火曜", with: "火曜")
+        }
+        guard !str.contains("次水曜") else {
+            return str.replacingOccurrences(of: "次水曜", with: "水曜")
+        }
+        guard !str.contains("次木曜") else {
+            return str.replacingOccurrences(of: "次木曜", with: "木曜")
+        }
+        guard !str.contains("次金曜") else {
+            return str.replacingOccurrences(of: "次金曜", with: "金曜")
+        }
+        guard !str.contains("次土曜") else {
+            return str.replacingOccurrences(of: "次土曜", with: "土曜")
+        }
+        return str
+    }
+
+    // 文字列に〇曜があるならば、"yyyy年MM月dd日"に変換し、文字列を返す。
+    func convertC(str: String) -> String {
+
+        guard !str.contains("日曜") else {
+            let dateFormatter = DateFormatter()
+            dateFormatter.calendar = Calendar(identifier: .gregorian)
+            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
+            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+            dateFormatter.dateFormat = "yyyy年MM月dd日"
+            let weekdayOfSpecifiedDay = 1
+            let weekdayOfToday = dateFormatter.calendar.component(.weekday, from: Date())
+            let additionalDays =  (weekdayOfSpecifiedDay - weekdayOfToday) > 0 ? (weekdayOfSpecifiedDay - weekdayOfToday) : (weekdayOfSpecifiedDay - weekdayOfToday) + 7
+            let date = dateFormatter.calendar.date(byAdding: DateComponents(day: additionalDays), to: Date())!
+            return str.replacingOccurrences(of: "日曜", with: dateFormatter.string(from: date))
+        }
+
+        guard !str.contains("月曜") else {
+            let dateFormatter = DateFormatter()
+            dateFormatter.calendar = Calendar(identifier: .gregorian)
+            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
+            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+            dateFormatter.dateFormat = "yyyy年MM月dd日"
+            let weekdayOfSpecifiedDay = 2
+            let weekdayOfToday = dateFormatter.calendar.component(.weekday, from: Date())
+            let additionalDays =  (weekdayOfSpecifiedDay - weekdayOfToday) > 0 ? (weekdayOfSpecifiedDay - weekdayOfToday) : (weekdayOfSpecifiedDay - weekdayOfToday) + 7
+            let date = dateFormatter.calendar.date(byAdding: DateComponents(day: additionalDays), to: Date())!
+            return str.replacingOccurrences(of: "月曜", with: dateFormatter.string(from: date))
+        }
+
+        guard !str.contains("火曜") else {
+            let dateFormatter = DateFormatter()
+            dateFormatter.calendar = Calendar(identifier: .gregorian)
+            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
+            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+            dateFormatter.dateFormat = "yyyy年MM月dd日"
+            let weekdayOfSpecifiedDay = 3
+            let weekdayOfToday = dateFormatter.calendar.component(.weekday, from: Date())
+            let additionalDays =  (weekdayOfSpecifiedDay - weekdayOfToday) > 0 ? (weekdayOfSpecifiedDay - weekdayOfToday) : (weekdayOfSpecifiedDay - weekdayOfToday) + 7
+            let date = dateFormatter.calendar.date(byAdding: DateComponents(day: additionalDays), to: Date())!
+            return str.replacingOccurrences(of: "火曜", with: dateFormatter.string(from: date))
+        }
+
+        guard !str.contains("水曜") else {
+            let dateFormatter = DateFormatter()
+            dateFormatter.calendar = Calendar(identifier: .gregorian)
+            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
+            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+            dateFormatter.dateFormat = "yyyy年MM月dd日"
+            let weekdayOfSpecifiedDay = 4
+            let weekdayOfToday = dateFormatter.calendar.component(.weekday, from: Date())
+            let additionalDays =  (weekdayOfSpecifiedDay - weekdayOfToday) > 0 ? (weekdayOfSpecifiedDay - weekdayOfToday) : (weekdayOfSpecifiedDay - weekdayOfToday) + 7
+            let date = dateFormatter.calendar.date(byAdding: DateComponents(day: additionalDays), to: Date())!
+            return str.replacingOccurrences(of: "水曜", with: dateFormatter.string(from: date))
+        }
+
+        guard !str.contains("木曜") else {
+            let dateFormatter = DateFormatter()
+            dateFormatter.calendar = Calendar(identifier: .gregorian)
+            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
+            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+            dateFormatter.dateFormat = "yyyy年MM月dd日"
+            let weekdayOfSpecifiedDay = 5
+            let weekdayOfToday = dateFormatter.calendar.component(.weekday, from: Date())
+            let additionalDays =  (weekdayOfSpecifiedDay - weekdayOfToday) > 0 ? (weekdayOfSpecifiedDay - weekdayOfToday) : (weekdayOfSpecifiedDay - weekdayOfToday) + 7
+            let date = dateFormatter.calendar.date(byAdding: DateComponents(day: additionalDays), to: Date())!
+            return str.replacingOccurrences(of: "木曜", with: dateFormatter.string(from: date))
+        }
+
+        guard !str.contains("金曜") else {
+            let dateFormatter = DateFormatter()
+            dateFormatter.calendar = Calendar(identifier: .gregorian)
+            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
+            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+            dateFormatter.dateFormat = "yyyy年MM月dd日"
+            let weekdayOfSpecifiedDay = 6
+            let weekdayOfToday = dateFormatter.calendar.component(.weekday, from: Date())
+            let additionalDays =  (weekdayOfSpecifiedDay - weekdayOfToday) > 0 ? (weekdayOfSpecifiedDay - weekdayOfToday) : (weekdayOfSpecifiedDay - weekdayOfToday) + 7
+            let date = dateFormatter.calendar.date(byAdding: DateComponents(day: additionalDays), to: Date())!
+            return str.replacingOccurrences(of: "金曜", with: dateFormatter.string(from: date))
+        }
+
+        guard !str.contains("土曜") else {
+            let dateFormatter = DateFormatter()
+            dateFormatter.calendar = Calendar(identifier: .gregorian)
+            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
+            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+            dateFormatter.dateFormat = "yyyy年MM月dd日"
+            let weekdayOfSpecifiedDay = 7
+            let weekdayOfToday = dateFormatter.calendar.component(.weekday, from: Date())
+            let additionalDays =  (weekdayOfSpecifiedDay - weekdayOfToday) > 0 ? (weekdayOfSpecifiedDay - weekdayOfToday) : (weekdayOfSpecifiedDay - weekdayOfToday) + 7
+            let date = dateFormatter.calendar.date(byAdding: DateComponents(day: additionalDays), to: Date())!
+            return str.replacingOccurrences(of: "土曜", with: dateFormatter.string(from: date))
+        }
+
+        return str
+    }
+
+    // convertA~convertCを行う
+    func createStringDateFromDayOfTheWeekSpecification(str: String) -> String {
+        var newStr  = str
+        newStr = convertA(str: newStr)
+        newStr = convertB(str: newStr)
+        newStr = convertC(str: newStr)
         return newStr
     }
 }
