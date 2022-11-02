@@ -16,15 +16,19 @@ extension MyRegex {
 
     // 期限の整形
     func getFormattedDeadline(deadline: String) -> String {
+
         var formattedDeadline = deadline
+
         formattedDeadline = fullwidthToHalfwidth(formattedDeadline) ?? formattedDeadline // 全角文字を半角文字へ変換する。
         formattedDeadline = convertKanjiToNum(str: formattedDeadline) // 零から三十一までの漢字を数字に変換する
         formattedDeadline = removeStrings(str: formattedDeadline) // 余計な文字列を削除する
+
         formattedDeadline = createTonightDate_Str(str: formattedDeadline) // 入力内容が「今夜」であれば、"yyyy年MM月dd日19時00分"へ変換する
         formattedDeadline = replace(str: formattedDeadline) // 時半や来年や明日などの文字列を変換する
         formattedDeadline = addFirstDay(str: formattedDeadline) // 文字列が「月」で終わる場合、「01日」を追加する。
-        formattedDeadline = createStringDateFromRelativeTimeSpecification(Str: formattedDeadline) // 〇日後や0時間後を変換する。
-        formattedDeadline = createStringDateFromDayOfTheWeekSpecification(str: formattedDeadline) // 日曜日や次の水曜日を"yyyy年MM月dd日"に変換する。
+        formattedDeadline = createStringDateFromRelativeTimeSpecification(Str: formattedDeadline) // 〇日後や〇時間後を変換する。
+        formattedDeadline = createStringDateFromDayOfTheWeekSpecification(str: formattedDeadline) // 〇曜日、次の〇曜日、来週〇曜などを"yyyy年MM月dd日"に変換する。
+
         return formattedDeadline
     }
 
@@ -397,8 +401,95 @@ extension MyRegex {
         return str
     }
 
-    // 文字列に次〇曜があるならば、〇曜に変換し、文字列を返す。
+    // 文字列に「再来週〇曜」があれば、"yyyy年MM月dd日"に変換し、それを返す。
     func convertB(str: String) -> String {
+
+        let specifications = ["再来週日曜", "再来週月曜", "再来週火曜", "再来週水曜", "再来週木曜", "再来週金曜", "再来週土曜"]
+
+        for i in 0 ... 6 {
+
+            guard !str.contains(specifications[i]) else {
+
+                let dateFormatter = DateFormatter()
+                dateFormatter.calendar = Calendar(identifier: .gregorian)
+                dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
+                dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+                dateFormatter.dateFormat = "yyyy年MM月dd日"
+
+                let fourteenDaysLater = dateFormatter.calendar.date(byAdding: .day, value: 14, to: Date())!
+
+                let weekdayOfSpecification = i + 1
+                let weekdayOfSevenDaysLater = dateFormatter.calendar.component(.weekday, from: fourteenDaysLater)
+
+                let additionalDays = weekdayOfSpecification - weekdayOfSevenDaysLater + 14
+
+                let date = dateFormatter.calendar.date(byAdding: .day, value: additionalDays, to: Date())!
+
+                return str.replacingOccurrences(of: specifications[i], with: dateFormatter.string(from: date))
+            }
+        }
+        return str
+    }
+
+    // 文字列に「来週〇曜」があれば、"yyyy年MM月dd日"に変換し、それを返す。
+    func convertC(str: String) -> String {
+
+        let specifications = ["来週日曜", "来週月曜", "来週火曜", "来週水曜", "来週木曜", "来週金曜", "来週土曜"]
+
+        for i in 0 ... 6 {
+
+            guard !str.contains(specifications[i]) else {
+
+                let dateFormatter = DateFormatter()
+                dateFormatter.calendar = Calendar(identifier: .gregorian)
+                dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
+                dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+                dateFormatter.dateFormat = "yyyy年MM月dd日"
+
+                let sevenDaysLater = dateFormatter.calendar.date(byAdding: .day, value: 7, to: Date())!
+
+                let weekdayOfSpecification = i + 1
+                let weekdayOfSevenDaysLater = dateFormatter.calendar.component(.weekday, from: sevenDaysLater)
+
+                let additionalDays = weekdayOfSpecification - weekdayOfSevenDaysLater + 7
+
+                let date = dateFormatter.calendar.date(byAdding: .day, value: additionalDays, to: Date())!
+
+                return str.replacingOccurrences(of: specifications[i], with: dateFormatter.string(from: date))
+            }
+        }
+        return str
+    }
+
+    // 文字列に「今週〇曜」があれば、"yyyy年MM月dd日"に変換し、それを返す。
+    func convertD(str: String) -> String {
+
+        let specifications = ["今週日曜", "今週月曜", "今週火曜", "今週水曜", "今週木曜", "今週金曜", "今週土曜"]
+
+        for i in 0 ... 6 {
+            guard !str.contains(specifications[i]) else {
+
+                let dateFormatter = DateFormatter()
+                dateFormatter.calendar = Calendar(identifier: .gregorian)
+                dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
+                dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+                dateFormatter.dateFormat = "yyyy年MM月dd日"
+
+                let weekdayOfSpecification = i + 1
+                let weekdayOfToday = dateFormatter.calendar.component(.weekday, from: Date())
+
+                let additionalDays = weekdayOfSpecification - weekdayOfToday
+
+                let date = dateFormatter.calendar.date(byAdding: .day, value: additionalDays, to: Date())!
+
+                return str.replacingOccurrences(of: specifications[i], with: dateFormatter.string(from: date))
+            }
+        }
+        return str
+    }
+
+    // 文字列に次〇曜があるならば、〇曜に変換し、文字列を返す。
+    func convertE(str: String) -> String {
         guard !str.contains("次日曜") else {
             return str.replacingOccurrences(of: "次日曜", with: "日曜")
         }
@@ -424,7 +515,7 @@ extension MyRegex {
     }
 
     // 文字列に〇曜があるならば、"yyyy年MM月dd日"に変換し、文字列を返す。
-    func convertC(str: String) -> String {
+    func convertF(str: String) -> String {
 
         guard !str.contains("日曜") else {
             let dateFormatter = DateFormatter()
@@ -520,14 +611,18 @@ extension MyRegex {
         return str
     }
 
-    // convertA~convertCを行う
+    // convertA~convertFを行う
     func createStringDateFromDayOfTheWeekSpecification(str: String) -> String {
         var newStr  = str
         newStr = convertA(str: newStr)
         newStr = convertB(str: newStr)
         newStr = convertC(str: newStr)
+        newStr = convertD(str: newStr)
+        newStr = convertE(str: newStr)
+        newStr = convertF(str: newStr)
         return newStr
     }
+
 }
 
 
