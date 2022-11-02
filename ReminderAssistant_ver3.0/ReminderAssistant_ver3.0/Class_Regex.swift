@@ -27,7 +27,7 @@ extension MyRegex {
         formattedDeadline = replace(str: formattedDeadline) // 時半や来年や明日などの文字列を変換する
         formattedDeadline = addFirstDay(str: formattedDeadline) // 文字列が「月」で終わる場合、「01日」を追加する。
         formattedDeadline = createStringDateFromRelativeTimeSpecification(Str: formattedDeadline) // 〇日後や〇時間後を変換する。
-        formattedDeadline = createStringDateFromDayOfTheWeekSpecification(str: formattedDeadline) // 〇曜日、次の〇曜日、来週〇曜などを"yyyy年MM月dd日"に変換する。
+        formattedDeadline = createStringDateFromDayOfTheWeekSpecification(str: formattedDeadline) // 来週〇曜、次の〇曜、〇曜日などを"yyyy年MM月dd日"に変換する。
 
         return formattedDeadline
     }
