@@ -20,7 +20,8 @@ extension MyRegex {
         formattedDeadline = convertKanjiToNum(str: formattedDeadline) // 零から三十一までの漢字を数字に変換する
         formattedDeadline = removeStrings(str: formattedDeadline) // 余計な文字列を削除する
 
-        formattedDeadline = createTonightDate_Str(str: formattedDeadline) // 入力内容が今夜か今晩であれば、"yyyy年MM月dd日19時00分"へ変換する
+        formattedDeadline = createTonightDate_Str(str: formattedDeadline) // 入力内容が今夜か今晩であれば、"yyyy年MM月dd日19時00分"へ変換する。
+
         formattedDeadline = createStringDateFromDayOfTheWeekSpecification(str: formattedDeadline) // 来週〇曜、次の〇曜、〇曜日などを"yyyy年MM月dd日"に変換する。
         formattedDeadline = replace(str: formattedDeadline) // 時半や来年や明日などの文字列を変換する
         formattedDeadline = addFirstDay(str: formattedDeadline) // 文字列が「月」で終わる場合、「01日」を追加する。
@@ -618,27 +619,13 @@ extension MyRegex {
 
     // convertA~convertFを行う
     func createStringDateFromDayOfTheWeekSpecification(str: String) -> String {
-        print("createStringDateFromDayOfTheWeekSpecificationを開始")
         var newStr  = str
-        print("Aを開始")
-        print(newStr)
         newStr = convertA(str: newStr)
-        print("Bを開始")
-        print(newStr)
         newStr = convertB(str: newStr)
-        print("Cを開始")
-        print(newStr)
         newStr = convertC(str: newStr)
-        print("Dを開始")
-        print(newStr)
         newStr = convertD(str: newStr)
-        print("Eを開始")
-        print(newStr)
         newStr = convertE(str: newStr)
-        print("Fを開始")
-        print(newStr)
         newStr = convertF(str: newStr)
-        print(newStr)
         return newStr
     }
 
