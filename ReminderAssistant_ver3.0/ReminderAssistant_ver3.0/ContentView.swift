@@ -9,6 +9,8 @@ import SwiftUI
 
 struct ContentView: View {
 
+    @State var isShow = false
+    @State var date_str = ""
 
     // インスタンスの作成
     let myRegex = MyRegex()
@@ -67,6 +69,68 @@ struct ContentView: View {
                         .padding(.top)
                 }
                 Text("ReminderAssistant ver 3.0")
+            }
+
+            if isShow {
+                Color.black.opacity(0.2).ignoresSafeArea()
+                VStack {
+//                    Group {
+//                        Image(systemName: "checkmark.rectangle")
+//                            .foregroundColor(.green)
+//                            .scaleEffect(10)
+//                            .frame(height: 180)
+//                        Text("リマインダー作成完了").bold().font(.title2)
+//                        Text("タイトル")
+//                        Text(title_TextField)
+//                        Text("期限")
+//                        Text(date_str)
+//                    }
+                    Group {
+                        Image("checkmark")
+                            .resizable()
+                            .scaledToFit()
+                            .scaleEffect(0.8)
+                        Text("リマインダー作成完了").bold().font(.title2)
+                        Group {
+                            Text("タイトル：\(title_TextField)")
+                                .padding(.top, 1)
+                            Text("期限：\(date_str)")
+                                .padding(.bottom, 5)
+                        }
+                        .foregroundColor(Color(red: 0.3, green: 0.3, blue: 0.3, opacity: 1.0))
+                        .font(.footnote)
+                    }
+                    Button {
+                        title_TextField = ""
+                        deadline_TextField = ""
+                        isShow = false
+                        date_str = ""
+                    } label: {
+//                        Text("閉じる")
+//                            .frame(width: 250)
+//                            .bold()
+//                            .foregroundColor(.white)
+//                            .padding()
+//                            .background(.blue)
+//                            .cornerRadius(10)
+                        Text("閉じる")
+                            .frame(width: UIScreen.main.bounds.width*0.6)
+                            .bold()
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(.blue)
+                            .cornerRadius(10)
+                            .padding()
+                    }
+                }
+//                .padding(10)
+//                .background(.white)
+//                .cornerRadius(20)
+//                .shadow(radius: 20)
+                .frame(width: UIScreen.main.bounds.width*0.8)
+                .background(.white)
+                .cornerRadius(20)
+                .shadow(radius: 20)
             }
         }
         .alert(isPresented: $showingAlert) {
@@ -149,16 +213,22 @@ struct ContentView: View {
         //リマインダーを作成
         if eventStore.getAuthorizationStatus() {
             eventStore.createReminder(title: title, deadLine: deadline_Date!)
-            showAlert(alert: Alert(title: Text("リマインダー作成完了"), message: Text("タイトル：\(title)\n期限：\(myRegex.getFullDateString(date: deadline_Date!))"), dismissButton: .default(Text("閉じる"), action: {
-                title_TextField = ""
-                deadline_TextField = ""})))
+//            showAlert(alert: Alert(title: Text("リマインダー作成完了"), message: Text("タイトル：\(title)\n期限：\(myRegex.getFullDateString(date: deadline_Date!))"), dismissButton: .default(Text("閉じる"), action: {
+//                title_TextField = ""
+//                deadline_TextField = ""})))
+            date_str = myRegex.getFullDateString(date: deadline_Date!)
+            isShow = true
+
         } else {
             await eventStore.requestAccess()
             if eventStore.getAuthorizationStatus() {
                 eventStore.createReminder(title: title, deadLine: deadline_Date!)
-                showAlert(alert: Alert(title: Text("リマインダー作成完了"), message: Text("タイトル：\(title)\n期限：\(myRegex.getFullDateString(date: deadline_Date!))"), dismissButton: .default(Text("閉じる"), action: {
-                    title_TextField = ""
-                    deadline_TextField = ""})))
+//                showAlert(alert: Alert(title: Text("リマインダー作成完了"), message: Text("タイトル：\(title)\n期限：\(myRegex.getFullDateString(date: deadline_Date!))"), dismissButton: .default(Text("閉じる"), action: {
+//                    title_TextField = ""
+//                    deadline_TextField = ""})))
+
+                date_str = myRegex.getFullDateString(date: deadline_Date!)
+                isShow = true
             } else {
                settingAlert = true
             }
