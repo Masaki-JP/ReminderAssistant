@@ -9,11 +9,13 @@ import SwiftUI
 
 struct ContentView: View {
 
+    @AppStorage("reminderList") var reminderList = "未設定"
+
     @State var isShow = false
     @State var date_str = ""
 
     // インスタンスの作成
-    let myRegex = MyRegex()
+    var myRegex = MyRegex()
     let eventStore = EventStore()
 
     // タイトルと期限の定義
@@ -32,107 +34,96 @@ struct ContentView: View {
 
     var body: some View {
 
-        ZStack {
+        NavigationView {
 
-            Color(red: 1.0, green: 0.8941, blue: 0.8824, opacity: 1.0).ignoresSafeArea()
+            ZStack {
 
-            VStack {
+                Color(red: 1.0, green: 0.8941, blue: 0.8824, opacity: 1.0).ignoresSafeArea()
 
-                VStack(alignment: .leading) {
-                    Text("Title").font(.title3).bold()
-                    TextField("買い物に行く", text: $title_TextField)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 280)
-                        .modifier(TextFieldClearButton(text: $title_TextField))
-                        .padding(.bottom)
-                    Text("Deadline").font(.title3).bold()
-                    TextField("2018年4月15日10時10分", text: $deadline_TextField)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 280)
-                        .modifier(TextFieldClearButton(text: $deadline_TextField))
-                        .padding(.bottom)
-                }
-
-                Button {
-                    Task {
-                        await doTask(title: title_TextField, deadline: deadline_TextField)
-                    }
-                } label: {
-                    Text("リマインダーを作成")
-                        .bold()
-                        .padding(.all)
-                        .frame(width: 280)
-                        .font(.title2)
-                        .foregroundColor(.white)
-                        .background(.pink)
-                        .cornerRadius(10)
-                        .padding(.top)
-                }
-                Text("ReminderAssistant ver 3.0")
-            }
-
-            if isShow {
-                Color.black.opacity(0.2).ignoresSafeArea()
                 VStack {
-//                    Group {
-//                        Image(systemName: "checkmark.rectangle")
-//                            .foregroundColor(.green)
-//                            .scaleEffect(10)
-//                            .frame(height: 180)
-//                        Text("リマインダー作成完了").bold().font(.title2)
-//                        Text("タイトル")
-//                        Text(title_TextField)
-//                        Text("期限")
-//                        Text(date_str)
-//                    }
-                    Group {
-                        Image("checkmark")
-                            .resizable()
-                            .scaledToFit()
-                            .scaleEffect(0.8)
-                        Text("リマインダー作成完了").bold().font(.title2)
-                        Group {
-                            Text("タイトル：\(title_TextField)")
-                                .padding(.top, 1)
-                            Text("期限：\(date_str)")
-                                .padding(.bottom, 5)
-                        }
-                        .foregroundColor(Color(red: 0.3, green: 0.3, blue: 0.3, opacity: 1.0))
-                        .font(.footnote)
+
+                    VStack(alignment: .leading) {
+
+                        Text("Title").font(.title3).bold()
+                        TextField("買い物に行く", text: $title_TextField)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 280)
+                            .modifier(TextFieldClearButton(text: $title_TextField))
+                            .padding(.bottom)
+                        Text("Deadline").font(.title3).bold()
+                        TextField("2018年4月15日10時10分", text: $deadline_TextField)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 280)
+                            .modifier(TextFieldClearButton(text: $deadline_TextField))
+                            .padding(.bottom)
                     }
+
                     Button {
-                        title_TextField = ""
-                        deadline_TextField = ""
-                        isShow = false
-                        date_str = ""
+                        Task {
+                            await doTask(title: title_TextField, deadline: deadline_TextField)
+                        }
                     } label: {
-//                        Text("閉じる")
-//                            .frame(width: 250)
-//                            .bold()
-//                            .foregroundColor(.white)
-//                            .padding()
-//                            .background(.blue)
-//                            .cornerRadius(10)
-                        Text("閉じる")
-                            .frame(width: UIScreen.main.bounds.width*0.6)
+                        Text("リマインダーを作成")
                             .bold()
+                            .padding(.all)
+                            .frame(width: 280)
+                            .font(.title2)
                             .foregroundColor(.white)
-                            .padding()
-                            .background(.blue)
+                            .background(.pink)
                             .cornerRadius(10)
-                            .padding()
+                            .padding(.top)
                     }
+                    Text("リマインダーの作成先：\(reminderList)").padding(.top)
+                    NavigationLink {
+                        SettingView(store: eventStore)
+                    } label: {
+                        Text("設定に移動")
+                    }
+
                 }
-//                .padding(10)
-//                .background(.white)
-//                .cornerRadius(20)
-//                .shadow(radius: 20)
-                .frame(width: UIScreen.main.bounds.width*0.8)
-                .background(.white)
-                .cornerRadius(20)
-                .shadow(radius: 20)
+
+                if isShow {
+                    Color.black.opacity(0.2).ignoresSafeArea()
+                    VStack {
+                        Group {
+                            Image("checkmark")
+                                .resizable()
+                                .scaledToFit()
+                                .scaleEffect(0.8)
+                            Text("リマインダー作成完了").bold().font(.title2)
+                            Group {
+                                Text("タイトル：\(title_TextField)")
+                                    .padding(.top, 1)
+                                Text("期限：\(date_str)")
+                                    .padding(.bottom, 5)
+                            }
+                            .foregroundColor(Color(red: 0.3, green: 0.3, blue: 0.3, opacity: 1.0))
+                            .font(.footnote)
+                        }
+                        Button {
+                            title_TextField = ""
+                            deadline_TextField = ""
+                            isShow = false
+                            date_str = ""
+                        } label: {
+                            Text("閉じる")
+                                .frame(width: UIScreen.main.bounds.width*0.6)
+                                .bold()
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(.blue)
+                                .cornerRadius(10)
+                                .padding()
+                        }
+                    }
+                    .frame(width: UIScreen.main.bounds.width*0.8)
+                    .background(.white)
+                    .cornerRadius(20)
+                    .shadow(radius: 20)
+                }
             }
         }
+        .navigationViewStyle(.stack)
         .alert(isPresented: $showingAlert) {
             alert ?? Alert(title: Text("アラートが設定されていません。"))
         }
@@ -212,20 +203,14 @@ struct ContentView: View {
 
         //リマインダーを作成
         if eventStore.getAuthorizationStatus() {
-            eventStore.createReminder(title: title, deadLine: deadline_Date!)
-//            showAlert(alert: Alert(title: Text("リマインダー作成完了"), message: Text("タイトル：\(title)\n期限：\(myRegex.getFullDateString(date: deadline_Date!))"), dismissButton: .default(Text("閉じる"), action: {
-//                title_TextField = ""
-//                deadline_TextField = ""})))
+            eventStore.createReminder(title: title, deadLine: deadline_Date!, listName: reminderList)
             date_str = myRegex.getFullDateString(date: deadline_Date!)
             isShow = true
 
         } else {
             await eventStore.requestAccess()
             if eventStore.getAuthorizationStatus() {
-                eventStore.createReminder(title: title, deadLine: deadline_Date!)
-//                showAlert(alert: Alert(title: Text("リマインダー作成完了"), message: Text("タイトル：\(title)\n期限：\(myRegex.getFullDateString(date: deadline_Date!))"), dismissButton: .default(Text("閉じる"), action: {
-//                    title_TextField = ""
-//                    deadline_TextField = ""})))
+                eventStore.createReminder(title: title, deadLine: deadline_Date!, listName: reminderList)
 
                 date_str = myRegex.getFullDateString(date: deadline_Date!)
                 isShow = true

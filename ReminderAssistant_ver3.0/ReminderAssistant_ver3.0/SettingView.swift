@@ -10,20 +10,43 @@ import SwiftUI
 struct SettingView: View {
 
     @AppStorage("reminderList") var reminderList = "未設定"
+    @State var lists: [String] = []
+    var store: EventStore
 
     var body: some View {
-        VStack {
-            Text("setting")
+        List {
+            Section {
+                ForEach(0 ..< lists.count, id: \.self) { index in
+                    if lists[index] == reminderList {
+                        HStack {
+                            Text(lists[index]).font(.headline)
+                            Spacer()
+                            Image(systemName: "checkmark").foregroundColor(.green)
+                        }
+                    } else {
+                        Button {
+                            reminderList = lists[index]
+                        } label: {
+                            Text(lists[index]).foregroundColor(.primary)
+                        }
+
+                    }
+                }
+            }
         }
         .onAppear {
-            print("設定が開かれた")
+            lists = store.getLists()
         }
     }
-
 }
 
-struct SettingView_Previews: PreviewProvider {
-    static var previews: some View {
-        SettingView()
-    }
-}
+
+
+
+
+//struct SettingView_Previews: PreviewProvider {
+//    let store = EventStore()
+//    static var previews: some View {
+//        SettingView(reminderList: "aaa", store: )
+//    }
+//}

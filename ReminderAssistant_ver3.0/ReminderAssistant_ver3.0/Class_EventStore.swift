@@ -15,7 +15,7 @@ import EventKit
 final class EventStore {
 
     // 初期化
-    private let store: EKEventStore
+    let store: EKEventStore
     init() {
         store = EKEventStore()
     }
@@ -40,10 +40,24 @@ final class EventStore {
     }
 
     // 新規リマインダーを作成
-    func createReminder(title: String,deadLine: Date) -> Void {
+    func createReminder(title: String, deadLine: Date, listName: String) -> Void {
         let newReminder: EKReminder = EKReminder(eventStore: store)
         newReminder.title = title
-        newReminder.calendar = store.defaultCalendarForNewReminders()
+
+
+        if isListExist(list: listName) {
+            store.calendars(for: .reminder).forEach { list in
+                if listName == list.title {
+                    newReminder.calendar = list
+                }
+            }
+        } else {
+            newReminder.calendar = store.defaultCalendarForNewReminders()
+        }
+
+
+
+
         let alarm = EKAlarm(absoluteDate: deadLine)
         newReminder.addAlarm(alarm)
         newReminder.dueDateComponents = Calendar(identifier: .gregorian).dateComponents(in: TimeZone(identifier: "Asia/Tokyo")!, from: deadLine)
@@ -56,3 +70,29 @@ final class EventStore {
     }
 }
 
+
+
+
+extension EventStore {
+
+    // リマインダーリストを取得
+    func getLists() -> [String] {
+        var lists = [] as [String]
+        self.store.calendars(for: .reminder).forEach { list in
+            lists.append(list.title)
+        }
+        print(lists)
+        return lists
+    }
+
+    // リストが存在するか確認
+    func isListExist(list: String) -> Bool {
+        var isExist = false
+        self.store.calendars(for: .reminder).forEach { calendar in
+            if list == calendar.title {
+                isExist = true
+            }
+        }
+        return isExist
+    }
+}
