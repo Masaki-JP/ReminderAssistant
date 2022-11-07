@@ -14,6 +14,7 @@
 		98B1373928F4CB26000AEA8B /* Memo in Resources */ = {isa = PBXBuildFile; fileRef = 98B1373828F4CB26000AEA8B /* Memo */; };
 		98B1373B28F4CB81000AEA8B /* Class_EventStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98B1373A28F4CB81000AEA8B /* Class_EventStore.swift */; };
 		98B1373D28F4CB8D000AEA8B /* Class_Regex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98B1373C28F4CB8D000AEA8B /* Class_Regex.swift */; };
+		98E1ACF52918F38C0045A7AB /* SettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98E1ACF42918F38C0045A7AB /* SettingView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +26,7 @@
 		98B1373828F4CB26000AEA8B /* Memo */ = {isa = PBXFileReference; lastKnownFileType = text; path = Memo; sourceTree = "<group>"; };
 		98B1373A28F4CB81000AEA8B /* Class_EventStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Class_EventStore.swift; sourceTree = "<group>"; };
 		98B1373C28F4CB8D000AEA8B /* Class_Regex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Class_Regex.swift; sourceTree = "<group>"; };
+		98E1ACF42918F38C0045A7AB /* SettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +60,7 @@
 			isa = PBXGroup;
 			children = (
 				98B1372A28F4CAE8000AEA8B /* ReminderAssistant_ver3_0App.swift */,
+				98E1ACF42918F38C0045A7AB /* SettingView.swift */,
 				98B1372C28F4CAE8000AEA8B /* ContentView.swift */,
 				98B1373A28F4CB81000AEA8B /* Class_EventStore.swift */,
 				98B1373C28F4CB8D000AEA8B /* Class_Regex.swift */,
@@ -148,6 +151,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				98B1373D28F4CB8D000AEA8B /* Class_Regex.swift in Sources */,
+				98E1ACF52918F38C0045A7AB /* SettingView.swift in Sources */,
 				98B1373B28F4CB81000AEA8B /* Class_EventStore.swift in Sources */,
 				98B1372D28F4CAE8000AEA8B /* ContentView.swift in Sources */,
 				98B1372B28F4CAE8000AEA8B /* ReminderAssistant_ver3_0App.swift in Sources */,
