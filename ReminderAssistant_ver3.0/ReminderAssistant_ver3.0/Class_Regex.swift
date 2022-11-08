@@ -298,7 +298,7 @@ extension MyRegex {
 
         return newStr
     }
-    // 〇時間〇分後から"yyyy年MM月dd日HH時mm分"を作成する関数
+    // 〇時間〇分後から"yyyy年MM月dd日HH時mm分ss秒"を作成する関数
     func convert10(str: String) -> String {
         if matchOrNot(dateString: str, regex: "^[1-9][0-9]{0,3}時間[1-9][0-9]{0,3}分後$") {
             let newStr = str.replacingOccurrences(of: "分後", with: "")
@@ -309,13 +309,13 @@ extension MyRegex {
             dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
             var day = dateFormatter.calendar.date(byAdding: .hour, value: Int(times[0])!, to: Date())
             day = dateFormatter.calendar.date(byAdding: .minute, value: Int(times[1])!, to: day!)
-            dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分"
+            dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分ss秒"
             return dateFormatter.string(from: day!)
         } else {
             return str
         }
     }
-    // 〇時間半後から"yyyy年MM月dd日HH時mm分"を作成する関数
+    // 〇時間半後から"yyyy年MM月dd日HH時mm分ss秒"を作成する関数
     func convert11(str: String) -> String {
         if matchOrNot(dateString: str, regex: "^[1-9][0-9]{0,3}時間半後$") {
             let time = Int(str.replacingOccurrences(of: "時間半後", with: ""))!
@@ -325,13 +325,13 @@ extension MyRegex {
             dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
             var day = dateFormatter.calendar.date(byAdding: .hour, value: time, to: Date())
             day = dateFormatter.calendar.date(byAdding: .minute, value: 30, to: day!)
-            dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分"
+            dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分ss秒"
             return dateFormatter.string(from: day!)
         } else {
             return str
         }
     }
-    // 〇時間後から"yyyy年MM月dd日HH時mm分"を作成する関数
+    // 〇時間後から"yyyy年MM月dd日HH時mm分ss秒"を作成する関数
     func convert12(str: String) -> String {
         if matchOrNot(dateString: str, regex: "^[1-9][0-9]{0,3}時間後$") {
             let time = Int(str.replacingOccurrences(of: "時間後", with: ""))!
@@ -340,13 +340,13 @@ extension MyRegex {
             dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
             dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
             let day = dateFormatter.calendar.date(byAdding: .hour, value: time, to: Date())!
-            dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分"
+            dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分ss秒"
             return dateFormatter.string(from: day)
         } else {
             return str
         }
     }
-    // 〇分後から"yyyy年MM月dd日HH時mm分"を作成する関数
+    // 〇分後から"yyyy年MM月dd日HH時mm分ss秒"を作成する関数
     func convert13(str: String) -> String {
         if matchOrNot(dateString: str, regex: "^[1-9][0-9]{0,3}分後$") {
             let time = Int(str.replacingOccurrences(of: "分後", with: ""))!
@@ -355,7 +355,7 @@ extension MyRegex {
             dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
             dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
             let day = dateFormatter.calendar.date(byAdding: .minute, value: time, to: Date())!
-            dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分"
+            dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分ss秒"
             return dateFormatter.string(from: day)
         } else {
             return str
@@ -644,7 +644,7 @@ extension MyRegex {
         return fullwidthString
     }
 
-    // 不要な文字列を削除し、それを返す。
+    // 不要な文字列を削除し、それを返す
     func removeStrings(str: String) -> String {
         var newStr = str
         let unnecessaryStrings = ["と", "の", " ", "　"] // スペースは全角と半角
@@ -817,6 +817,8 @@ extension MyRegex {
 final class MyRegex {
 
     let patterns = [
+
+        ["regex": "^[0-9]{4}年[0-9][0-9]月[0-9][0-9]日[0-9][0-9]時[0-9][0-9]分[0-9][0-9]秒$","unicode35": "yyyy年MM月dd日HH時mm分ss秒"], // 〇分後などの処理を正確にするために追加
 
         ["regex": "^[0-9]{4}年[0-9]月[0-9]日[0-9]時$","unicode35": "yyyy年M月d日H時"],
         ["regex": "^[0-9]{4}年[0-9]月[0-9]日[0-9][0-9]時$","unicode35": "yyyy年M月d日HH時"],
