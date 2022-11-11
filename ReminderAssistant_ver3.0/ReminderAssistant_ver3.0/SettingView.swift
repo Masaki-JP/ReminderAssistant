@@ -15,7 +15,6 @@ struct SettingView: View {
 
     var body: some View {
         List {
-            Section {
                 ForEach(0 ..< lists.count, id: \.self) { index in
                     if lists[index] == reminderList {
                         HStack {
@@ -32,7 +31,6 @@ struct SettingView: View {
 
                     }
                 }
-            }
         }
         .onAppear {
             lists = store.getLists()

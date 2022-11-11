@@ -2,3 +2,8 @@
 注意事項
 info.plistに「Privacy - Reminders Usage Description」を追加しなければならない。
 リマインダーへのアクセス許可を取る前にリマインダー等を作成することはできない。
+
+
+アプリ公開にあたって参考にしたサイト一覧
+https://tech.amefure.com/swift-appstore-public
+https://zenn.dev/moutend/articles/feebf0120dce6e6426fa

@@ -42,9 +42,10 @@ struct ContentView: View {
 
                 VStack {
 
+
                     VStack(alignment: .leading) {
 
-                        Text("Title").font(.title3).bold()
+                        Text("Reminder Title").font(.title3).bold()
                         TextField("買い物に行く", text: $title_TextField)
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 280)
@@ -73,13 +74,14 @@ struct ContentView: View {
                             .cornerRadius(10)
                             .padding(.top)
                     }
+                    Text("リマインダーを気軽に設定できます。上にタイトル、下に期限を設定しボタンを押してください。").padding()
                     Text("リマインダーの作成先：\(reminderList)").padding(.top)
                     NavigationLink {
                         SettingView(store: eventStore)
+                            .navigationTitle("リマインダーの追加先")
                     } label: {
                         Text("設定に移動")
                     }
-
                 }
 
                 if isShow {
