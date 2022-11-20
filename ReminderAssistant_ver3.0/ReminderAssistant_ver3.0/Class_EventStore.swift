@@ -40,9 +40,17 @@ class EventStore {
     }
 
     // 新規リマインダーを作成
-    func createReminder(title: String, deadLine: Date, listName: String) -> Void {
+    func createReminder(title: String, deadLine: Date, Note: String, listName: String) -> Void {
         let newReminder: EKReminder = EKReminder(eventStore: store)
+
         newReminder.title = title
+
+        if Note != "" {
+            newReminder.notes = Note + "\nCreated by Reminder Assistant"
+        } else {
+            newReminder.notes = "Created by Reminder Assistant"
+        }
+
 
 
         if isListExist(list: listName) {

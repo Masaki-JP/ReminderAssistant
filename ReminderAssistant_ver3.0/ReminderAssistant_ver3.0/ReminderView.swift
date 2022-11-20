@@ -9,6 +9,10 @@ import SwiftUI
 
 struct ReminderView: View {
 
+    // メモ機能
+    @State var notes_TextField = ""
+    @State var notesIsEditting = false
+
     @Environment(\.scenePhase) private var scenePhase
 
     // アップストレージ
@@ -31,6 +35,7 @@ struct ReminderView: View {
     enum FocusField {
         case title
         case deadline
+        case notes
     }
 
     // アラート
@@ -51,9 +56,14 @@ struct ReminderView: View {
 
             VStack {
 
+                Text("Let's create reminders").padding(.bottom).frame(width: UIScreen.main.bounds.width).bold().font(.largeTitle).foregroundColor(.white).background((focusState == nil) ? .indigo : .clear)
+
+                Spacer()
+
                 VStack(alignment: .leading) {
 
-                    Text("Reminder Title").font(.title3).bold()
+
+                    Text("Title").font(.title).bold()
 
                     TextField(
                         "買い物に行く",
@@ -67,13 +77,13 @@ struct ReminderView: View {
                     .focused($focusState, equals: .title)
                     .shadow(color: titleIsEdditing ? .blue : .clear, radius: 3)
                     .textFieldStyle(.roundedBorder)
-                    .frame(width: 280)
+                    .frame(width: 300)
                     .modifier(TextFieldClearButton(text: $title_TextField))
                     .padding(.bottom)
 
-                    Text("Deadline").font(.title3).bold()
+                    Text("Deadline").font(.title).bold()
 
-                    TextField("2018年4月15日10時10分", text: $deadline_TextField, onEditingChanged: { isEditting in
+                    TextField("2018年4月15日10時00分", text: $deadline_TextField, onEditingChanged: { isEditting in
                         if isEditting {
                             deadlineIsEditting = true
                         } else {
@@ -83,8 +93,23 @@ struct ReminderView: View {
                     .focused($focusState, equals: .deadline)
                     .shadow(color: deadlineIsEditting ? .blue : .clear, radius: 3)
                     .textFieldStyle(.roundedBorder)
-                    .frame(width: 280)
+                    .frame(width: 300)
                     .modifier(TextFieldClearButton(text: $deadline_TextField))
+                    .padding(.bottom)
+
+                    Text("Notes").font(.title).bold()
+                    TextField("メモ（オプション）", text: $notes_TextField) { isEditting in
+                        if isEditting {
+                            notesIsEditting = true
+                        } else {
+                            notesIsEditting = false
+                        }
+                    }
+                    .focused($focusState, equals: .notes)
+                    .shadow(color: notesIsEditting ? .blue : .clear, radius: 3)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 300)
+                    .modifier(TextFieldClearButton(text: $notes_TextField))
                     .padding(.bottom)
                 }
 
@@ -110,10 +135,12 @@ struct ReminderView: View {
                         .padding(.top)
                 }
 
-                Text("リマインダーの作成先：\(reminderList)")
-                    .font(.callout).padding(.top)
-                Text("(作成先が未設定の場合、デフォルトリストに追加されます。)")
-                    .font(.caption)
+                Group {
+                    Text("リマインダーの作成先：\(reminderList)")
+                        .font(.callout).padding(.top)
+                    Text("(作成先が未設定の場合、デフォルトリストに追加されます。)")
+                        .font(.caption).padding(.bottom, 50)
+                }
             }
 
             if showCompletionAlert {
@@ -130,6 +157,8 @@ struct ReminderView: View {
                                 .padding(.top, 1)
                             Text("期限：\(date_str)")
                                 .padding(.bottom, 5)
+                            Text("メモ：\(notes_TextField)")
+                                .padding(.bottom, 5)
                         }
                         .foregroundColor(Color(red: 0.3, green: 0.3, blue: 0.3, opacity: 1.0))
                         .font(.footnote)
@@ -137,6 +166,7 @@ struct ReminderView: View {
                     Button {
                         title_TextField = ""
                         deadline_TextField = ""
+                        notes_TextField = ""
                         showCompletionAlert = false
                         date_str = ""
                     } label: {
@@ -283,14 +313,14 @@ struct ReminderView: View {
 
         //リマインダーを作成
         if eventStore.getAuthorizationStatus() {
-            eventStore.createReminder(title: title, deadLine: deadline_Date!, listName: reminderList)
+            eventStore.createReminder(title: title, deadLine: deadline_Date!, Note: notes_TextField, listName: reminderList)
             date_str = myRegex.getFullDateString(date: deadline_Date!)
             showCompletionAlert = true
 
         } else {
             await eventStore.requestAccess()
             if eventStore.getAuthorizationStatus() {
-                eventStore.createReminder(title: title, deadLine: deadline_Date!, listName: reminderList)
+                eventStore.createReminder(title: title, deadLine: deadline_Date!, Note: notes_TextField, listName: reminderList)
 
                 date_str = myRegex.getFullDateString(date: deadline_Date!)
                 showCompletionAlert = true
