@@ -12,7 +12,7 @@ import EventKit
 
 
 // EventStoreクラスの定義
-final class EventStore {
+class EventStore {
 
     // 初期化
     let store: EKEventStore
@@ -81,7 +81,6 @@ extension EventStore {
         self.store.calendars(for: .reminder).forEach { list in
             lists.append(list.title)
         }
-        print(lists)
         return lists
     }
 

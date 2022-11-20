@@ -8,10 +8,18 @@ https://tech.amefure.com/swift-appstore-public
 https://zenn.dev/moutend/articles/feebf0120dce6e6426fa
 
 
+アクセス許可を起動時にもらう
+それとリマインダーの作成先のビューを出現させようとしたとき、アクセス許可がないと表示できないので、そこでも許可どり
 
 
+作成履歴の追加
+オンコミットでは、このアプリを終了せずに他のアプリから戻ってきた場合はフォーカスが当たらない問題を解決する(TabViewのselectionがReminderViewだったらフォーカスを当てる処理)
+テキストフィールドの修正　削除ボタン
+メモに「created by ReminderAssistant」を追加する設定を実装
+指定された期限が過去だった場合の処理
+朝、昼、夜をユーザーの好きな時間に変更できるようにする
 
-
+月末と週末って対応してたっけ？
 
 General
 ・「Identity」→「App Category」を「Utilities」に変更
@@ -19,3 +27,7 @@ Info
 「Privacy - Reminders Usage Description」を追加
 ・「App Category」に「Utilities」を追加
 ・「Development localization」を「Japan」に変更
+
+
+
+

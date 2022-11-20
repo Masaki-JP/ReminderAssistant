@@ -9,31 +9,49 @@ import SwiftUI
 
 struct SettingView: View {
 
+    @AppStorage("autofocus") var autofocus = false
     @AppStorage("reminderList") var reminderList = "未設定"
+
     @State var lists: [String] = []
-    var store: EventStore
+
+    let eventStore = EventStore()
 
     var body: some View {
-        List {
-                ForEach(0 ..< lists.count, id: \.self) { index in
-                    if lists[index] == reminderList {
-                        HStack {
-                            Text(lists[index]).font(.headline)
-                            Spacer()
-                            Image(systemName: "checkmark").foregroundColor(.green)
-                        }
-                    } else {
-                        Button {
-                            reminderList = lists[index]
-                        } label: {
-                            Text(lists[index]).foregroundColor(.primary)
-                        }
 
+        NavigationView {
+
+            List {
+                Section {
+                    Picker(selection: $reminderList) {
+                        if reminderList == "未設定" {
+                            Text("未設定").tag(reminderList)
+                        }
+                        ForEach(0 ..< lists.count, id: \.self) { index in
+                            Text(lists[index]).tag(lists[index])
+                        }
+                    } label: {
+                        Text("リマインダー作成先")
                     }
+                    .pickerStyle(.navigationLink)
+                } header: {
+                    Text("")
+                } footer: {
+                    Text("未設定の場合はデフォルトに設定されているリストに作成します。")
                 }
+
+                Section {
+                    Toggle(isOn: $autofocus) {
+                        Text("オートフォーカス")
+                    }
+                } footer: {
+                    Text("リマインダーの作成画面が表示されたときに、入力フォームに自動でフォーカスします。")
+                }
+            }
+            .navigationTitle("設定")
         }
+        .navigationViewStyle(.stack)
         .onAppear {
-            lists = store.getLists()
+            lists = eventStore.getLists()
         }
     }
 }
@@ -42,9 +60,24 @@ struct SettingView: View {
 
 
 
-//struct SettingView_Previews: PreviewProvider {
-//    let store = EventStore()
-//    static var previews: some View {
-//        SettingView(reminderList: "aaa", store: )
-//    }
-//}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+struct SettingView_Previews: PreviewProvider {
+    static var previews: some View {
+        SettingView()
+    }
+}
