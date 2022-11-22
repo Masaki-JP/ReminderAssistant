@@ -31,7 +31,7 @@ struct ReminderView: View {
     @State var titleIsEdditing = false
     @State var deadline_TextField = ""
     @State var deadlineIsEditting = false
-    @FocusState var focusState : FocusField?
+    @FocusState var focusState: FocusField?
     enum FocusField {
         case title
         case deadline
