@@ -47,7 +47,7 @@ struct SampleUI: View {
                     }
                     .frame(width: UIScreen.main.bounds.width*0.8)
                     .padding()
-                    .background(Color(red: 0.15, green: 0.15, blue: 0.15))
+                    .background(.ultraThickMaterial)
                     .cornerRadius(15)
 
                     HStack {
@@ -59,35 +59,36 @@ struct SampleUI: View {
                     }
                     .frame(width: UIScreen.main.bounds.width*0.8)
                     .padding()
-                    .background(Color(red: 0.15, green: 0.15, blue: 0.15))
+                    .background(.ultraThickMaterial)
                     .cornerRadius(15)
                     .padding(.top, 20)
 
 
-                    TextField("Notes (option)", text: $text3, axis: .vertical)
-                        .lineLimit(4)
-                        .focused($focusState, equals: .three)
-                        .toolbar {
-                            ToolbarItem(placement: .keyboard) {
-                                Button {
-                                    var store = text3
-                                    text3 = ""
-                                    focusState = nil
-                                    DispatchQueue.main.asyncAfter(deadline: .now()+0.03) {
-                                        text3 = store
-                                        store = ""
+                    HStack {
+                        TextField("Notes (option)", text: $text3, axis: .vertical)
+                            .lineLimit(4)
+                            .focused($focusState, equals: .three)
+                            .toolbar {
+                                ToolbarItem(placement: .keyboard) {
+                                    Button {
+                                        var store = text3
+                                        text3 = ""
+                                        focusState = nil
+                                        DispatchQueue.main.asyncAfter(deadline: .now()+0.03) {
+                                            text3 = store
+                                            store = ""
+                                        }
+                                    } label: {
+                                        Text("完了")
                                     }
-                                } label: {
-                                    Text("完了")
                                 }
                             }
-                        }
-                        .frame(width: UIScreen.main.bounds.width*0.8)
-                        .padding()
-                        .background(Color(red: 0.15, green: 0.15, blue: 0.15))
-                        .cornerRadius(15)
-                        .padding(.top, 20)
-                        .ignoresSafeArea(.keyboard, edges: .bottom)
+                    }
+                    .frame(width: UIScreen.main.bounds.width*0.8)
+                    .padding()
+                    .background(.ultraThickMaterial)
+                    .cornerRadius(15)
+                    .padding(.top, 20)
                 }
 
 
@@ -106,7 +107,6 @@ struct SampleUI: View {
                 if focusState == nil {
                     Spacer()
                 }
-
             }
         }
     }

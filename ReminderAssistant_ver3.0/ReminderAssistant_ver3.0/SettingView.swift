@@ -42,19 +42,19 @@ struct SettingView: View {
                 Section {
                     Toggle(isOn: $autofocus) {
                         Text("オートフォーカス")
-                    }
+                    }.tint(.green)
                 } footer: {
                     Text("リマインダーの作成画面が表示されたときに、入力フォームに自動でフォーカスします。")
                 }
             }
             .navigationTitle("設定")
-        }
+        } // NavigationView
         .navigationViewStyle(.stack)
         .onAppear {
             lists = eventStore.getLists()
         }
-    }
-}
+    } // body
+} // SettingView
 
 
 

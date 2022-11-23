@@ -28,9 +28,21 @@ struct ContentView: View {
                     Text("Settings")
                 }
                 .tag(2)
-        }
+
+            SampleUI()
+                .tabItem {
+                    Image(systemName: "person.fill")
+                    Text("SampleUI")
+                }
+                .tag(3)
+        } // TabView
+        .tint(.white)
+    } // body
+    
+    init() {
+        UITabBar.appearance().unselectedItemTintColor = UIColor.gray
     }
-}
+} // ContentView
 
 
 
