@@ -38,6 +38,7 @@ struct SampleUI: View {
 
 
                 Group {
+
                     HStack {
                         TextField("Reminder title", text: $text1)
                             .focused($focusState, equals: .one)

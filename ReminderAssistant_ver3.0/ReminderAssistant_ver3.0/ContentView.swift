@@ -29,19 +29,23 @@ struct ContentView: View {
                 }
                 .tag(2)
 
-            SampleUI()
-                .tabItem {
-                    Image(systemName: "person.fill")
-                    Text("SampleUI")
-                }
-                .tag(3)
+//            SampleUI()
+//                .tabItem {
+//                    Image(systemName: "person.fill")
+//                    Text("SampleUI")
+//                }
+//                .tag(3)
+
         } // TabView
         .tint(.white)
+
     } // body
     
     init() {
         UITabBar.appearance().unselectedItemTintColor = UIColor.gray
+        UITabBar.appearance().backgroundColor = UIColor(red: 0.075, green: 0.075, blue: 0.075, alpha: 1)
     }
+
 } // ContentView
 
 
