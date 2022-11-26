@@ -309,7 +309,6 @@ struct ReminderView: View {
             DispatchQueue.main.asyncAfter(deadline: .now()+0.2) {
                 showCompletionAlert = true
             }
-
         } else {
             await eventStore.requestAccess()
             if eventStore.getAuthorizationStatus() {

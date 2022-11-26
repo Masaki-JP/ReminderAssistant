@@ -9,8 +9,6 @@ import Foundation
 import EventKit
 
 
-
-
 // EventStoreクラスの定義
 class EventStore {
 
@@ -64,12 +62,10 @@ class EventStore {
         }
 
 
-
-
         let alarm = EKAlarm(absoluteDate: deadLine)
         newReminder.addAlarm(alarm)
         newReminder.dueDateComponents = Calendar(identifier: .gregorian).dateComponents(in: TimeZone(identifier: "Asia/Tokyo")!, from: deadLine)
-        // このプロパティを設定しておかなければ、期限切れのリマインダーとしてショートカットは認識してくれない。
+        // dueDateComponentsを設定しておかなければ、期限経過のリマインダーとしてショートカットは認識してくれない。
         do {
             try store.save(newReminder, commit: true)
         } catch let error {
