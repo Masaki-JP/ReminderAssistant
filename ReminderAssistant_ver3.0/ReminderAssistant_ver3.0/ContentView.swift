@@ -31,7 +31,7 @@ struct ContentView: View {
 
 //            SampleUI()
 //                .tabItem {
-//                    Image(systemName: "person.fill")
+//                    Image(systemName: "person")
 //                    Text("SampleUI")
 //                }
 //                .tag(3)

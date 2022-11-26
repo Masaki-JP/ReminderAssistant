@@ -63,31 +63,12 @@ struct ReminderView: View {
                     Spacer()
                 }
 
-
                 Group {
 
                     HStack {
                         TextField("Reminder title", text: $title_TextField)
                         .focused($focusState, equals: .title)
-//                        .toolbar {
-//                            ToolbarItemGroup(placement: .keyboard) {
-//                                Spacer()
-//                                if focusState == .title {
-//                                    Button {
-//                                        focusState = .deadline
-//                                    } label: {
-//                                        Text("期限に移動")
-//                                    }
-//                                } else if focusState == .deadline {
-//                                    Button {
-//                                        focusState = .title
-//                                    } label: {
-//                                        Text("タイトルに移動")
-//                                    }
-//                                }
-//                                Spacer()
-//                            }
-//                        }
+
                         if focusState == .title && title_TextField != "" {
                             Button {
                                 title_TextField = ""
@@ -106,25 +87,7 @@ struct ReminderView: View {
                     HStack {
                         TextField("Deadline", text: $deadline_TextField)
                         .focused($focusState, equals: .deadline)
-//                        .toolbar {
-//                            ToolbarItemGroup(placement: .keyboard) {
-//                                Spacer()
-//                                if focusState == .title {
-//                                    Button {
-//                                        focusState = .deadline
-//                                    } label: {
-//                                        Text("期限に移動")
-//                                    }
-//                                } else if focusState == .deadline {
-//                                    Button {
-//                                        focusState = .title
-//                                    } label: {
-//                                        Text("タイトルに移動")
-//                                    }
-//                                }
-//                                Spacer()
-//                            }
-//                        }
+
                         if focusState == .deadline && deadline_TextField != "" {
                             Button {
                                 deadline_TextField = ""
@@ -145,20 +108,6 @@ struct ReminderView: View {
                         TextField("Notes (option)", text: $notes_TextField, axis: .vertical)
                         .focused($focusState, equals: .notes)
                         .lineLimit(4)
-//                        .toolbar {
-//                            ToolbarItem(placement: .keyboard) {
-//                                Button {
-//                                    let store = notes_TextField
-//                                    notes_TextField = ""
-//                                    focusState = nil
-//                                    DispatchQueue.main.asyncAfter(deadline: .now()+0.03) {
-//                                        notes_TextField = store
-//                                    }
-//                                } label: {
-//                                    Text("完了")
-//                                }
-//                            }
-//                        }
                     }
                     .frame(width: UIScreen.main.bounds.width*0.8)
                     .padding()
@@ -169,21 +118,32 @@ struct ReminderView: View {
                 } // Group
 
 
-                Button {
+//                Button {
+//                    Task {
+//                        focusState = nil
+//                        await doTask(title: title_TextField, deadline: deadline_TextField)
+//                    }
+//                } label: {
+//                    Text("Create a reminder")
+//                        .bold().font(.title).foregroundColor(.white).padding()
+//                        .background((title_TextField != "") && (deadline_TextField != "") ? Color(red: 230/270, green: 121/270, blue: 40/270) : .gray)
+//                        .cornerRadius(100)
+//                        .padding(.top, 25)
+//                }
+
+                Button("Create a reminder") {
                     Task {
                         focusState = nil
                         await doTask(title: title_TextField, deadline: deadline_TextField)
                     }
-                } label: {
-                    Text("Create a reminder")
-                        .bold().font(.title).foregroundColor(.white).padding()
-                        .background((title_TextField != "") && (deadline_TextField != "") ? Color(red: 230/270, green: 121/270, blue: 40/270) : .gray)
-                        .cornerRadius(100)
-                        .padding(.top, 25)
                 }
+                .bold().font(.title).foregroundColor(.white).padding()
+                .background((title_TextField != "") && (deadline_TextField != "") ? Color(red: 230/270, green: 121/270, blue: 40/270) : .gray)
+                .cornerRadius(100)
+                .padding(.top, 25)
 
 
-                Text("リマインダーの作成先：\(reminderList)")
+                Text("リマインダー作成先：\(reminderList)")
                     .font(.callout).padding(.top, 5)
 
                 if focusState == nil {
@@ -193,46 +153,42 @@ struct ReminderView: View {
             } // VStack
 
             if showCompletionAlert {
-                Color.black.opacity(0.2).ignoresSafeArea()
                 VStack {
                     Group {
-                        Image("checkmark")
+                        Image("pngwing.com")
                             .resizable()
-                            .scaledToFit()
-                            .scaleEffect(0.8)
-                        Text("リマインダー作成完了").bold().font(.title2)
-                        Group {
-                            Text("タイトル：\(title_TextField)")
-                                .padding(.top, 1)
-                            Text("期限：\(date_str)")
-                                .padding(.bottom, 5)
-                            Text("メモ：\(notes_TextField)")
-                                .padding(.bottom, 5)
-                        }
-                        .foregroundColor(Color(red: 0.3, green: 0.3, blue: 0.3, opacity: 1.0))
-                        .font(.footnote)
+                            .frame(width: 200, height: 200)
+                            .padding(.top)
+                        Text("Completed!").bold().font(.largeTitle)
+                            .padding(.bottom, 15)
                     }
+
+                    Group {
+                        Text(title_TextField)
+                            .font(.headline)
+                            .lineLimit(1)
+                        Text(date_str)
+                            .padding(.bottom, 15)
+                            .font(.callout)
+                    }
+                    .frame(width: UIScreen.main.bounds.width*0.7)
+
                     Button {
-                        title_TextField = ""
-                        deadline_TextField = ""
-                        notes_TextField = ""
-                        showCompletionAlert = false
-                        date_str = ""
+                        closeButtonAction()
                     } label: {
                         Text("閉じる")
-                            .frame(width: UIScreen.main.bounds.width*0.6)
+                            .frame(width: UIScreen.main.bounds.width*0.625)
                             .bold()
                             .foregroundColor(.white)
                             .padding()
                             .background(.blue)
                             .cornerRadius(10)
-                            .padding()
+                            .padding(.bottom, 13)
                     }
                 }
                 .frame(width: UIScreen.main.bounds.width*0.8)
-                .background(.white)
+                .background(Color(red: 0.2, green: 0.2, blue: 0.2))
                 .cornerRadius(20)
-                .shadow(radius: 20)
             } // showCompletionAlert
 
         } // ZStack
@@ -256,7 +212,7 @@ struct ReminderView: View {
                         let store = notes_TextField
                         notes_TextField = ""
                         focusState = nil
-                        DispatchQueue.main.asyncAfter(deadline: .now()+0.03) {
+                        DispatchQueue.main.asyncAfter(deadline: .now()+0.1) {
                             notes_TextField = store
                         }
                     } label: {
@@ -290,11 +246,24 @@ struct ReminderView: View {
         }
         .onChange(of: scenePhase) { phase in
             print("リマインダービューにてオンチェンジメソッドが実行")
-            if autofocus && phase == .active && focusState != .title {
-                DispatchQueue.main.asyncAfter(deadline: .now()+0.3) {
-                    focusState = .title
+
+            switch phase {
+            case .active:
+                if autofocus && focusState != .title {
+                    DispatchQueue.main.asyncAfter(deadline: .now()+0.3) {
+                        focusState = .title
+                    }
                 }
+            case .inactive:
+                closeButtonAction()
+            case .background:
+                closeButtonAction()
+            @unknown default:
+                fatalError()
             }
+
+
+
         }
 
     } // body
@@ -337,7 +306,7 @@ struct ReminderView: View {
         if eventStore.getAuthorizationStatus() {
             eventStore.createReminder(title: title, deadLine: deadline_Date!, Note: notes_TextField, listName: reminderList)
             date_str = myRegex.getFullDateString(date: deadline_Date!)
-            DispatchQueue.main.asyncAfter(deadline: .now()+0.3) {
+            DispatchQueue.main.asyncAfter(deadline: .now()+0.2) {
                 showCompletionAlert = true
             }
 
@@ -346,7 +315,7 @@ struct ReminderView: View {
             if eventStore.getAuthorizationStatus() {
                 eventStore.createReminder(title: title, deadLine: deadline_Date!, Note: notes_TextField, listName: reminderList)
                 date_str = myRegex.getFullDateString(date: deadline_Date!)
-                DispatchQueue.main.asyncAfter(deadline: .now()+0.3) {
+                DispatchQueue.main.asyncAfter(deadline: .now()+0.2) {
                     showCompletionAlert = true
                 }
 
@@ -357,8 +326,15 @@ struct ReminderView: View {
 
     } // doTask
 
-} // ReminderView
+    private func closeButtonAction() {
+        title_TextField = ""
+        deadline_TextField = ""
+        notes_TextField = ""
+        showCompletionAlert = false
+        date_str = ""
+    }
 
+} // ReminderView
 
 
 
@@ -395,7 +371,7 @@ struct ReminderView: View {
 // プレビュープロバイダー
 struct ReminderView_Previews: PreviewProvider {
     static var previews: some View {
-        //        ReminderView(reminderList: "サンプルリストA")
         ReminderView()
     }
 }
+
