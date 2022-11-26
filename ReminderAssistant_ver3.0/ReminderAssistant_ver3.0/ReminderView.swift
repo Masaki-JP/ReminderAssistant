@@ -302,7 +302,7 @@ struct ReminderView: View {
         }
 
 
-        //リマインダーを作成
+        // 4. リマインダーを作成
         if eventStore.getAuthorizationStatus() {
             eventStore.createReminder(title: title, deadLine: deadline_Date!, Note: notes_TextField, listName: reminderList)
             date_str = myRegex.getFullDateString(date: deadline_Date!)
