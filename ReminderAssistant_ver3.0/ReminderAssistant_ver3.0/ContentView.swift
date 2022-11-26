@@ -11,6 +11,8 @@ struct ContentView: View {
 
     @State var selectedTab: Int = 1
 
+    private let eventStore = EventStore()
+
     var body: some View {
 
         TabView(selection: $selectedTab) {
@@ -38,8 +40,13 @@ struct ContentView: View {
 
         } // TabView
         .tint(.white)
-
+        .onAppear {
+            Task {
+                await eventStore.firstRequestAccess()
+            }
+        }
     } // body
+
     
     init() {
         UITabBar.appearance().unselectedItemTintColor = UIColor.gray

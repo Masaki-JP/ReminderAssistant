@@ -19,10 +19,11 @@ class EventStore {
     }
 
     // リマインダーへのアクセス許可の要求
-    func requestAccess() async -> Void {
+    func firstRequestAccess() async -> Void {
         do {
             try await store.requestAccess(to: .reminder)
         } catch {
+            print("エラーをキャッチ")
             print(error.localizedDescription)
         }
     }

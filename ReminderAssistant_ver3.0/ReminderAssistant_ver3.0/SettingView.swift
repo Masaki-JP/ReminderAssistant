@@ -14,6 +14,8 @@ struct SettingView: View {
 
     @State var lists: [String] = []
 
+    @State var settingAlert = false
+
     let eventStore = EventStore()
 
     var body: some View {
@@ -51,8 +53,24 @@ struct SettingView: View {
         } // NavigationView
         .navigationViewStyle(.stack)
         .onAppear {
-            lists = eventStore.getLists()
+            print("SettingViewにてonApperメソッドが実行")
+            if eventStore.getAuthorizationStatus() {
+                lists = eventStore.getLists()
+            } else {
+                settingAlert = true
+            }
         }
+        .alert("リマインダーへのアクセスを許可してください。", isPresented: $settingAlert) {
+            Button("設定を開く") {
+                if let url = URL(string: UIApplication.openSettingsURLString), UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                }
+            }
+        }
+
+
+
+
     } // body
 } // SettingView
 
