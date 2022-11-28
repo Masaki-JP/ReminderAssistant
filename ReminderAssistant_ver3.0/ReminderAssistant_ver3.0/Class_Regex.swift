@@ -682,26 +682,32 @@ extension MyRegex {
         newStr = newStr.replacingOccurrences(of: "夜", with: "19時00分")
         newStr = newStr.replacingOccurrences(of: "晩", with: "19時00分")
 
-        // 来年、再来年、来月、再来月、来週、再来週、明日、明後日、明明後日を変換する。
+
+        // 再来年、来年、再来月、来月、再来週、来週、明日、明々後日(明明後日)、明後日を返還する。
         let dateFormatter = DateFormatter()
         dateFormatter.calendar = Calendar(identifier: .gregorian)
         dateFormatter.locale = Locale(identifier: "ja_JP")
         dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
 
-        dateFormatter.dateFormat = "yyyy年"
 
+        // 再来年、来年 → yyyy年
+        dateFormatter.dateFormat = "yyyy年"
         let yearAfterNext = dateFormatter.string(from: dateFormatter.calendar.date(byAdding: .year, value: 2, to: today)!)
         newStr = newStr.replacingOccurrences(of: "再来年", with: yearAfterNext) // 来年と再来年の順番は入れ替えない！
         let nextYear = dateFormatter.string(from: dateFormatter.calendar.date(byAdding: .year, value: 1, to: today)!)
         newStr = newStr.replacingOccurrences(of: "来年", with: nextYear) // 来年と再来年の順番は入れ替えない！
 
-        dateFormatter.dateFormat = "MM月"
+
+        //　再来月、来月 → yyyy年MM月
+        dateFormatter.dateFormat = "yyyy年MM月"
         let monthAfterNext = dateFormatter.string(from: dateFormatter.calendar.date(byAdding: .month, value: 2, to: today)!)
         newStr = newStr.replacingOccurrences(of: "再来月", with: monthAfterNext) // 来月と再来月の順番は入れ替えない！
         let nextMonth = dateFormatter.string(from: dateFormatter.calendar.date(byAdding: .month, value: 1, to: today)!)
         newStr = newStr.replacingOccurrences(of: "来月", with: nextMonth) // 来月と再来月の順番は入れ替えない！
 
-        dateFormatter.dateFormat = "dd日"
+
+        // 再来週、来週、明日、明々後日(明明後日)、明後日 → yyyy年MM月dd日
+        dateFormatter.dateFormat = "yyyy年MM月dd日"
         let weekAfterNext = dateFormatter.string(from: dateFormatter.calendar.date(byAdding: .day, value: 14, to: today)!)
         newStr = newStr.replacingOccurrences(of: "再来週", with: weekAfterNext) // 来週と再来週の順番は入れ替えない！
         let nextWeek = dateFormatter.string(from: dateFormatter.calendar.date(byAdding: .day, value: 7, to: today)!)
@@ -717,6 +723,7 @@ extension MyRegex {
 
         return newStr
     }
+
 
     // 文字列が正規表現に当てはまるか否か
     func matchOrNot(dateString: String, regex: String) -> Bool {

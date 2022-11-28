@@ -14,6 +14,7 @@ struct ReminderView: View {
     // アップストレージ
     @AppStorage("autofocus") var autofocus = false
     @AppStorage("reminderList") var reminderList = "未設定"
+    @AppStorage("isFirstLaunch") var isFirstLaunch = true
 
     // インスタンス
     let myRegex = MyRegex()
@@ -117,15 +118,6 @@ struct ReminderView: View {
                     .shadow(color: focusState == .notes ? .white : .clear, radius: 3)
                 } // Group
 
-//                Button("Create a reminder") {
-//                    focusState = nil
-//                    doTask(title: title_TextField, deadline: deadline_TextField)
-//                }
-//                .bold().font(.title).foregroundColor(.white).padding()
-//                .background((title_TextField != "") && (deadline_TextField != "") ? Color(red: 230/270, green: 121/270, blue: 40/270) : .gray)
-//                .cornerRadius(100)
-//                .padding(.top, 25)
-
                 Button {
                     focusState = nil
                     doTask(title: title_TextField, deadline: deadline_TextField)
@@ -162,23 +154,12 @@ struct ReminderView: View {
                     Group {
                         Text(title_TextField)
                             .font(.headline)
-                            .lineLimit(1)
+                            .lineLimit(2)
                         Text(date_str)
                             .padding(.bottom, 15)
                             .font(.callout)
                     }
                     .frame(width: UIScreen.main.bounds.width*0.7)
-
-//                    Button("閉じる") {
-//                        closeButtonAction()
-//                    }
-//                    .frame(width: UIScreen.main.bounds.width*0.625)
-//                    .bold()
-//                    .foregroundColor(.white)
-//                    .padding()
-//                    .background(.blue)
-//                    .cornerRadius(10)
-//                    .padding(.bottom, 13)
 
                     Button {
                         closeButtonAction()
@@ -243,11 +224,18 @@ struct ReminderView: View {
             }
         }
         .onAppear {
-
             print("ReminderViewにてonApperメソッドが実行")
+
             reminderList = UserDefaults.standard.string(forKey: "reminderList") ?? "未設定"
 
+            // アクセスが許可されていることを確認
             guard eventStore.getAuthorizationStatus() else {
+
+                guard !isFirstLaunch else {
+                    isFirstLaunch = false
+                    return
+                }
+
                 settingAlert = true
                 return
             }
