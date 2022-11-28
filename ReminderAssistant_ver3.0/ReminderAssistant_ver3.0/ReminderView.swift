@@ -117,18 +117,26 @@ struct ReminderView: View {
                     .shadow(color: focusState == .notes ? .white : .clear, radius: 3)
                 } // Group
 
-                Button("Create a reminder") {
-//                    Task {
-//                        focusState = nil
-//                        await doTask(title: title_TextField, deadline: deadline_TextField)
-//                    }
+//                Button("Create a reminder") {
+//                    focusState = nil
+//                    doTask(title: title_TextField, deadline: deadline_TextField)
+//                }
+//                .bold().font(.title).foregroundColor(.white).padding()
+//                .background((title_TextField != "") && (deadline_TextField != "") ? Color(red: 230/270, green: 121/270, blue: 40/270) : .gray)
+//                .cornerRadius(100)
+//                .padding(.top, 25)
+
+                Button {
                     focusState = nil
                     doTask(title: title_TextField, deadline: deadline_TextField)
+                } label: {
+                    Text("Create a reminder")
+                        .bold().font(.title).foregroundColor(.white).padding()
+                        .background((title_TextField != "") && (deadline_TextField != "") ? Color(red: 230/270, green: 121/270, blue: 40/270) : .gray)
+                        .cornerRadius(100)
                 }
-                .bold().font(.title).foregroundColor(.white).padding()
-                .background((title_TextField != "") && (deadline_TextField != "") ? Color(red: 230/270, green: 121/270, blue: 40/270) : .gray)
-                .cornerRadius(100)
                 .padding(.top, 25)
+
 
 
                 Text("リマインダー作成先：\(reminderList)")
@@ -161,6 +169,17 @@ struct ReminderView: View {
                     }
                     .frame(width: UIScreen.main.bounds.width*0.7)
 
+//                    Button("閉じる") {
+//                        closeButtonAction()
+//                    }
+//                    .frame(width: UIScreen.main.bounds.width*0.625)
+//                    .bold()
+//                    .foregroundColor(.white)
+//                    .padding()
+//                    .background(.blue)
+//                    .cornerRadius(10)
+//                    .padding(.bottom, 13)
+
                     Button {
                         closeButtonAction()
                     } label: {
@@ -171,8 +190,10 @@ struct ReminderView: View {
                             .padding()
                             .background(.blue)
                             .cornerRadius(10)
-                            .padding(.bottom, 13)
                     }
+                    .padding(.bottom, 13)
+
+
                 }
                 .frame(width: UIScreen.main.bounds.width*0.8)
                 .background(Color(red: 0.2, green: 0.2, blue: 0.2))
@@ -214,13 +235,7 @@ struct ReminderView: View {
             alert ?? Alert(title: Text("アラートが設定されていません。"))
         }
         .alert("リマインダーへのアクセスを許可してください。", isPresented: $settingAlert) {
-//            Button {
-//                if let url = URL(string: UIApplication.openSettingsURLString), UIApplication.shared.canOpenURL(url) {
-//                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
-//                }
-//            } label: {
-//                Text("設定を開く")
-//            }
+
             Button("設定を開く") {
                 if let url = URL(string: UIApplication.openSettingsURLString), UIApplication.shared.canOpenURL(url) {
                     UIApplication.shared.open(url, options: [:], completionHandler: nil)
@@ -229,10 +244,7 @@ struct ReminderView: View {
         }
         .onAppear {
 
-
-
-
-            print("リマインダービューにてオンアピアメソッドが実行")
+            print("ReminderViewにてonApperメソッドが実行")
             reminderList = UserDefaults.standard.string(forKey: "reminderList") ?? "未設定"
 
             guard eventStore.getAuthorizationStatus() else {
@@ -245,14 +257,9 @@ struct ReminderView: View {
                     focusState = .title
                 }
             }
-
-
-
-
-
         }
         .onChange(of: scenePhase) { phase in
-            print("リマインダービューにてオンチェンジメソッドが実行")
+            print("ReminderViewにてonChangeメソッドが実行")
 
             switch phase {
             case .active:
@@ -283,7 +290,6 @@ struct ReminderView: View {
 
 
     // リマインダー作成の関数
-//    private func doTask(title: String, deadline: String) async {
     private func doTask(title: String, deadline: String) {
 
         // 1. 整形された"deadline_String"の作成する
@@ -314,86 +320,18 @@ struct ReminderView: View {
         }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // 4. リマインダーを作成
         if eventStore.getAuthorizationStatus() {
             eventStore.createReminder(title: title, deadLine: deadline_Date!, Note: notes_TextField, listName: reminderList)
             date_str = myRegex.getFullDateString(date: deadline_Date!)
-            DispatchQueue.main.asyncAfter(deadline: .now()+0.2) {
+            DispatchQueue.main.asyncAfter(deadline: .now()+0.3) {
                 showCompletionAlert = true
             }
         } else {
-
             settingAlert = true
-
-//            if eventStore.getAuthorizationStatus() {
-//
-//                eventStore.createReminder(title: title, deadLine: deadline_Date!, Note: notes_TextField, listName: reminderList)
-//
-//                date_str = myRegex.getFullDateString(date: deadline_Date!)
-//
-//                DispatchQueue.main.asyncAfter(deadline: .now()+0.2) {
-//                    showCompletionAlert = true
-//                }
-//            } else {
-//                settingAlert = true
-//            }
         }
 
     } // doTask
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     private func closeButtonAction() {
