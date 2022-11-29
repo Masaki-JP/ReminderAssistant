@@ -83,6 +83,9 @@ struct ReminderView: View {
                     .background(.ultraThickMaterial)
                     .cornerRadius(15)
                     .shadow(color: focusState == .title ? .white : .clear, radius: 3)
+                    .onTapGesture {
+                        focusState = .title
+                    }
 
 
                     HStack {
@@ -101,9 +104,11 @@ struct ReminderView: View {
                     .padding()
                     .background(.ultraThickMaterial)
                     .cornerRadius(15)
-                    .padding(.top, 20)
                     .shadow(color: focusState == .deadline ? .white : .clear, radius: 3)
-
+                    .onTapGesture {
+                        focusState = .deadline
+                    }
+                    .padding(.top, 20)
 
                     HStack {
                         TextField("Notes (option)", text: $notes_TextField, axis: .vertical)
@@ -114,8 +119,12 @@ struct ReminderView: View {
                     .padding()
                     .background(.ultraThickMaterial)
                     .cornerRadius(15)
-                    .padding(.top, 20)
                     .shadow(color: focusState == .notes ? .white : .clear, radius: 3)
+                    .onTapGesture(perform: {
+                        focusState = .notes
+                    })
+                    .padding(.top, 20)
+
                 } // Group
 
                 Button {
