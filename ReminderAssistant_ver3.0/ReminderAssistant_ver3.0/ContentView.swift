@@ -31,13 +31,6 @@ struct ContentView: View {
                 }
                 .tag(2)
 
-//            SampleUI()
-//                .tabItem {
-//                    Image(systemName: "person")
-//                    Text("SampleUI")
-//                }
-//                .tag(3)
-
         } // TabView
         .tint(.white)
         .onAppear {
