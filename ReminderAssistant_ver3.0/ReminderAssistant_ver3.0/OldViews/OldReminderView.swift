@@ -7,9 +7,7 @@
 
 import SwiftUI
 
-struct ReminderView: View {
-
-
+struct OldReminderView: View {
 
     // アップストレージ
     @AppStorage("autofocus") var autofocus = false
@@ -374,9 +372,9 @@ struct ReminderView: View {
 
 
 // プレビュープロバイダー
-struct ReminderView_Previews: PreviewProvider {
+struct OldReminderView_Previews: PreviewProvider {
     static var previews: some View {
-        ReminderView()
+        OldReminderView()
     }
 }
 

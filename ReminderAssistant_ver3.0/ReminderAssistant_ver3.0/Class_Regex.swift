@@ -742,7 +742,7 @@ extension MyRegex {
         dateFormatter.calendar = Calendar(identifier: .gregorian)
         dateFormatter.locale = Locale(identifier: "ja_JP")
         dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
-        dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分ss秒"
+        dateFormatter.dateFormat = "yyyy年M月d日 H:mm"
         return dateFormatter.string(from: date)
     }
 

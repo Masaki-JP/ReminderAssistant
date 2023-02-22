@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SettingView: View {
+struct OldSettingView: View {
 
     @AppStorage("autofocus") var autofocus = false
     @AppStorage("reminderList") var reminderList = "未設定"
@@ -94,8 +94,8 @@ struct SettingView: View {
 
 
 
-struct SettingView_Previews: PreviewProvider {
+struct OldSettingView_Previews: PreviewProvider {
     static var previews: some View {
-        SettingView()
+        OldSettingView()
     }
 }
