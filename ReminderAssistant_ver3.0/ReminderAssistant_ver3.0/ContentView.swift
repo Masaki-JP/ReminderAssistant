@@ -25,11 +25,7 @@ struct ContentView: View {
     
     // フォーカス
     @FocusState var focus: Focus?
-    enum Focus {
-        case title
-        case deadline
-        case notes
-    }
+
     
     // アラート
     @State var alert: Alert?
@@ -51,11 +47,16 @@ struct ContentView: View {
     @State var imageWidth: CGFloat = 220
     @State var imageHeight: CGFloat = 220
     
+    let textFieldWidth: CGFloat = 320
     
-    
-    let coreColor = Color(red: 64/255, green: 123/255, blue: 255/255)
-    
-    var BGColor: Color {
+    var coreColor: Color {
+        if colorScheme == .light {
+            return Color(red: 64/255, green: 123/255, blue: 255/255)
+        } else {
+            return Color(red: 64/255, green: 123/255, blue: 255/255)
+        }
+    }
+    var bgColor: Color {
         if colorScheme == .light {
            return Color(.white)
         } else {
@@ -69,7 +70,7 @@ struct ContentView: View {
             
 
             
-            BGColor.ignoresSafeArea()
+            bgColor.ignoresSafeArea()
 
             GeometryReader { geometry in
                 ScrollView(showsIndicators: false) {
@@ -86,103 +87,101 @@ struct ContentView: View {
 
                         Image("MobileUser")
                             .resizable()
-                            .frame(width: !onFocus ? imageWidth : 0,height: !onFocus ? imageHeight : 0)
+                            .frame(width: !onFocus ? imageWidth : 0, height: !onFocus ? imageHeight : 0)
                             .padding(.top)
 
 
                         VStack(alignment: .leading, spacing: 0) {
 
 
-                            VStack(alignment: .leading, spacing: 0) {
-                                Text("名前")
-                                    .frame(width: 320, alignment: .leading)
-                                    .background(BGColor)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(coreColor)
-                                    .padding(.leading, 1)
-                                    .padding(.top)
-                                    .onTapGesture {
-                                        print("onTapGesture")
-                                        if focus != .title { focus = .title }
-                                    }
+//                            VStack(alignment: .leading, spacing: 0) {
+//                                Text("名前")
+//                                    .frame(width: 320, alignment: .leading)
+//                                    .background(BGColor)
+//                                    .fontWeight(.semibold)
+//                                    .foregroundColor(coreColor)
+//                                    .padding(.leading, 1)
+//                                    .padding(.top)
+//                                    .onTapGesture {
+//                                        if focus != .title { focus = .title }
+//                                    }
+//
+//                                TextField("", text: $title)
+//                                    .frame(width: 320)
+//                                    .focused($focus, equals: .title)
+//                                    .padding([.top, .leading], 2)
+//
+//                                RoundedRectangle(cornerRadius: 1)
+//                                    .foregroundColor(coreColor)
+//                                    .frame(width: 320, height: 1)
+//                                    .padding(.top, 5)
+//                                    .onTapGesture {
+//                                        if focus != .title { focus = .title }
+//                                    }
+//                            }
+                            MyTextField(labelName: "名前", width: textFieldWidth, text: $title, coreColor: coreColor, bgColor: bgColor, focus: $focus, focusStateValue: .title)
+                                .padding(.top)
 
-                                TextField("", text: $title)
-                                    .frame(width: 320)
-                                    .focused($focus, equals: .title)
-                                    .padding([.top, .leading], 2)
+//                            VStack(alignment: .leading, spacing: 0) {
+//                                Text("期限")
+//                                    .frame(width: 320, alignment: .leading)
+//                                    .background(BGColor)
+//                                    .fontWeight(.semibold)
+//                                    .foregroundColor(coreColor)
+//                                    .padding(.leading, 1)
+//                                    .padding(.top, 35)
+//                                    .onTapGesture {
+//                                        print("onTapGesture")
+//                                        if focus != .deadline { focus = .deadline }
+//                                    }
+//
+//                                TextField("", text: $deadline)
+//                                    .frame(width: 320)
+//                                    .focused($focus, equals: .deadline)
+//                                    .padding([.top, .leading], 2)
+//
+//                                RoundedRectangle(cornerRadius: 1)
+//                                    .foregroundColor(coreColor)
+//                                    .frame(width: 320, height: 1)
+//                                    .padding(.top, 5)
+//                                    .onTapGesture {
+//                                        if focus != .deadline { focus = .deadline }
+//                                    }
+//
+//                            }
+                            MyTextField(labelName: "期限", width: textFieldWidth, text: $deadline, coreColor: coreColor, bgColor: bgColor, focus: $focus, focusStateValue: .deadline)
+                                .padding(.top, 30)
 
-                                RoundedRectangle(cornerRadius: 1)
-                                    .foregroundColor(coreColor)
-                                    .frame(width: 320, height: 1)
-                                    .padding(.top, 5)
-                                    .onTapGesture {
-                                        print("onTapGesture")
-                                        if focus != .title { focus = .title }
-                                    }
-                            }
+//                            VStack(alignment: .leading, spacing: 0) {
+//                                Text("注釈")
+//                                    .frame(width: 320, alignment: .leading)
+//                                    .background(BGColor)
+//                                    .fontWeight(.semibold)
+//                                    .foregroundColor(coreColor)
+//                                    .padding(.leading, 1)
+//                                    .padding(.top, 30)
+//                                    .onTapGesture {
+//                                        if focus != .notes { focus = .notes }
+//                                    }
+//
+//                                TextField("", text: $notes, axis: .vertical)
+//                                    .lineLimit(4)
+//                                    .frame(width: 320)
+//                                    .padding([.top, .leading], 2)
+//                                    .focused($focus, equals: .notes)
+//
+//                                RoundedRectangle(cornerRadius: 1)
+//                                    .foregroundColor(coreColor)
+//                                    .frame(width: 320, height: 1)
+//                                    .padding(.top, 5)
+//                                    .onTapGesture {
+//                                        if focus != .notes { focus = .notes }
+//                                    }
+//
+//                            }
 
-
-                            VStack(alignment: .leading, spacing: 0) {
-                                Text("期限")
-                                    .frame(width: 320, alignment: .leading)
-                                    .background(BGColor)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(coreColor)
-                                    .padding(.leading, 1)
-                                    .padding(.top, 35)
-                                    .onTapGesture {
-                                        print("onTapGesture")
-                                        if focus != .deadline { focus = .deadline }
-                                    }
-
-                                TextField("", text: $deadline)
-                                    .frame(width: 320)
-                                    .focused($focus, equals: .deadline)
-                                    .padding([.top, .leading], 2)
-
-                                RoundedRectangle(cornerRadius: 1)
-                                    .foregroundColor(coreColor)
-                                    .frame(width: 320, height: 1)
-                                    .padding(.top, 5)
-                                    .onTapGesture {
-                                        print("onTapGesture")
-                                        if focus != .deadline { focus = .deadline }
-                                    }
-
-                            }
-
-
-
-                            VStack(alignment: .leading, spacing: 0) {
-                                Text("注釈")
-                                    .frame(width: 320, alignment: .leading)
-                                    .background(BGColor)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(coreColor)
-                                    .padding(.leading, 1)
-                                    .padding(.top, 35)
-                                    .onTapGesture {
-                                        print("onTapGesture")
-                                        if focus != .notes { focus = .notes }
-                                    }
-
-                                TextField("", text: $notes, axis: .vertical)
-                                    .lineLimit(4)
-                                    .frame(width: 320)
-                                    .focused($focus, equals: .notes)
-                                    .padding([.top, .leading], 2)
-
-                                RoundedRectangle(cornerRadius: 1)
-                                    .foregroundColor(coreColor)
-                                    .frame(width: 320, height: 1)
-                                    .padding(.top, 5)
-                                    .onTapGesture {
-                                        print("onTapGesture")
-                                        if focus != .notes { focus = .notes }
-                                    }
-
-                            }
-
+                            MyTextField(labelName: "注釈", width: textFieldWidth, axix: .vertical, lineLimit: 4, text: $notes, coreColor: coreColor, bgColor: bgColor, focus: $focus, focusStateValue: .notes)
+                                .padding(.top, 30)
                         }
 
 
@@ -199,7 +198,7 @@ struct ContentView: View {
                                 .cornerRadius(5)
                                
                         }
-                        .padding(.top, 35)
+                        .padding(.top, 30)
                         
                         
                         Spacer()

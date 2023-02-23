@@ -15,3 +15,9 @@ struct ReminderAssistant_ver3_0App: App {
         }
     }
 }
+
+enum Focus {
+    case title
+    case deadline
+    case notes
+}
