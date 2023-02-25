@@ -25,14 +25,14 @@ struct ContentView: View {
     
     // フォーカス
     @FocusState var focus: Focus?
-    
+    @State var onFocus = false
     
     // アラート
     @State var alert: Alert?
-    @State var showingAlert = false
+    @State var requestAccessAlert = false
     func showAlert(alert: Alert) {
         self.alert = alert
-        self.showingAlert = true
+        self.requestAccessAlert = true
     }
     @State var settingAlert = false
     @State var showNotificationView = false
@@ -43,12 +43,12 @@ struct ContentView: View {
     
     @State var showSettingsView = false
     @State var deadlineOfCreatedReminder = ""
-    @State var onFocus = false
-    @State var imageWidth: CGFloat = 220
-    @State var imageHeight: CGFloat = 220
+    @State var imageWidth: CGFloat = 230
+    @State var imageHeight: CGFloat = 230
     
-    let textFieldWidth: CGFloat = 320
+    let textFieldAndButtonWidth: CGFloat = 320
     
+    // カラー
     var coreColor: Color {
         if colorScheme == .light {
             return Color(red: 64/255, green: 123/255, blue: 255/255)
@@ -64,11 +64,11 @@ struct ContentView: View {
         }
     }
     
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    
     
     var body: some View {
         ZStack {
-            
-            
             
             bgColor.ignoresSafeArea()
             
@@ -88,38 +88,22 @@ struct ContentView: View {
                         Image("MobileUser")
                             .resizable()
                             .frame(width: !onFocus ? imageWidth : 0, height: !onFocus ? imageHeight : 0)
+                            .padding()
+                        
+                        MyTextField(labelName: "名前", width: textFieldAndButtonWidth, text: $title, coreColor: coreColor, bgColor: bgColor, focus: $focus, focusStateValue: .title)
                             .padding(.top)
                         
-                        MyTextField(labelName: "名前", width: textFieldWidth, text: $title, coreColor: coreColor, bgColor: bgColor, focus: $focus, focusStateValue: .title)
-                            .padding(.top)
+                        MyTextField(labelName: "期限", width: textFieldAndButtonWidth, text: $deadline, coreColor: coreColor, bgColor: bgColor, focus: $focus, focusStateValue: .deadline)
+                            .padding(.top, 25)
                         
-                        MyTextField(labelName: "期限", width: textFieldWidth, text: $deadline, coreColor: coreColor, bgColor: bgColor, focus: $focus, focusStateValue: .deadline)
-                            .padding(.top, 30)
+                        MyTextField(labelName: "注釈", width: textFieldAndButtonWidth, axix: .vertical, lineLimit: 4, text: $notes, coreColor: coreColor, bgColor: bgColor, focus: $focus, focusStateValue: .notes)
+                            .padding(.top, 25)
                         
-                        MyTextField(labelName: "注釈", width: textFieldWidth, axix: .vertical, lineLimit: 4, text: $notes, coreColor: coreColor, bgColor: bgColor, focus: $focus, focusStateValue: .notes)
-                            .padding(.top, 30)
-                        
-                        
-                        //                        Button {
-                        //                            focus = nil
-                        //                            createReminder(title: title, deadline: deadline)
-                        //                        } label: {
-                        //                            Text("リマインダー作成")
-                        //                                .font(.title3)
-                        //                                .fontWeight(.semibold)
-                        //                                .foregroundColor(.white)
-                        //                                .frame(width: 320, height: 45)
-                        //                                .background(coreColor)
-                        //                                .cornerRadius(5)
-                        //
-                        //                        }
-                        //                        .padding(.top, 30)
-                        
-                        MyButton(color: coreColor, width: textFieldWidth) {
+                        MyButton(text: "リマインダー作成", color: coreColor, width: textFieldAndButtonWidth) {
                             focus = nil
                             createReminder(title: title, deadline: deadline)
                         }
-                        .padding(.top, 30)
+                        .padding(.top, 25)
                         
                         Spacer()
                         
@@ -137,41 +121,64 @@ struct ContentView: View {
                 .frame(width: geometry.size.width)
             }
             
-            NotificationView(showSuccessView: $showNotificationView, title: $title, deadline: $deadlineOfCreatedReminder)
+            NotificationView(showView: $showNotificationView, title: $title, deadline: $deadlineOfCreatedReminder)
             
             
         } // ZStack
+        
+        
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                if focus == .title {
-                    Button {
+                //                if focus == .title {
+                //                    Button {
+                //                        focus = .deadline
+                //                    } label: {
+                //                        Text("期限に移動")
+                //                    }
+                //                } else if focus == .deadline {
+                //                    Button {
+                //                        focus = .title
+                //                    } label: {
+                //                        Text("タイトルに移動")
+                //                    }
+                //                } else if focus == .notes {
+                //                    Button {
+                //                        let store = notes
+                //                        notes = ""
+                //                        focus = nil
+                //                        DispatchQueue.main.asyncAfter(deadline: .now()+0.1) {
+                //                            notes = store
+                //                        }
+                //                    } label: {
+                //                        Text("キーボードを閉じる")
+                //                    }
+                //                }
+                switch focus {
+                case .title:
+                    Button("期限に移動") {
                         focus = .deadline
-                    } label: {
-                        Text("期限に移動")
                     }
-                } else if focus == .deadline {
-                    Button {
+                case .deadline:
+                    Button("名前に移動") {
                         focus = .title
-                    } label: {
-                        Text("タイトルに移動")
                     }
-                } else if focus == .notes {
-                    Button {
-                        let store = notes
-                        notes = ""
-                        focus = nil
+                case .notes:
+                    Button("キーボードを閉じる") {
+                        let store = notes; notes = ""; focus = nil;
                         DispatchQueue.main.asyncAfter(deadline: .now()+0.1) {
                             notes = store
                         }
-                    } label: {
-                        Text("キーボードを閉じる")
                     }
+                default:
+                    EmptyView()
                 }
                 Spacer()
             }
         }
-        .alert(isPresented: $showingAlert) {
+        .alert(isPresented: $requestAccessAlert) {
             alert ?? Alert(title: Text("アラートが設定されていません。"))
         }
         .alert("リマインダーへのアクセスを許可してください。", isPresented: $settingAlert) {
@@ -183,7 +190,6 @@ struct ContentView: View {
             }
         }
         .onChange(of: scenePhase) { newValue in
-            
             switch newValue {
             case .active:
                 if autofocus && focus != .title {
@@ -219,28 +225,22 @@ struct ContentView: View {
                 await eventStore.firstRequestAccess()
             }
         }
-        //        .onAppear {
-        //
-        //            reminderList = UserDefaults.standard.string(forKey: "reminderList") ?? "未設定"
-        //
-        //            // アクセスが許可されていることを確認
-        //            guard eventStore.getAuthorizationStatus() else {
-        //
-        //                guard !isFirstLaunch else {
-        //                    isFirstLaunch = false
-        //                    return
-        //                }
-        //
-        //                settingAlert = true
-        //                return
-        //            }
-        //
-        //            if autofocus && focusState != .title {
-        //                DispatchQueue.main.asyncAfter(deadline: .now()+0.3) {
-        //                    focusState = .title
-        //                }
-        //            }
-        //        }
+//        .onAppear {
+//
+//            reminderList = UserDefaults.standard.string(forKey: "reminderList") ?? "未設定"
+//
+//            // アクセスが許可されていることを確認
+//            guard eventStore.getAuthorizationStatus() else {
+//
+//                guard !isFirstLaunch else {
+//                    isFirstLaunch = false
+//                    return
+//                }
+//
+//                settingAlert = true
+//                return
+//            }
+//        }
         
     } // body
     
@@ -313,10 +313,10 @@ extension ContentView {
     
     // NotificationViewが非表示になる時の処理
     func actionWhenNotificationViewDisappear() {
-        title = ""
-        deadline = ""
-        notes = ""
-        deadlineOfCreatedReminder = ""
+        title.removeAll()
+        deadline.removeAll()
+        notes.removeAll()
+        deadlineOfCreatedReminder.removeAll()
         showNotificationView = false
     }
 }

@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct MyButton: View {
-    var text = "リマインダー作成"
+    
+    var text: String
     
     var color: Color
     
@@ -34,7 +35,7 @@ struct MyButton: View {
 
 struct MyButton_Previews: PreviewProvider {
     static var previews: some View {
-        MyButton(color: .pink, width: 320) {
+        MyButton(text: "print", color: .pink, width: 320) {
             print("pushed")
         }
     }

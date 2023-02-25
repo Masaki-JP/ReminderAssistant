@@ -49,7 +49,7 @@ struct SettingsView: View {
                     Text("リマインダーの作成画面が表示されたときに、入力フォームに自動でフォーカスします。")
                 }
             }
-            .navigationTitle("設定")
+            .navigationTitle("Settings")
         } // NavigationView
         .navigationViewStyle(.stack)
         .onAppear {
