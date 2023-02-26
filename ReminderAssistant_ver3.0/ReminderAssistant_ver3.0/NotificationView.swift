@@ -36,13 +36,23 @@ struct NotificationView: View {
             // Background
             if showView {
                 ZStack {
-                    bgColor2
-                        .ignoresSafeArea()
-                        .onTapGesture {
-                            withAnimation {
-                                showView = false
-                            }
+//                    bgColor2
+//                        .ignoresSafeArea()
+//                        .onTapGesture {
+//                            withAnimation {
+//                                showView = false
+//                            }
+//                        }
+                    Button {
+                        withAnimation {
+                            showView = false
                         }
+                    } label: {
+                            bgColor2
+                                .ignoresSafeArea()
+                    }
+                    .keyboardShortcut(.defaultAction)
+
                 }
                 .transition(.opacity)
             }

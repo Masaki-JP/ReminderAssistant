@@ -30,13 +30,6 @@ struct ContentView: View {
     
     
     // アラート
-//    @State var alert: Alert?
-//    @State var requestAccessAlert = false
-//    func showAlert(alert: Alert) {
-//        self.alert = alert
-//        self.requestAccessAlert = true
-//    }
-    
     @State var settingAlert = false
     @State var noMatchAlert = false
     @State var unknownErrorAlert = false
@@ -136,11 +129,7 @@ struct ContentView: View {
         
         //////////////////////////////////////////////////////////////////////////////////////////////
         
-       
-//        .alert(isPresented: $requestAccessAlert) {
-//            alert ?? Alert(title: Text("アラートが設定されていません。"))
-//        }
-        
+
         
         .alert("Error", isPresented: $settingAlert, actions: {
             Button("設定を開く") {
@@ -167,34 +156,8 @@ struct ContentView: View {
             Text("\n予期せぬエラーが発生しました。\n")
         })
         .toolbar {
-            //            ToolbarItemGroup(placement: .keyboard) {
-            //                Spacer()
-            //                switch focus {
-            //                case .title:
-            //                    Button("期限に移動") {
-            //                        focus = .deadline
-            //                    }
-            //                case .deadline:
-            //                    Button("名前に移動") {
-            //                        focus = .title
-            //                    }
-            //                case .notes:
-            //                    Button("キーボードを閉じる") {
-            //                        let store = notes; notes = ""; focus = nil;
-            //                        DispatchQueue.main.asyncAfter(deadline: .now()+0.1) {
-            //                            notes = store
-            //                        }
-            //                    }
-            //                default:
-            //                    EmptyView()
-            //                }
-            //                Spacer()
-            //            }
-        
             
             ToolbarItemGroup(placement: .keyboard) {
-                
-                // ライトモードはまだ
                 
                 let scaleEffect: CGFloat = 0.75
                 

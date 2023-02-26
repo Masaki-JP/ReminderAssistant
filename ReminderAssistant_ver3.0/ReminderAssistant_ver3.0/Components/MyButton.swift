@@ -30,6 +30,7 @@ struct MyButton: View {
                 .background(color)
                 .cornerRadius(5)
         }
+        .keyboardShortcut(.return, modifiers: .command)
     }
 }
 
