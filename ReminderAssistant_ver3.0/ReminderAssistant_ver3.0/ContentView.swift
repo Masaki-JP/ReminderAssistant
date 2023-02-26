@@ -27,15 +27,22 @@ struct ContentView: View {
     @FocusState var focus: Focus?
     @State var onFocus = false
     
+    
+    
     // アラート
-    @State var alert: Alert?
-    @State var requestAccessAlert = false
-    func showAlert(alert: Alert) {
-        self.alert = alert
-        self.requestAccessAlert = true
-    }
+//    @State var alert: Alert?
+//    @State var requestAccessAlert = false
+//    func showAlert(alert: Alert) {
+//        self.alert = alert
+//        self.requestAccessAlert = true
+//    }
+    
     @State var settingAlert = false
+    @State var noMatchAlert = false
+    @State var unknownErrorAlert = false
     @State var showNotificationView = false
+    
+    
     
     // その他
     @Environment(\.scenePhase) private var scenePhase
@@ -129,65 +136,168 @@ struct ContentView: View {
         
         //////////////////////////////////////////////////////////////////////////////////////////////
         
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                //                if focus == .title {
-                //                    Button {
-                //                        focus = .deadline
-                //                    } label: {
-                //                        Text("期限に移動")
-                //                    }
-                //                } else if focus == .deadline {
-                //                    Button {
-                //                        focus = .title
-                //                    } label: {
-                //                        Text("タイトルに移動")
-                //                    }
-                //                } else if focus == .notes {
-                //                    Button {
-                //                        let store = notes
-                //                        notes = ""
-                //                        focus = nil
-                //                        DispatchQueue.main.asyncAfter(deadline: .now()+0.1) {
-                //                            notes = store
-                //                        }
-                //                    } label: {
-                //                        Text("キーボードを閉じる")
-                //                    }
-                //                }
-                switch focus {
-                case .title:
-                    Button("期限に移動") {
-                        focus = .deadline
-                    }
-                case .deadline:
-                    Button("名前に移動") {
-                        focus = .title
-                    }
-                case .notes:
-                    Button("キーボードを閉じる") {
-                        let store = notes; notes = ""; focus = nil;
-                        DispatchQueue.main.asyncAfter(deadline: .now()+0.1) {
-                            notes = store
-                        }
-                    }
-                default:
-                    EmptyView()
-                }
-                Spacer()
-            }
-        }
-        .alert(isPresented: $requestAccessAlert) {
-            alert ?? Alert(title: Text("アラートが設定されていません。"))
-        }
-        .alert("リマインダーへのアクセスを許可してください。", isPresented: $settingAlert) {
-            
+       
+//        .alert(isPresented: $requestAccessAlert) {
+//            alert ?? Alert(title: Text("アラートが設定されていません。"))
+//        }
+        
+        
+        .alert("Error", isPresented: $settingAlert, actions: {
             Button("設定を開く") {
                 if let url = URL(string: UIApplication.openSettingsURLString), UIApplication.shared.canOpenURL(url) {
                     UIApplication.shared.open(url, options: [:], completionHandler: nil)
                 }
             }
+        }, message: {
+            Text("\nリマインダーアプリへのアクセスを許可してください！\n")
+        })
+        
+        .alert("Error", isPresented: $noMatchAlert, actions: {
+            Button("OK") {
+                print("pushed")
+            }
+        }, message: {
+            Text("\n期限の記述をご確認ください！\n")
+        })
+        .alert("Error", isPresented: $unknownErrorAlert, actions: {
+            Button("OK") {
+                print("pushed")
+            }
+        }, message: {
+            Text("\n予期せぬエラーが発生しました。\n")
+        })
+        .toolbar {
+            //            ToolbarItemGroup(placement: .keyboard) {
+            //                Spacer()
+            //                switch focus {
+            //                case .title:
+            //                    Button("期限に移動") {
+            //                        focus = .deadline
+            //                    }
+            //                case .deadline:
+            //                    Button("名前に移動") {
+            //                        focus = .title
+            //                    }
+            //                case .notes:
+            //                    Button("キーボードを閉じる") {
+            //                        let store = notes; notes = ""; focus = nil;
+            //                        DispatchQueue.main.asyncAfter(deadline: .now()+0.1) {
+            //                            notes = store
+            //                        }
+            //                    }
+            //                default:
+            //                    EmptyView()
+            //                }
+            //                Spacer()
+            //            }
+        
+            
+            ToolbarItemGroup(placement: .keyboard) {
+                
+                // ライトモードはまだ
+                
+                let scaleEffect: CGFloat = 0.75
+                
+                // キーボード非表示
+                Button {
+                    
+                    if focus == .notes {
+                        let store = notes
+                        notes = ""
+                        DispatchQueue.main.asyncAfter(deadline: .now()+0.1) {
+                            notes = store
+                        }
+                        focus = nil
+                    } else {
+                        focus = nil
+                    }
+                    
+                  
+                } label: {
+                    Image(systemName: "arrow.down")
+                        .scaleEffect(scaleEffect)
+                }
+                .opacity(colorScheme == .light ? 1.0 : 0.8)
+                .padding(.leading, -12)
+                
+                Spacer()
+                
+                // 名前
+                Button {
+                    focus = .title
+                } label: {
+                    HStack(spacing: 0) {
+                        Image(systemName: "list.bullet.clipboard")
+                            .scaleEffect(scaleEffect)
+                        Text("名前")
+                    }
+                }
+                .padding(.trailing, 5)
+                .opacity(colorScheme == .dark && focus != .title ? 0.8 : 1.0)
+                .fontWeight(focus == .title ? .bold : .regular)
+                
+                Text("-")
+                    .foregroundColor(.blue)
+                    .opacity(colorScheme == .light ? 1.0 : 0.8)
+                
+                // 期限
+                Button {
+                    focus = .deadline
+                } label: {
+                    HStack(spacing: 0) {
+                        Image(systemName: "clock")
+                            .scaleEffect(scaleEffect)
+                        Text("期限")
+                    }
+                }
+                .padding(.horizontal, 5)
+                .opacity(colorScheme == .dark && focus != .deadline ? 0.8 : 1.0)
+                .fontWeight(focus == .deadline ? .bold : .regular)
+                
+                Text("-")
+                    .foregroundColor(.blue)
+                    .opacity(colorScheme == .light ? 1.0 : 0.8)
+                
+                // 注釈
+                Button {
+                    focus = .notes
+                } label: {
+                    HStack(spacing: 0) {
+                        Image(systemName: "note.text")
+                            .scaleEffect(scaleEffect)
+                        Text("注釈")
+                    }
+                }
+                .padding(.leading, 5)
+                .opacity(colorScheme == .dark && focus != .notes ? 0.8 : 1.0)
+                .fontWeight(focus == .notes ? .bold : .regular)
+                
+                Spacer()
+                
+                // キーボード非表示
+                Button {
+                    
+                    if focus == .notes {
+                        let store = notes
+                        notes = ""
+                        DispatchQueue.main.asyncAfter(deadline: .now()+0.1) {
+                            notes = store
+                        }
+                        focus = nil
+                    } else {
+                        focus = nil
+                    }
+                    
+                  
+                } label: {
+                    Image(systemName: "arrow.down")
+                        .scaleEffect(scaleEffect)
+                }
+                .opacity(colorScheme == .light ? 1.0 : 0.8)
+                .padding(.trailing, -12)
+                
+            } // toolbarItemGroup
+            
         }
         .onChange(of: scenePhase) { newValue in
             switch newValue {
@@ -243,91 +353,7 @@ struct ContentView: View {
 //        }
         
     } // body
-    
-    
-    
-    
-    
-    
-    
 }
-
-
-
-
-
-
-
-
-
-
-
-
-extension ContentView {
-    
-    // リマインダー作成の関数
-    func createReminder(title: String, deadline: String) {
-        
-        // 1. 整形された"deadline_String"の作成する
-        let deadline_String = myRegex.getFormattedDeadline(deadline: deadline)
-        
-        // 2. 整形された"deadline_String"から当てはまる「regex」と「unicode35」探す
-        var matchUnicode35 = ""
-        myRegex.patterns.forEach { pattern in
-            guard (pattern["regex"] != nil) && (pattern["unicode35"] != nil) else {
-                showAlert(alert: Alert(title: Text("リマインダー作成失敗"), message: Text("エラーが発生しました。処理を中断します。\nErrorID: 37281")))
-                return
-            }
-            if myRegex.matchOrNot(dateString: deadline_String, regex: pattern["regex"]!) {
-                matchUnicode35 = pattern["unicode35"]!
-            }
-        }
-        guard matchUnicode35 != "" else {
-            showAlert(alert: Alert(title: Text("リマインダー作成失敗"), message: Text("当てはまる正規表現が見つかりませんでした。期限の記述におかしな点はないか確認してください。")))
-            return
-        }
-        
-        
-        // 3. Date型の期限を作成する
-        let deadline_Date = myRegex.getDateFromString(deadline: deadline_String, unicode35: matchUnicode35)
-        guard deadline_Date != nil else {
-            showAlert(alert: Alert(title: Text("リマインダー作成失敗"), message: Text("エラーが発生しました。処理を中断します。\nErrorID: 86428")))
-            return
-        }
-        
-        
-        // 4. リマインダーを作成
-        guard eventStore.getAuthorizationStatus() else {
-            settingAlert = true
-            return
-        }
-        
-        eventStore.createReminder(title: title, deadLine: deadline_Date!, Note: notes, listName: reminderList)
-        deadlineOfCreatedReminder = myRegex.getFullDateString(date: deadline_Date!)
-        DispatchQueue.main.asyncAfter(deadline: .now()+0.3) {
-            showNotificationView = true
-        }
-        
-    }
-    
-    
-    // NotificationViewが非表示になる時の処理
-    func actionWhenNotificationViewDisappear() {
-        title.removeAll()
-        deadline.removeAll()
-        notes.removeAll()
-        deadlineOfCreatedReminder.removeAll()
-        showNotificationView = false
-    }
-}
-
-
-
-
-
-
-
-
 
 
 struct ContentView_Previews: PreviewProvider {

@@ -37,7 +37,8 @@
 キーボード接続時にコマンドエンターでリマインダー作成ボタンを押す処理はできないか？
 
 
-
+リマインダー作成のButtonに対して「.keyboardShortcut(.return, modifiers: [.command])を付加
+NotificationViewのバックグラウンドのButtonに対しても「.keyboardShortcut(.default)」を付加
 
 ————————————————————————————————————————————————————————————
 
