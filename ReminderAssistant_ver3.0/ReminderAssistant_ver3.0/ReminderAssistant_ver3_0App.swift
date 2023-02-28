@@ -11,10 +11,15 @@ import SwiftUI
 struct ReminderAssistant_ver3_0App: App {
     var body: some Scene {
         WindowGroup {
+//            switch UIDevice.current.userInterfaceIdiom {
+//            case .phone:
+//                ContentView()
+//            case .pad:
+//                ContentView()
+//            default:
+//                Text("Error")
+//            }
             ContentView()
-                .onAppear {
-                    print("エントリ")
-                }
         }
     }
 }

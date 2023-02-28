@@ -36,14 +36,8 @@ struct NotificationView: View {
             // Background
             if showView {
                 ZStack {
-//                    bgColor2
-//                        .ignoresSafeArea()
-//                        .onTapGesture {
-//                            withAnimation {
-//                                showView = false
-//                            }
-//                        }
                     Button {
+                        print("pushed 426")
                         withAnimation {
                             showView = false
                         }
@@ -51,7 +45,7 @@ struct NotificationView: View {
                             bgColor2
                                 .ignoresSafeArea()
                     }
-                    .keyboardShortcut(.defaultAction)
+                    .keyboardShortcut(.return, modifiers: [])
 
                 }
                 .transition(.opacity)

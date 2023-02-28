@@ -43,10 +43,12 @@ struct ContentView: View {
     
     @State var showSettingsView = false
     @State var deadlineOfCreatedReminder = ""
-    @State var imageWidth: CGFloat = 230
-    @State var imageHeight: CGFloat = 230
+//    @State var imageWidth: CGFloat = 230
+//    @State var imageHeight: CGFloat = 230
+    let imageWidth: CGFloat = 230
+    let imageHeight: CGFloat = 230
     
-    let textFieldAndButtonWidth: CGFloat = 320
+//    let textFieldAndButtonWidth: CGFloat = 320
     
     // カラー
     var coreColor: Color {
@@ -73,6 +75,9 @@ struct ContentView: View {
             bgColor.ignoresSafeArea()
             
             GeometryReader { geometry in
+                
+                let width = geometry.size.width*0.875
+                
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         
@@ -90,16 +95,16 @@ struct ContentView: View {
                             .frame(width: !onFocus ? imageWidth : 0, height: !onFocus ? imageHeight : 0)
                             .padding()
                         
-                        MyTextField(labelName: "名前", width: textFieldAndButtonWidth, text: $title, coreColor: coreColor, bgColor: bgColor, focus: $focus, focusStateValue: .title)
+                        MyTextField(labelName: "名前", width: width, text: $title, coreColor: coreColor, bgColor: bgColor, focus: $focus, focusStateValue: .title)
                             .padding(.top)
                         
-                        MyTextField(labelName: "期限", width: textFieldAndButtonWidth, text: $deadline, coreColor: coreColor, bgColor: bgColor, focus: $focus, focusStateValue: .deadline)
+                        MyTextField(labelName: "期限", width: width, text: $deadline, coreColor: coreColor, bgColor: bgColor, focus: $focus, focusStateValue: .deadline)
                             .padding(.top, 25)
                         
-                        MyTextField(labelName: "注釈", width: textFieldAndButtonWidth, axix: .vertical, lineLimit: 4, text: $notes, coreColor: coreColor, bgColor: bgColor, focus: $focus, focusStateValue: .notes)
+                        MyTextField(labelName: "注釈", width: width, axix: .vertical, lineLimit: 4, text: $notes, coreColor: coreColor, bgColor: bgColor, focus: $focus, focusStateValue: .notes)
                             .padding(.top, 25)
                         
-                        MyButton(text: "リマインダー作成", color: coreColor, width: textFieldAndButtonWidth) {
+                        MyButton(text: "リマインダー作成", color: coreColor, width: width) {
                             focus = nil
                             createReminder(title: title, deadline: deadline)
                         }
@@ -125,7 +130,7 @@ struct ContentView: View {
             
             
         } // ZStack
-        
+//        .preferredColorScheme(.dark)
         
         //////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -298,22 +303,23 @@ struct ContentView: View {
                 await eventStore.firstRequestAccess()
             }
         }
-//        .onAppear {
-//
-//            reminderList = UserDefaults.standard.string(forKey: "reminderList") ?? "未設定"
-//
-//            // アクセスが許可されていることを確認
-//            guard eventStore.getAuthorizationStatus() else {
-//
-//                guard !isFirstLaunch else {
-//                    isFirstLaunch = false
-//                    return
-//                }
-//
-//                settingAlert = true
-//                return
-//            }
-//        }
+        .onAppear {
+
+            reminderList = UserDefaults.standard.string(forKey: "reminderList") ?? "未設定"
+
+            // アクセスが許可されていることを確認
+            guard eventStore.getAuthorizationStatus() else {
+
+                guard !isFirstLaunch else {
+                    isFirstLaunch = false
+                    return
+                }
+
+                settingAlert = true
+                return
+            }
+        }
+        
         
     } // body
 }
