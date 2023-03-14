@@ -10,9 +10,9 @@ import SwiftUI
 struct SettingsView: View {
 
     @AppStorage("autofocus") var autofocus = false
-    @AppStorage("reminderList") var reminderList = "未設定"
-
-    @State var lists: [String] = []
+    @AppStorage("reminderList") var reminderListForNewReminder = "未設定"
+    
+    @State var allReminderLists: [String] = []
 
     @State var settingAlert = false
 
@@ -24,12 +24,12 @@ struct SettingsView: View {
 
             List {
                 Section {
-                    Picker(selection: $reminderList) {
-                        if reminderList == "未設定" {
-                            Text("未設定").tag(reminderList)
+                    Picker(selection: $reminderListForNewReminder) {
+                        if reminderListForNewReminder == "未設定" {
+                            Text("未設定").tag(reminderListForNewReminder)
                         }
-                        ForEach(0 ..< lists.count, id: \.self) { index in
-                            Text(lists[index]).tag(lists[index])
+                        ForEach(0 ..< allReminderLists.count, id: \.self) { index in
+                            Text(allReminderLists[index]).tag(allReminderLists[index])
                         }
                     } label: {
                         Text("リマインダー作成先")
@@ -55,7 +55,7 @@ struct SettingsView: View {
         .onAppear {
             print("SettingViewにてonApperメソッドが実行")
             if eventStore.getAuthorizationStatus() {
-                lists = eventStore.getLists()
+                allReminderLists = eventStore.getLists()
             } else {
                 settingAlert = true
             }
