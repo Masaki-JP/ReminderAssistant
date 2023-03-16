@@ -10,7 +10,7 @@ import EventKit
 
 
 // EventStoreクラスの定義
-class EventStore {
+class EventStore: ObservableObject {
 
     // 初期化
     let store: EKEventStore

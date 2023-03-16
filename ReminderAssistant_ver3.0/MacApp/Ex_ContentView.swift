@@ -1,14 +1,13 @@
 //
 //  Ex_ContentView.swift
-//  ReminderAssistant_ver3.0
+//  MacApp
 //
-//  Created by Masaki Doi on 2023/02/25.
+//  Created by Masaki Doi on 2023/03/15.
 //
 
 import SwiftUI
 
 extension ContentView {
-    
     // リマインダー作成の関数
     func createReminder(title: String, deadline: String) {
         
@@ -39,25 +38,18 @@ extension ContentView {
         
         // 4. リマインダーを作成
         guard eventStore.getAuthorizationStatus() else {
-            settingAlert = true
+            showSettingAlert = true
             return
         }
         
-        eventStore.createReminder(title: title, deadLine: deadline_Date!, Note: notes, listName: reminderList)
+        let notes = ""
+        
+        eventStore.createReminder(title: title, deadLine: deadline_Date!, Note: notes, listName: reminderListForNewReminder)
         deadlineOfCreatedReminder = myRegex.getFullDateString(date: deadline_Date!)
         DispatchQueue.main.asyncAfter(deadline: .now()+0.3) {
-            showNotificationView = true
+            showCompletionAlert = true
         }
         
     }
     
-    
-    // NotificationViewが非表示になる時の処理
-    func actionWhenNotificationViewDisappear() {
-        title.removeAll()
-        deadline.removeAll()
-        notes.removeAll()
-        deadlineOfCreatedReminder.removeAll()
-        showNotificationView = false
-    }
 }

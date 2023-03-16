@@ -43,12 +43,10 @@ struct ContentView: View {
     
     @State var showSettingsView = false
     @State var deadlineOfCreatedReminder = ""
-//    @State var imageWidth: CGFloat = 230
-//    @State var imageHeight: CGFloat = 230
+    
     let imageWidth: CGFloat = 230
     let imageHeight: CGFloat = 230
     
-//    let textFieldAndButtonWidth: CGFloat = 320
     
     // カラー
     var coreColor: Color {
