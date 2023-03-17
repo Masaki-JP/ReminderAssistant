@@ -23,6 +23,8 @@ extension MyRegex {
         formattedDeadline = createTonightDate_Str(str: formattedDeadline) // 入力内容が今夜か今晩であれば、"yyyy年MM月dd日19時00分"へ変換する。
 
         
+        formattedDeadline = convertWeekendsAndEndOfMonth(str: formattedDeadline) // 週末、今週末、来週末、再来週末、月末、今月末、来月末、再来月末 -> yyyy年MM月dd日
+        
         
         formattedDeadline = createStringDateFromDayOfTheWeekSpecification(str: formattedDeadline) // 来週〇曜、次の〇曜、〇曜日などを"yyyy年MM月dd日"に変換する。
         formattedDeadline = replace(str: formattedDeadline) // 時半や来年や明日などの文字列を変換する
@@ -631,6 +633,23 @@ extension MyRegex {
         return newStr
     }
 
+    
+    
+    // 週末、今週末、来週末、再来週末、月末、今月末、来月末、再来月末をyyyy年MM月dd日に変換する。
+    func convertWeekendsAndEndOfMonth(str: String) -> String {
+        var newStr = str
+        newStr = convertEndOfMonthAfterNextMonth(str: newStr)
+        newStr = convertEndOfNextMonth(str: newStr)
+        newStr = convertEndOfMonth(str: newStr)
+        newStr = convertThirdNearestWeekend(str: newStr)
+        newStr = convertSecondNearestWeekend(str: newStr)
+        newStr = convertNearestWeekend(str: newStr)
+        return newStr
+    }
+    
+    
+    
+    
 }
 
 
@@ -793,6 +812,127 @@ extension MyRegex {
         }
 
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    // 再来月末 -> yyyy年MM月dd日
+    func convertEndOfMonthAfterNextMonth(str: String) -> String {
+                
+        guard str.contains("再来月末") else { return str; }
+        
+        let today = Date()
+        let MonthAfterNextMonthDate = myDateFormatter.calendar.date(byAdding: .month, value: 2, to: today)!
+        let startOfMonth = myDateFormatter.calendar.date(from: myDateFormatter.calendar.dateComponents([.year, .month], from: MonthAfterNextMonthDate))!
+        let range = myDateFormatter.calendar.range(of: .day, in: .month, for: startOfMonth)!
+        let endOfMonth = myDateFormatter.calendar.date(byAdding: DateComponents(day: range.count-1), to: startOfMonth)!
+
+        myDateFormatter.dateFormat = "yyyy年MM月dd日"
+        return str.replacingOccurrences(of: "再来月末", with: myDateFormatter.string(from: endOfMonth))
+    }
+    
+    // 来月末 -> yyyy年MM月dd日
+    func convertEndOfNextMonth(str: String) -> String {
+        
+        guard str.contains("来月末") else { return str; }
+        
+        let today = Date()
+        let nextMonthDate = myDateFormatter.calendar.date(byAdding: .month, value: 1, to: today)!
+        let startOfMonth = myDateFormatter.calendar.date(from: myDateFormatter.calendar.dateComponents([.year, .month], from: nextMonthDate))!
+        let range = myDateFormatter.calendar.range(of: .day, in: .month, for: startOfMonth)!
+        let endOfMonth = myDateFormatter.calendar.date(byAdding: DateComponents(day: range.count-1), to: startOfMonth)!
+
+        myDateFormatter.dateFormat = "yyyy年MM月dd日"
+        return str.replacingOccurrences(of: "来月末", with: myDateFormatter.string(from: endOfMonth))
+    }
+    
+    // 今月末、月末 -> yyyy年MM月dd日
+    func convertEndOfMonth(str: String) -> String {
+        var newStr = str
+        
+        if newStr.contains("今月末") {
+            newStr = newStr.replacingOccurrences(of: "今月末", with: "月末")
+        }
+        
+        guard newStr.contains("月末") else { return newStr; }
+        
+        let today = Date()
+        let startOfMonth = myDateFormatter.calendar.date(from: myDateFormatter.calendar.dateComponents([.year, .month], from: today))!
+        let range = myDateFormatter.calendar.range(of: .day, in: .month, for: startOfMonth)!
+        let endOfMonth = myDateFormatter.calendar.date(byAdding: DateComponents(day: range.count-1), to: startOfMonth)!
+
+        myDateFormatter.dateFormat = "yyyy年MM月dd日"
+        return newStr.replacingOccurrences(of: "月末", with: myDateFormatter.string(from: endOfMonth))
+    }
+    
+    // 再来週末 -> yyyy年MM月dd日
+    func convertThirdNearestWeekend(str: String) -> String {
+        guard str.contains("再来週末") else { return str; }
+        let weekdayOfSpecifiedDay = 7
+        let weekdayOfToday = myDateFormatter.calendar.component(.weekday, from: Date())
+        let additionalDays =  (weekdayOfSpecifiedDay - weekdayOfToday) > 0 ? (weekdayOfSpecifiedDay - weekdayOfToday) : (weekdayOfSpecifiedDay - weekdayOfToday) + 7
+        let date = myDateFormatter.calendar.date(byAdding: DateComponents(day: additionalDays+14), to: Date())!
+        myDateFormatter.dateFormat = "yyyy年MM月dd日"
+        return str.replacingOccurrences(of: "再来週末", with: myDateFormatter.string(from: date))
+
+    }
+    
+    // 来週末 -> yyyy年MM月dd日
+    func convertSecondNearestWeekend(str: String) -> String {
+        guard str.contains("来週末") else { return str; }
+        let weekdayOfSpecifiedDay = 7
+        let weekdayOfToday = myDateFormatter.calendar.component(.weekday, from: Date())
+        let additionalDays =  (weekdayOfSpecifiedDay - weekdayOfToday) > 0 ? (weekdayOfSpecifiedDay - weekdayOfToday) : (weekdayOfSpecifiedDay - weekdayOfToday) + 7
+        let date = myDateFormatter.calendar.date(byAdding: DateComponents(day: additionalDays+7), to: Date())!
+        myDateFormatter.dateFormat = "yyyy年MM月dd日"
+        return str.replacingOccurrences(of: "来週末", with: myDateFormatter.string(from: date))
+
+    }
+    
+    // 今週末、週末 -> yyyy年MM月dd日
+    func convertNearestWeekend(str: String) -> String {
+        var newStr = str
+
+        if newStr.contains("今週末") {
+            newStr = newStr.replacingOccurrences(of: "今週末", with: "週末")
+        }
+
+        guard newStr.contains("週末") else { return newStr; }
+        let weekdayOfSpecifiedDay = 7
+        let weekdayOfToday = myDateFormatter.calendar.component(.weekday, from: Date())
+        let additionalDays =  (weekdayOfSpecifiedDay - weekdayOfToday) > 0 ? (weekdayOfSpecifiedDay - weekdayOfToday) : (weekdayOfSpecifiedDay - weekdayOfToday) + 7
+        let date = myDateFormatter.calendar.date(byAdding: DateComponents(day: additionalDays), to: Date())!
+        myDateFormatter.dateFormat = "yyyy年MM月dd日"
+        return newStr.replacingOccurrences(of: "週末", with: myDateFormatter.string(from: date))
+    }
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 }
 
 
@@ -801,6 +941,15 @@ extension MyRegex {
 
 // プロパティ
 class MyRegex: ObservableObject {
+    
+    init() {
+        myDateFormatter = DateFormatter()
+        myDateFormatter.calendar = Calendar(identifier: .gregorian)
+        myDateFormatter.timeZone = TimeZone(identifier: "ja_JP")
+        myDateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+    }
+    
+    let myDateFormatter: DateFormatter
 
     let patterns = [
 
