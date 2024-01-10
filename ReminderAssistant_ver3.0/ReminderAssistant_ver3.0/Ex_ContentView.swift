@@ -19,7 +19,7 @@ extension ContentView {
         var matchUnicode35 = ""
         myRegex.patterns.forEach { pattern in
             guard (pattern["regex"] != nil) && (pattern["unicode35"] != nil) else { fatalError() }
-            if myRegex.matchOrNot(dateString: deadline_String, regex: pattern["regex"]!) {
+            if myRegex.matchOrNot(str: deadline_String, regex: pattern["regex"]!) {
                 matchUnicode35 = pattern["unicode35"]!
             }
         }

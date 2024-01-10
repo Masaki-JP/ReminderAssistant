@@ -41,14 +41,9 @@ struct MyWidgetEntryView : View {
             .resizable()
             .scaledToFit()
             .privacySensitive(false)
+            .modifier(ContainerBackgroundToiOS17AndLater())
     }
 }
-
-
-
-
-
-
 
 
 struct MyWidget: Widget {
@@ -59,12 +54,24 @@ struct MyWidget: Widget {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
             MyWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("クイックアクセス")
-        .description("このウィジェットをタップするとReminder Assistantを開くことができます。ロック画面からホーム画面に移り、そこからアプリを開くより早く調べ物ができる便利なウィジェットです。")
+        .configurationDisplayName("Quick Access")
+        .description("ロック画面からアプリを開くことができます。")
         .supportedFamilies([.accessoryCircular])
     }
 }
 
+// たしか自作
+struct ContainerBackgroundToiOS17AndLater: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 17, *) {
+            return content.containerBackground(for: .widget) {
+                Color.clear
+            }
+        } else {
+            return content
+        }
+    }
+}
 
 // プレビュー
 struct MyWidget_Previews: PreviewProvider {

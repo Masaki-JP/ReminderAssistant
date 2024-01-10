@@ -21,20 +21,23 @@ class EventStore: ObservableObject {
     // リマインダーへのアクセス許可の要求
     func firstRequestAccess() async -> Void {
         do {
-            try await store.requestAccess(to: .reminder)
+            if #available(iOS 17, *) {
+                try await store.requestFullAccessToReminders()
+            } else {
+                try await store.requestAccess(to: .reminder)
+            }
         } catch {
-            print("エラーをキャッチ")
-            print(error.localizedDescription)
+            print(#file, #line, error)
         }
     }
 
     // リマインダーへのアクセスが許可されているか確認
     func getAuthorizationStatus() -> Bool {
         let status = EKEventStore.authorizationStatus(for: .reminder)
-        if status == .authorized {
-            return true
+        if #available(iOS 17, *) {
+            return (status == .fullAccess) ? true : false
         } else {
-            return false
+            return ( status == .authorized) ? true : false
         }
     }
 

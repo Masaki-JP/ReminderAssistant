@@ -37,7 +37,6 @@ struct NotificationView: View {
             if showView {
                 ZStack {
                     Button {
-                        print("pushed 426")
                         withAnimation {
                             showView = false
                         }

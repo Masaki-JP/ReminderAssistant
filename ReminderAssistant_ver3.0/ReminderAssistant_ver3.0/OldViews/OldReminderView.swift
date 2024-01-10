@@ -297,7 +297,7 @@ struct OldReminderView: View {
                 showAlert(alert: Alert(title: Text("リマインダー作成失敗"), message: Text("エラーが発生しました。処理を中断します。\nErrorID: 37281")))
                 return
             }
-            if myRegex.matchOrNot(dateString: deadline_String, regex: pattern["regex"]!) {
+            if myRegex.matchOrNot(str: deadline_String, regex: pattern["regex"]!) {
                 matchUnicode35 = pattern["unicode35"]!
             }
         }
