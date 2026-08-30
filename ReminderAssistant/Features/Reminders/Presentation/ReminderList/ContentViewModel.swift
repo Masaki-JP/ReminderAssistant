@@ -19,7 +19,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol, ReminderS
     
     private let reminderStore: ReminderStoreType
     private let reminderStoreCache: ReminderStoreCacheType?
-    private var notificationToken: NSObjectProtocol? = nil
+    private var notificationToken: (any NSObjectProtocol)? = nil
     
     var isLoading: Bool {
         reminderOperations.contains {
