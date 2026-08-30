@@ -86,6 +86,10 @@ struct CreateReminderSheet: View {
             }
         }
         .interactiveDismissDisabled(!canDismissWithoutConfirmation)
+        .task {
+            try? await Task.sleep(for: .seconds(0.1))
+            focus = .title
+        }
     }
     
     var titleSection: some View {
