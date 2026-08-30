@@ -1,0 +1,19 @@
+————————————————————
+
+UserDefaults Keys（AppStorageも含む）
+
+現在使用中
+- xxxxxxxxxx
+- xxxxxxxxxx
+- xxxxxxxxxx
+
+過去に使用
+- xxxxxxxxxx
+- xxxxxxxxxx
+- xxxxxxxxxx
+
+————————————————————
+
+バージョン管理にはSemantic Versioningを採用する。
+
+————————————————————
