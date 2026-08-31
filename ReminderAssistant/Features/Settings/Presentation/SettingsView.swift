@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss: DismissAction
+    @AppStorage("colorScheme") var colorSchemeSetting = ColorSchemeSetting.defaultValue
     @Binding var reminderDestinationListID: String?
     let lists: [RAReminderList]
     
@@ -29,13 +30,16 @@ struct SettingsView: View {
                 }
                 
                 Section {
-                    Picker("外観モード", selection: .constant("システム")) {
-                        ForEach(["ライト", "ダーク", "システム"], id: \.self) { mode in
-                            Text(mode).tag(mode)
+                    Picker("外観モード", selection: $colorSchemeSetting) {
+                        ForEach(ColorSchemeSetting.allCases) { colorSchemeSetting in
+                            Text(colorSchemeSetting.label)
+                                .tag(colorSchemeSetting)
                         }
                     }
                 } header: {
                     Text("外観")
+                } footer: {
+                    Text("端末の外観モードに合わせるには、システムを選択してください。")
                 }
                 
                 Section {

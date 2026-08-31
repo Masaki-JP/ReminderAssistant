@@ -78,6 +78,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol, ReminderStoreCacheT
                     reminderDestinationListID: $reminderDestinationListID,
                     lists: viewModel.editableLists
                 )
+                .preferredColorScheme(colorScheme)
             }
             .sheet(isPresented: $isCreateReminderSheetPresented) {
                 CreateReminderSheet { title, deadline, priority, notes in
