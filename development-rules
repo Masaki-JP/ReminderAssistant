@@ -3,14 +3,13 @@
 UserDefaults Keys（AppStorageも含む）
 
 現在使用中
-- xxxxxxxxxx
-- xxxxxxxxxx
-- xxxxxxxxxx
+- colorScheme
+- hasInitializedReminderDestinationList
+- lastSelectedListID
+- reminderDestinationListID
 
 過去に使用
-- xxxxxxxxxx
-- xxxxxxxxxx
-- xxxxxxxxxx
+- なし
 
 ————————————————————
 
