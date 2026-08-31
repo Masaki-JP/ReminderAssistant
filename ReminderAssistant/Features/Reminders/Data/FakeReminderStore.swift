@@ -115,6 +115,8 @@ actor FakeReminderStore: ReminderStoreProtocol {
                 list: request.list,
                 title: request.title,
                 dueDateComponents: dueDate,
+                priority: request.priority,
+                notes: request.notes,
                 creationDate: now,
                 lastModifiedDate: now
             )
