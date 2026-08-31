@@ -28,7 +28,7 @@ struct CreateReminderSheet: View {
     }
     
     var isConfirmButtonDisabled: Bool {
-        title.isEmpty || deadline.isEmpty
+        title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || deadline.isEmpty
     }
     
     var isPad: Bool {
