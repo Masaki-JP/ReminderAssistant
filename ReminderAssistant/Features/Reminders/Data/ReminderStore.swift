@@ -55,10 +55,12 @@ final actor ReminderStore: ReminderStoreProtocol {
             guard let dueDate else { throw ReminderStoreError.deadlineConversionFailed }
             
             let reminder = EKReminder(eventStore: eventStore)
-            reminder.title = "テスト"
+            reminder.title = request.title
             reminder.dueDateComponents = dueDate
             reminder.startDateComponents = nil
             reminder.addAlarm(.init(relativeOffset: 0))
+            reminder.priority = request.priority.ekReminderPriority
+            reminder.notes = request.notes
             reminder.calendar = calendar
             
             try checkCancel()

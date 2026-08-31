@@ -124,5 +124,14 @@ extension RAReminder {
             default: return nil
             }
         }
+
+        var ekReminderPriority: Int {
+            switch self {
+            case .none: 0
+            case .low: 9
+            case .medium: 5
+            case .high: 1
+            }
+        }
     }
 }
