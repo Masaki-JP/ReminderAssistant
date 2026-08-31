@@ -43,8 +43,8 @@ struct SettingsView: View {
                 }
                 
                 Section {
-                    LabeledContent("バージョン", value: "4.2.5")
-                    LabeledContent("ビルド", value: "32")
+                    LabeledContent("バージョン", value: bundleShortVersionString)
+                    LabeledContent("ビルド", value: bundleVersion)
                 } header: {
                     Text("アプリ情報")
                 }
@@ -58,6 +58,14 @@ struct SettingsView: View {
                 }
             }
         }
+    }
+    
+    var bundleShortVersionString: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-"
+    }
+    
+    var bundleVersion: String {
+        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "-"
     }
 }
 
