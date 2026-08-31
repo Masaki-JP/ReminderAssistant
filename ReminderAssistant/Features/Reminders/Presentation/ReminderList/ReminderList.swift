@@ -7,7 +7,7 @@ struct ReminderList: View {
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     
     var isScrollIndicatorsVisible: Bool {
-        sections.flatMap(\.reminders).count >= 80
+        sections.flatMap(\.reminders).count >= 100
     }
     
     var body: some View {
