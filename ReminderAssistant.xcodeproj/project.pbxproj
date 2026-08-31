@@ -188,11 +188,11 @@
 				};
 			};
 			buildConfigurationList = 4CADDAEB30447DFE003808B3 /* Build configuration list for PBXProject "ReminderAssistant" */;
-			developmentRegion = en;
+			developmentRegion = ja;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				en,
 				Base,
+				ja,
 			);
 			mainGroup = 4CADDAE730447DFE003808B3;
 			minimizedProjectReferenceProxies = 1;
