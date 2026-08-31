@@ -10,6 +10,7 @@
 		4C57A4593044F89000DA18DF /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C57A4583044F89000DA18DF /* WidgetKit.framework */; };
 		4C57A45B3044F89000DA18DF /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C57A45A3044F89000DA18DF /* SwiftUI.framework */; };
 		4C57A4663044F89000DA18DF /* RAWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4C57A4563044F89000DA18DF /* RAWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4C65D9BB3045645800EA9247 /* JapaneseDateConverter in Frameworks */ = {isa = PBXBuildFile; productRef = 4C65D9BA3045645800EA9247 /* JapaneseDateConverter */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -83,6 +84,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C65D9BB3045645800EA9247 /* JapaneseDateConverter in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -161,6 +163,7 @@
 			);
 			name = ReminderAssistant;
 			packageProductDependencies = (
+				4C65D9BA3045645800EA9247 /* JapaneseDateConverter */,
 			);
 			productName = ReminderAssistant;
 			productReference = 4CADDAF030447DFE003808B3 /* ReminderAssistant.app */;
@@ -193,6 +196,9 @@
 			);
 			mainGroup = 4CADDAE730447DFE003808B3;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				4C65D9B93045645800EA9247 /* XCRemoteSwiftPackageReference "JapaneseDateConverter" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4CADDAF130447DFE003808B3 /* Products */;
 			projectDirPath = "";
@@ -539,6 +545,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4C65D9B93045645800EA9247 /* XCRemoteSwiftPackageReference "JapaneseDateConverter" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Masaki-JP/JapaneseDateConverter";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4C65D9BA3045645800EA9247 /* JapaneseDateConverter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4C65D9B93045645800EA9247 /* XCRemoteSwiftPackageReference "JapaneseDateConverter" */;
+			productName = JapaneseDateConverter;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 4CADDAE830447DFE003808B3 /* Project object */;
 }

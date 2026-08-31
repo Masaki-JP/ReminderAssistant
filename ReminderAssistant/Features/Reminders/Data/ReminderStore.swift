@@ -1,4 +1,5 @@
 import EventKit
+import JapaneseDateConverter
 
 /// Actorの選定理由
 /// - オブザーバートークンを保持するため、参照型である必要がある。
@@ -46,7 +47,10 @@ final actor ReminderStore: ReminderStoreProtocol {
                 )
             }
             
-            let dueDate = JapaneseDateConverter().convert(request.deadline)                    
+            let dueDate = JapaneseDateConverter().convert(from: request.deadline).map {
+                Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: $0)
+            }
+            
             try checkCancel()
             guard let dueDate else { throw ReminderStoreError.deadlineConversionFailed }
             
