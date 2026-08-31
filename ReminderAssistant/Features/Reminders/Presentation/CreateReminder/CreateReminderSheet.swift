@@ -193,6 +193,7 @@ struct CreateReminderSheet: View {
         HStack(spacing: nil) {
             focusPicker
             dismissKeyboardButton
+            createReminderButton
         }
     }
     
@@ -211,6 +212,16 @@ struct CreateReminderSheet: View {
         }
         .buttonStyle(.glass)
         .labelStyle(.iconOnly)
+    }
+    
+    var createReminderButton: some View {
+        Button("作成", systemImage: "checkmark") {
+            confirmAction(title, deadline, priority, notes)
+            dismiss()
+        }
+        .buttonStyle(.glassProminent)
+        .labelStyle(.iconOnly)
+        .disabled(isConfirmButtonDisabled)
     }
 }
 
