@@ -22,10 +22,9 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol, ReminderS
     private var notificationToken: (any NSObjectProtocol)? = nil
     
     var isLoading: Bool {
-        reminderOperations.contains {
-            if case .load = $0 { return true }
-            return false
-        }
+        (reminderOperations.first).map { operation in
+            if case .load = operation { true } else { false }
+        } ?? false
     }
     
     init(
