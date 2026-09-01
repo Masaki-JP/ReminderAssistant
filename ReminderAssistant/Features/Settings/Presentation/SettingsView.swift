@@ -20,13 +20,10 @@ struct SettingsView: View {
                         }
                     }
                     .disabled(lists.isEmpty)
-                    
-                    Toggle(isOn: .constant(true)) {
-                        Text("クイック作成")
-                        Text("アプリ表示時に作成画面に遷移します。")
-                    }
                 } header: {
                     Text("作成")
+                } footer: {
+                    Text("新規リマインダーの作成先として使用するリストを設定できます。")
                 }
                 
                 Section {
