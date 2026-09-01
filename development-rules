@@ -11,6 +11,16 @@ UserDefaults Keys（AppStorageも含む）
 過去に使用
 - なし
 
+Masaki-JP/RA-Archive-02
+- destinationListID
+- autoFocus
+- selectedList
+
+Masaki-JP/RA-Archive-01
+- reminderList
+- autofocus
+- isFirstLaunch
+
 ————————————————————
 
 バージョン管理にはSemantic Versioningを採用する。
