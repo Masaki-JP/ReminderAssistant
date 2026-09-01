@@ -8,7 +8,6 @@ extension ContentView {
         @Binding var isSettingsViewPresented: Bool
         let isCreateReminderDisabled: Bool
         let isLoading: Bool
-        let onReloadButtonTapped: () -> Void
         
         var body: some ToolbarContent {
             if UIDevice.current.userInterfaceIdiom == .phone {
@@ -32,7 +31,7 @@ extension ContentView {
             // MARK: - topBarTrailing
             
             ToolbarItem(placement: .topBarTrailing) {
-                reloadButton
+                loadingIndicator
             }
             .sharedBackgroundVisibility(.hidden)
             
@@ -55,7 +54,7 @@ extension ContentView {
             // MARK: - topBarLeading
             
             ToolbarItemGroup(placement: .topBarLeading) {
-                reloadButton
+                loadingIndicator
                 settingsButton
                 SortMenu(sortOrder: $sortOrder)
                 FilterMenu(filter: $filter)
@@ -70,16 +69,14 @@ extension ContentView {
             }
         }
         
-        var reloadButton: some View {
-            Button(action: onReloadButtonTapped) {
-                Image(systemName: "arrow.clockwise")
-                    .symbolEffect(
-                        .rotate,
-                        options: .repeat(.continuous).speed(5.0),
-                        isActive: isLoading
-                    )
-                    .scaleEffect(0.8)
-            }
+        var loadingIndicator: some View {
+            Image(systemName: "arrow.clockwise")
+                .symbolEffect(
+                    .rotate,
+                    options: .repeat(.continuous).speed(5.0),
+                    isActive: isLoading
+                )
+                .scaleEffect(0.8)
         }
         
         var settingsButton: some View {
