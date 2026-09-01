@@ -49,7 +49,7 @@ struct SettingsView: View {
                     Text("アプリ情報")
                 }
             }
-            .navigationTitle("設定")
+            .navigationTitle("各種設定")
             .navigationBarTitleDisplayMode(.inline)
             .contentMargins(.vertical, .zero)
             .toolbar {
