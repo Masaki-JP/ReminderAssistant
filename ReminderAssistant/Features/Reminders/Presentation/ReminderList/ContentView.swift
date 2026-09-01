@@ -99,7 +99,9 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol, ReminderStoreCacheT
                     filter: $filter,
                     isCreateReminderSheetPresented: $isCreateReminderSheetPresented,
                     isSettingsViewPresented: $isSettingsViewPresented,
-                    isCreateReminderDisabled: viewModel.editableLists.isEmpty
+                    isCreateReminderDisabled: viewModel.editableLists.isEmpty,
+                    isLoading: viewModel.isLoading,
+                    onReloadButtonTapped: viewModel.loadReminders,
                 )
             }
             .toolbarTitleMenu {
