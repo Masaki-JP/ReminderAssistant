@@ -81,8 +81,7 @@ struct ReminderList: View {
     }
     
     var backgroundColor: Color {
-        let grayLevel = colorScheme == .light ? 0.95 : 0.025
-        return .init(red: grayLevel, green: grayLevel, blue: grayLevel)
+        .init(uiColor: .systemGroupedBackground)
     }
 }
 

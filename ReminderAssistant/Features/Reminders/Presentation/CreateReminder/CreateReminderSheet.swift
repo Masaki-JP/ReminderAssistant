@@ -71,6 +71,7 @@ struct CreateReminderSheet: View {
                 }
             }
             .scrollIndicators(.hidden)
+            .background(Color(uiColor: .secondarySystemBackground))
             .contentMargins(.horizontal, 20)
             .contentMargins(.top, 18)
             .contentMargins(.bottom, 12)
