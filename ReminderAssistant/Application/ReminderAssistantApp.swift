@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct EKReminder_260707App: App {
+struct ReminderAssistantApp: App {
     @AppStorage("colorScheme") var colorSchemeSetting = ColorSchemeSetting.defaultValue
     
     var body: some Scene {
