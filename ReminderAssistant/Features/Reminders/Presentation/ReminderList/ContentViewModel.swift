@@ -73,6 +73,9 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
                     notes: notes,
                     list: list,
                 ))
+                
+                guard self != nil else { return }
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
             } catch {
                 self?.handleError(error, as: .createReminderFailed)
             }
