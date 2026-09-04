@@ -58,15 +58,15 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         listIdentifier: String?,
     ) {
         let operationID = UUID()
-        let task = Task {
-            defer { reminderOperations.removeOperation(with: .create(operationID)) }
+        let task = Task { [weak self] in
+            defer { self?.reminderOperations.removeOperation(with: .create(operationID)) }
             
             do {
-                guard let list = editableLists.first(where: { $0.calendarIdentifier == listIdentifier }) else {
+                guard let list = self?.editableLists.first(where: { $0.calendarIdentifier == listIdentifier }) else {
                     throw ContentViewModelError.reminderDestinationListUnavailable
                 }
                 
-                try await reminderStore.create(.init(
+                try await self?.reminderStore.create(.init(
                     title: title,
                     deadline: deadline,
                     priority: priority,
@@ -74,7 +74,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
                     list: list,
                 ))
             } catch {
-                handleError(error, as: .createReminderFailed)
+                self?.handleError(error, as: .createReminderFailed)
             }
         }
         
@@ -103,8 +103,8 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         hasReadInitialCache = true
         
         let operationID = UUID()
-        let task = Task {
-            defer { reminderOperations.removeOperation(with: .load(operationID)) }
+        let task = Task { [weak self, reminderStore = self.reminderStore, reminderStoreCache = self.reminderStoreCache] in
+            defer { self?.reminderOperations.removeOperation(with: .load(operationID)) }
             
             do {
                 async let fetchedResult = reminderStore.fetch()
@@ -112,15 +112,15 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
                 if shouldReadInitialCache,
                    let cachedResult = await reminderStoreCache?.fetch() {
                     try Task.checkCancellation()
-                    apply(cachedResult)
+                    self?.apply(cachedResult)
                 }
                 
                 let fetchResult = try await fetchedResult
                 try Task.checkCancellation()
-                apply(fetchResult)
+                self?.apply(fetchResult)
                 await reminderStoreCache?.save(fetchResult)
             } catch {
-                handleError(error, as: .loadRemindersFailed)
+                self?.handleError(error, as: .loadRemindersFailed)
             }
         }
         
@@ -145,18 +145,18 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     
     private func requestCompletionToggle(for reminder: RAReminder) {
         let completion = !reminder.isCompleted
-        let task = Task {
-            defer { reminderOperations.removeOperation(with: .toggleCompletion(reminder.id)) }
+        let task = Task { [weak self] in
+            defer { self?.reminderOperations.removeOperation(with: .toggleCompletion(reminder.id)) }
             
             try? await Task.sleep(for: .seconds(0.3))
             
             do {
-                try await reminderStore.set(id: reminder.id, completion: completion)
+                try await self?.reminderStore.set(id: reminder.id, completion: completion)
                 
-                guard let index = reminderIndex(for: reminder) else { return }
-                reminders[index].setIsCompleted(completion)
+                guard let index = self?.reminderIndex(for: reminder) else { return }
+                self?.reminders[index].setIsCompleted(completion)
             } catch {
-                handleError(error, as: .toggleCompletionFailed)
+                self?.handleError(error, as: .toggleCompletionFailed)
             }
         }
         
