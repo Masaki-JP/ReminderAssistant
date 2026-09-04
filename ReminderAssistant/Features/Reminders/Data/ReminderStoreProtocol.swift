@@ -1,6 +1,7 @@
 import Foundation
 
 enum ReminderStoreError: Error, Equatable {
+    case accessNotAuthorized
     case listNotFound(calendarIdentifier: String)
     case reminderNotFound(calendarItemIdentifier: String)
     case fetchFailed

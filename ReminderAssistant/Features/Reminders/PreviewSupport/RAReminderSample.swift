@@ -4,19 +4,18 @@ import Foundation
 /// `date` には「今日」や「3日後」、`time` には「09:30」のような値を指定する。
 /// 日時を指定しない場合は、`.init(date: nil, time: nil)` を使用する。
 nonisolated
-private struct DateInput {
-    let date: String?
-    let time: String?
+struct DateInput {
+    let date: String?; let time: String?
 }
 
 nonisolated
-private let sampleCalendar = Calendar.gregorianCalendar()
+let sampleCalendar = Calendar.gregorianCalendar()
 
 /// サンプルデータの各入力値を検証して、RAReminderを生成する。
 /// 相対日時の文字列をアプリ内で扱う日時へ変換する。
 /// 不正な入力値や日時の前後関係は、実行時エラーとして検出する。
 nonisolated
-private func makeSample(
+func makeSample(
     calendarItemIdentifier: String,
     list: RAReminderList,
     title: String,
@@ -31,19 +30,19 @@ private func makeSample(
     guard calendarItemIdentifier.isEmpty == false else {
         fatalError("カレンダー項目IDを入力してください")
     }
-
+    
     guard list.calendarIdentifier.isEmpty == false else {
         fatalError("リマインダーリストIDを入力してください")
     }
-
+    
     guard list.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false else {
         fatalError("リマインダーリスト名を入力してください")
     }
-
+    
     guard title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false else {
         fatalError("タイトルを入力してください")
     }
-
+    
     let dueDateComponents = makeDateComponents(dueDate)
     let convertedCreationDate = makeDate(creationDate)
     let convertedLastModifiedDate = makeDate(lastModifiedDate)
@@ -56,31 +55,31 @@ private func makeSample(
     } else {
         convertedCompletionDate = nil
     }
-
+    
     guard isCompleted == (convertedCompletionDate != nil) else {
         fatalError("完了状態と完了日時が一致していません")
     }
-
+    
     if let convertedCreationDate, let convertedLastModifiedDate {
         guard convertedCreationDate <= convertedLastModifiedDate else {
             fatalError("作成日時は最終更新日時より後にできません")
         }
     }
-
+    
     if let convertedCompletionDate {
         if let convertedCreationDate {
             guard convertedCreationDate <= convertedCompletionDate else {
                 fatalError("完了日時は作成日時より前にできません")
             }
         }
-
+        
         if let convertedLastModifiedDate {
             guard convertedCompletionDate <= convertedLastModifiedDate else {
                 fatalError("完了日時は最終更新日時より後にできません")
             }
         }
     }
-
+    
     return RAReminder(
         calendarItemIdentifier: calendarItemIdentifier,
         list: list,
@@ -103,16 +102,16 @@ private func makeDateComponents(_ value: DateInput) -> DateComponents? {
     guard value.date != nil || value.time == nil else {
         fatalError("日付を指定せずに時刻だけを指定することはできません")
     }
-
+    
     guard let date = makeRelativeDate(value.date) else { return nil }
     var components = sampleCalendar.dateComponents([.year, .month, .day], from: date)
-
+    
     if let time = value.time {
         let (hour, minute) = parseTime(time)
         components.hour = hour
         components.minute = minute
     }
-
+    
     return components
 }
 
@@ -134,7 +133,7 @@ private func makeDate(_ value: DateInput) -> Date? {
 nonisolated
 private func makeRelativeDate(_ value: String?) -> Date? {
     guard let value else { return nil }
-
+    
     let dayOffset: Int
     switch value {
     case "昨日": dayOffset = -1
@@ -149,7 +148,7 @@ private func makeRelativeDate(_ value: String?) -> Date? {
             fatalError("相対日付が不正です: \(value)")
         }
     }
-
+    
     return sampleCalendar.date(
         byAdding: .day,
         value: dayOffset,
@@ -212,12 +211,12 @@ enum RAReminderSample {
         calendarIdentifier: "00000000-0000-0000-0000-000000000105",
         title: "その他"
     )
-
+    
     /*
      期限が設定されたサンプルは、期限が早い順に並んでいます。期限未設定のサンプルは末尾に配置しています。
      隣接する期限どうしは、最低でも21分空けています。
      */
-
+    
     static let samples: [RAReminder] = [
         makeSample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000001",
@@ -1420,4 +1419,103 @@ enum RAReminderSample {
             completionDate: nil
         ),
     ]
+    
+    static func accessRequestPreviewReminders(for list: RAReminderList) -> [RAReminder] {
+        let dueDate1 = DateInput(date: "50日前", time: "9:00")
+        let dueDate2 = DateInput(date: "50日後", time: "9:00")
+        let creationDate = DateInput(date: "100日前", time: "9:00")
+        
+        return [
+            makeSample(
+                calendarItemIdentifier: "00000000-0000-0000-0000-000000000001",
+                list: list,
+                title: "xxxxxxxxxxx",
+                dueDate: dueDate1,
+                priority: .medium,
+                creationDate: creationDate,
+                lastModifiedDate: creationDate,
+            ),
+            makeSample(
+                calendarItemIdentifier: "00000000-0000-0000-0000-000000000002",
+                list: list,
+                title: "xxxxxxxxxxxxxx",
+                dueDate: dueDate1,
+                priority: .none,
+                creationDate: creationDate,
+                lastModifiedDate: creationDate,
+            ),
+            makeSample(
+                calendarItemIdentifier: "00000000-0000-0000-0000-000000000003",
+                list: list,
+                title: "xxxxxxxxxxxxxxxxxxx",
+                dueDate: dueDate1,
+                priority: .high,
+                creationDate: creationDate,
+                lastModifiedDate: creationDate,
+            ),
+            makeSample(
+                calendarItemIdentifier: "00000000-0000-0000-0000-000000000004",
+                list: list,
+                title: "xxxxxxxxxxxxxxx",
+                dueDate: dueDate1,
+                priority: .medium,
+                creationDate: creationDate,
+                lastModifiedDate: creationDate,
+            ),
+            makeSample(
+                calendarItemIdentifier: "00000000-0000-0000-0000-000000000005",
+                list: list,
+                title: "xxxxxxxxxxxxxxxxxx",
+                dueDate: dueDate1,
+                priority: .high,
+                creationDate: creationDate,
+                lastModifiedDate: creationDate,
+            ),
+            makeSample(
+                calendarItemIdentifier: "00000000-0000-0000-0000-000000000006",
+                list: list,
+                title: "xxxxxxxxxxxxxxxxxx",
+                dueDate: dueDate2,
+                priority: .high,
+                creationDate: creationDate,
+                lastModifiedDate: creationDate,
+            ),
+            makeSample(
+                calendarItemIdentifier: "00000000-0000-0000-0000-000000000007",
+                list: list,
+                title: "xxxxxxxxxxxxxxxxxx",
+                dueDate: dueDate2,
+                priority: .none,
+                creationDate: creationDate,
+                lastModifiedDate: creationDate,
+            ),
+            makeSample(
+                calendarItemIdentifier: "00000000-0000-0000-0000-000000000008",
+                list: list,
+                title: "xxxxxxxxxxxxxxxx",
+                dueDate: .init(date: "昨日", time: "11:02"),
+                priority: .low,
+                creationDate: creationDate,
+                lastModifiedDate: creationDate,
+            ),
+            makeSample(
+                calendarItemIdentifier: "00000000-0000-0000-0000-000000000009",
+                list: list,
+                title: "xxxxxxxxxx",
+                dueDate: dueDate2,
+                priority: .medium,
+                creationDate: creationDate,
+                lastModifiedDate: creationDate,
+            ),
+            makeSample(
+                calendarItemIdentifier: "00000000-0000-0000-0000-000000000010",
+                list: list,
+                title: "xxxxxxxxxxxxxx",
+                dueDate: dueDate2,
+                priority: .none,
+                creationDate: creationDate,
+                lastModifiedDate: creationDate,
+            ),
+        ]
+    }
 }

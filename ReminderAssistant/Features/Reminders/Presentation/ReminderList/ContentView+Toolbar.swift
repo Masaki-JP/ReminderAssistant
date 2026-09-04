@@ -212,5 +212,5 @@ private struct FilterMenu: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(onReminderAccessRevoked: {})
 }

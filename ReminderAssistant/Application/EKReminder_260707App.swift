@@ -6,7 +6,7 @@ struct EKReminder_260707App: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
                 .preferredColorScheme(colorSchemeSetting.colorScheme)
         }
     }

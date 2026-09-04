@@ -41,7 +41,10 @@ final actor ReminderStore: ReminderStoreProtocol {
     
     func create(_ request: CreateReminderRequest) async throws(ReminderStoreError) {
         try await operation(priority: .normal) { () async throws(ReminderStoreError) -> Void in
+            try checkAuthorization()
+            
             guard let calendar = eventStore.calendar(withIdentifier: request.list.calendarIdentifier) else {
+                try checkAuthorization()
                 throw ReminderStoreError.listNotFound(
                     calendarIdentifier: request.list.calendarIdentifier
                 )
@@ -70,7 +73,10 @@ final actor ReminderStore: ReminderStoreProtocol {
     
     func set(id: String, completion: Bool) async throws(ReminderStoreError) {
         try await operation(priority: .normal) { () async throws(ReminderStoreError) -> Void in
+            try checkAuthorization()
+            
             guard let reminder = eventStore.calendarItem(withIdentifier: id) as? EKReminder else {
+                try checkAuthorization()
                 throw ReminderStoreError.reminderNotFound(
                     calendarItemIdentifier: id
                 )
@@ -84,6 +90,8 @@ final actor ReminderStore: ReminderStoreProtocol {
     
     func fetch() async throws(ReminderStoreError) -> ReminderStoreFetchResult {
         try await operation(priority: .low) { () async throws(ReminderStoreError) -> ReminderStoreFetchResult in
+            try checkAuthorization()
+            
             let editableCalendars: [EKCalendar] = eventStore.calendars(for: .reminder)
                 .filter(\.allowsContentModifications)
             
@@ -102,6 +110,7 @@ final actor ReminderStore: ReminderStoreProtocol {
             }
             
             try checkCancel()
+            try checkAuthorization()
             
             switch result {
             case .success(let reminders):
@@ -134,9 +143,17 @@ final actor ReminderStore: ReminderStoreProtocol {
         }
     }
     
+    private func checkAuthorization() throws(ReminderStoreError) {
+        guard EKEventStore.authorizationStatus(for: .reminder) == .fullAccess else {
+            throw .accessNotAuthorized
+        }
+    }
+    
     private func save(_ reminder: EKReminder) throws(ReminderStoreError) {
         do {
             try eventStore.save(reminder, commit: true)
+        } catch let error as EKError where error.code == .eventStoreNotAuthorized {
+            throw .accessNotAuthorized
         } catch {
             throw .saveFailed
         }

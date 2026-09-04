@@ -12,16 +12,22 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol, ReminderStoreCacheT
     @AppStorage("reminderDestinationListID") var reminderDestinationListID: String?
     @AppStorage("hasInitializedReminderDestinationList") var hasInitializedReminderDestinationList = false
     
+    private let isAccessRequestPreview: Bool
+
     init(
         reminderStore: ReminderStoreType = ReminderStore.shared,
-        reminderStoreCache: ReminderStoreCacheType? = ReminderStoreCache()
+        reminderStoreCache: ReminderStoreCacheType? = ReminderStoreCache(),
+        onReminderAccessRevoked: @escaping () -> Void,
+        isAccessRequestPreview: Bool = false,
     ) {
         _viewModel = .init(
             wrappedValue: .init(
                 reminderStore: reminderStore,
-                reminderStoreCache: reminderStoreCache
+                reminderStoreCache: reminderStoreCache,
+                onReminderAccessRevoked: onReminderAccessRevoked,
             )
         )
+        self.isAccessRequestPreview = isAccessRequestPreview
     }
     
     var selectedList: RAReminderList? {
@@ -36,7 +42,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol, ReminderStoreCacheT
                 && filter.matches(reminder)
                 
                 let matchesSelectedList =
-                selectedListID.map { reminder.list.id == $0 } ?? true
+                isAccessRequestPreview || selectedListID.map { reminder.list.id == $0 } ?? true
                 
                 return matchesSelectedList && matchesSearchAndFilter
             }
@@ -55,8 +61,13 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol, ReminderStoreCacheT
         NavigationStack {
             ReminderList(
                 sections: reminderSections,
-                onToggleCompletion: viewModel.onToggleCompletion
+                onToggleCompletion: { reminder in
+                    guard isAccessRequestPreview == false else { return }
+                    viewModel.onToggleCompletion(reminder)
+                },
             )
+            .privacySensitive(isAccessRequestPreview)
+            .redacted(reason: isAccessRequestPreview ? .privacy : [])
             .contentMargins(.top, 8, for: .scrollContent)
             .overlay {
                 if viewModel.isLoading && viewModel.editableLists.isEmpty && viewModel.reminders.isEmpty {
@@ -82,6 +93,8 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol, ReminderStoreCacheT
             }
             .sheet(isPresented: $isCreateReminderSheetPresented) {
                 CreateReminderSheet { title, deadline, priority, notes in
+                    guard isAccessRequestPreview == false else { return }
+                    
                     viewModel.createReminder(
                         title: title,
                         deadline: deadline,
@@ -130,6 +143,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol, ReminderStoreCacheT
                 Button("OK", role: .cancel) {}
             } else {
                 Button("再読み込み") {
+                    guard isAccessRequestPreview == false else { return }
                     viewModel.loadReminders()
                 }
             }
@@ -168,6 +182,8 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol, ReminderStoreCacheT
 extension ContentView {
     /// 一覧の表示対象が未設定、または現在の編集可能なリストに存在しない場合、デフォルトリストまたは「すべて」を選択する。
     func selectListIfNeeded(from lists: [RAReminderList]) {
+        guard isAccessRequestPreview == false else { return }
+        
         guard selectedListID.map({ selectedListID in
             lists.contains(where: { $0.id == selectedListID })
         }) == false else { return }
@@ -181,6 +197,8 @@ extension ContentView {
     
     /// 初回はデフォルトリストまたは先頭のリストを選択し、設定済みの作成先が無効な場合はエラーを通知する。
     func selectReminderDestinationListIfNeeded(from lists: [RAReminderList]) {
+        guard isAccessRequestPreview == false else { return }
+        
         if hasInitializedReminderDestinationList == false {
             if reminderDestinationListID == nil {
                 guard let list = lists.first(where: { $0.id == viewModel.defaultListIdentifier })
@@ -205,6 +223,7 @@ extension ContentView {
     ContentView<FakeReminderStore, ReminderStoreCache>(
         reminderStore: .init(fetchDelay: .seconds(0.3)),
         reminderStoreCache: nil,
+        onReminderAccessRevoked: {},
     )
     .preferredColorScheme(.light)
 }
@@ -213,6 +232,7 @@ extension ContentView {
     ContentView<FakeReminderStore, ReminderStoreCache>(
         reminderStore: .init(fetchDelay: .seconds(0.3)),
         reminderStoreCache: nil,
+        onReminderAccessRevoked: {},
     )
     .preferredColorScheme(.dark)
 }
