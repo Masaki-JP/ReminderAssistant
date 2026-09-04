@@ -46,8 +46,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol, ReminderS
 
         /// 作成と更新の処理が完了しないリスクは許容する。
         reminderOperations.removeAll { operation in
-            operation.cancel()
-            return true
+            operation.cancel(); return true
         }
     }
     
@@ -168,8 +167,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol, ReminderS
     private func cancelCompletionToggle(for reminder: RAReminder) {
         reminderOperations.removeAll { operation in
             if case let .toggleCompletion(id, task) = operation, id == reminder.id {
-                task.cancel()
-                return true
+                task.cancel(); return true
             } else {
                 return false
             }
@@ -179,8 +177,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol, ReminderS
     func cancelLoad() {
         reminderOperations.removeAll { operation in
             if case .load(_, let loadTask) = operation {
-                loadTask.cancel()
-                return true
+                loadTask.cancel(); return true
             } else {
                 return false
             }
@@ -194,11 +191,9 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol, ReminderS
     private func handleError(_ error: any Error, as fallbackError: ContentViewModelError) {
         if (error as? ReminderStoreError) == .accessNotAuthorized {
             reminderOperations.removeAll { operation in
-                operation.cancel()
-                return true
+                operation.cancel(); return true
             }
-            reminderAccessRevokedHandler()
-            return
+            reminderAccessRevokedHandler(); return
         }
         
         if error is CancellationError || (error as? ReminderStoreError) == .cancelled {
@@ -206,8 +201,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol, ReminderS
         }
         
         reminderOperations.removeAll { operation in
-            operation.cancel()
-            return true
+            operation.cancel(); return true
         }
         
         if let contentViewModelError = error as? ContentViewModelError {
