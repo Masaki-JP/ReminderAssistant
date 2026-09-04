@@ -21,6 +21,8 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol, ReminderS
     private let reminderStoreCache: ReminderStoreCacheType?
     private var notificationToken: (any NSObjectProtocol)? = nil
     
+    private let reminderAccessRevokedHandler: () -> Void
+    
     var isLoading: Bool {
         (reminderOperations.first).map { operation in
             if case .load = operation { true } else { false }
@@ -29,10 +31,12 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol, ReminderS
     
     init(
         reminderStore: ReminderStoreType = ReminderStore.shared,
-        reminderStoreCache: ReminderStoreCacheType? = nil
+        reminderStoreCache: ReminderStoreCacheType? = nil,
+        onReminderAccessRevoked: @escaping () -> Void,
     ) {
         self.reminderStore = reminderStore
         self.reminderStoreCache = reminderStoreCache
+        self.reminderAccessRevokedHandler = onReminderAccessRevoked
     }
     
     isolated deinit {
@@ -188,6 +192,15 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol, ReminderS
     }
     
     private func handleError(_ error: any Error, as fallbackError: ContentViewModelError) {
+        if (error as? ReminderStoreError) == .accessNotAuthorized {
+            reminderOperations.removeAll { operation in
+                operation.cancel()
+                return true
+            }
+            reminderAccessRevokedHandler()
+            return
+        }
+        
         if error is CancellationError || (error as? ReminderStoreError) == .cancelled {
             return
         }
