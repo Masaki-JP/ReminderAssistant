@@ -1,6 +1,6 @@
 import Foundation
 
-actor ReminderStoreCache: ReminderStoreCacheProtocol {
+actor ReminderStoreCache {
     private struct StoredValue: Codable {
         let version: Int
         let cachedAt: Date

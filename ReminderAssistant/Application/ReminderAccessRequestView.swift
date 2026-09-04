@@ -35,7 +35,7 @@ struct ReminderAccessRequestView: View {
     var body: some View {
         ContentView(
             reminderStore: Self.previewReminderStore,
-            reminderStoreCache: ReminderStoreCache?.none,
+            reminderStoreCache: nil,
             onReminderAccessRevoked: {},
             isAccessRequestPreview: true,
         )
