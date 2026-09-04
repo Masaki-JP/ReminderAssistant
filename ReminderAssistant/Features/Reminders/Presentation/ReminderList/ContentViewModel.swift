@@ -1,7 +1,7 @@
 import SwiftUI
 
 @Observable
-final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol, ReminderStoreCacheType: ReminderStoreCacheProtocol> {
+final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     private(set) var reminders: [RAReminder] = []
     private(set) var editableLists: [RAReminderList] = []
     private(set) var defaultListIdentifier: String?
@@ -18,7 +18,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol, ReminderS
     private var hasReadInitialCache = false
     
     private let reminderStore: ReminderStoreType
-    private let reminderStoreCache: ReminderStoreCacheType?
+    private let reminderStoreCache: ReminderStoreCache?
     private var notificationToken: (any NSObjectProtocol)? = nil
     
     private let reminderAccessRevokedHandler: () -> Void
@@ -31,7 +31,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol, ReminderS
     
     init(
         reminderStore: ReminderStoreType = ReminderStore.shared,
-        reminderStoreCache: ReminderStoreCacheType? = nil,
+        reminderStoreCache: ReminderStoreCache? = nil,
         onReminderAccessRevoked: @escaping () -> Void,
     ) {
         self.reminderStore = reminderStore

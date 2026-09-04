@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct ContentView<ReminderStoreType: ReminderStoreProtocol, ReminderStoreCacheType: ReminderStoreCacheProtocol>: View {
-    @State var viewModel: ContentViewModel<ReminderStoreType, ReminderStoreCacheType>
+struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
+    @State var viewModel: ContentViewModel<ReminderStoreType>
     @State var sortOrder = ReminderSortOrder()
     @State var filter = ReminderFilter()
     @State var searchText = ""
@@ -16,7 +16,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol, ReminderStoreCacheT
 
     init(
         reminderStore: ReminderStoreType = ReminderStore.shared,
-        reminderStoreCache: ReminderStoreCacheType? = ReminderStoreCache(),
+        reminderStoreCache: ReminderStoreCache? = .init(),
         onReminderAccessRevoked: @escaping () -> Void,
         isAccessRequestPreview: Bool = false,
     ) {
@@ -220,8 +220,8 @@ extension ContentView {
 }
 
 #Preview("Light") {
-    ContentView<FakeReminderStore, ReminderStoreCache>(
-        reminderStore: .init(fetchDelay: .seconds(0.3)),
+    ContentView(
+        reminderStore: FakeReminderStore(fetchDelay: .seconds(0.3)),
         reminderStoreCache: nil,
         onReminderAccessRevoked: {},
     )
@@ -229,8 +229,8 @@ extension ContentView {
 }
 
 #Preview("Dark") {
-    ContentView<FakeReminderStore, ReminderStoreCache>(
-        reminderStore: .init(fetchDelay: .seconds(0.3)),
+    ContentView(
+        reminderStore: FakeReminderStore(fetchDelay: .seconds(0.3)),
         reminderStoreCache: nil,
         onReminderAccessRevoked: {},
     )
