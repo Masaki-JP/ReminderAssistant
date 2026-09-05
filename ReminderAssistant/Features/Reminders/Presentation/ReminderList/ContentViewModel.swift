@@ -199,7 +199,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     }
 
     func reportReminderDestinationListUnavailable() {
-        error = .reminderDestinationListUnavailable
+        presentError(.reminderDestinationListUnavailable)
     }
     
     private func handleError(_ error: any Error, as fallbackError: ContentViewModelError) {
@@ -219,12 +219,17 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         }
         
         if let contentViewModelError = error as? ContentViewModelError {
-            self.error = contentViewModelError
+            presentError(contentViewModelError)
         } else if let reminderStoreError = error as? ReminderStoreError, case .listNotFound = reminderStoreError {
-            self.error = .reminderDestinationListUnavailable
+            presentError(.reminderDestinationListUnavailable)
         } else {
-            self.error = fallbackError
+            presentError(fallbackError)
         }
+    }
+
+    private func presentError(_ error: ContentViewModelError) {
+        self.error = error
+        UINotificationFeedbackGenerator().notificationOccurred(.error)
     }
 }
 
