@@ -12,9 +12,13 @@ struct RootView: View {
     var body: some View {
         Group {
             if isReminderAccessGranted == true {
-                ContentView(onReminderAccessRevoked: { isReminderAccessGranted = false })
+                ContentView(configuration: .production(
+                    onReminderAccessRevoked: { isReminderAccessGranted = false }
+                ))
             } else {
-                ReminderAccessRequestView(onReminderAccessGranted: { isReminderAccessGranted = true })
+                ReminderAccessRequestView(
+                    onReminderAccessGranted: { isReminderAccessGranted = true }
+                )
             }
         }
         .onChange(of: scenePhase) { _, newValue in

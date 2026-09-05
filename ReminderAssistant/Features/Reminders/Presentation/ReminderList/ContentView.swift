@@ -14,20 +14,27 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
     
     private let isAccessRequestPreview: Bool
 
-    init(
-        reminderStore: ReminderStoreType = ReminderStore.shared,
-        reminderStoreCache: ReminderStoreCache? = .init(),
-        onReminderAccessRevoked: @escaping () -> Void,
-        isAccessRequestPreview: Bool = false,
-    ) {
-        _viewModel = .init(
-            wrappedValue: .init(
-                reminderStore: reminderStore,
-                reminderStoreCache: reminderStoreCache,
-                onReminderAccessRevoked: onReminderAccessRevoked,
+    init(configuration: Configuration) {
+        switch configuration {
+        case .production(let reminderStore, let reminderStoreCache, let onReminderAccessRevoked):
+            _viewModel = .init(
+                wrappedValue: .init(
+                    reminderStore: reminderStore,
+                    reminderStoreCache: reminderStoreCache,
+                    onReminderAccessRevoked: onReminderAccessRevoked,
+                )
             )
-        )
-        self.isAccessRequestPreview = isAccessRequestPreview
+            self.isAccessRequestPreview = false
+        case .accessRequestPreview(let reminderStore):
+            _viewModel = .init(
+                wrappedValue: .init(
+                    reminderStore: reminderStore,
+                    reminderStoreCache: nil,
+                    onReminderAccessRevoked: {},
+                )
+            )
+            self.isAccessRequestPreview = true
+        }
     }
     
     var selectedList: RAReminderList? {
@@ -220,19 +227,19 @@ extension ContentView {
 }
 
 #Preview("Light") {
-    ContentView(
+    ContentView(configuration: .production(
         reminderStore: FakeReminderStore(fetchDelay: .seconds(0.3)),
         reminderStoreCache: nil,
         onReminderAccessRevoked: {},
-    )
+    ))
     .preferredColorScheme(.light)
 }
 
 #Preview("Dark") {
-    ContentView(
+    ContentView(configuration: .production(
         reminderStore: FakeReminderStore(fetchDelay: .seconds(0.3)),
         reminderStoreCache: nil,
         onReminderAccessRevoked: {},
-    )
+    ))
     .preferredColorScheme(.dark)
 }
