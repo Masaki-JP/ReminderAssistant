@@ -137,13 +137,10 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
         }
         .searchable(text: $searchText, prompt: "リマインダーを検索")
         .animation(.default, value: viewModel.reminders)
+        .task(viewModel.loadReminders)
         .onChange(of: viewModel.editableLists) { _, lists in
             selectListIfNeeded(from: lists)
             selectReminderDestinationListIfNeeded(from: lists)
-        }
-        .task {
-            viewModel.setup()
-            viewModel.loadReminders()
         }
         .alert("エラー", isPresented: viewModel.errorBindng) {
             if viewModel.error == .reminderDestinationListUnavailable {

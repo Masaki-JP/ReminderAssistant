@@ -37,6 +37,17 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         self.reminderStore = reminderStore
         self.reminderStoreCache = reminderStoreCache
         self.reminderAccessRevokedHandler = onReminderAccessRevoked
+        
+        notificationToken = NotificationCenter.default.addObserver(
+            forName: reminderStore.remindersMayHaveChangedNotification,
+            object: nil,
+            queue: nil
+        ) { [weak self] _ in
+            Task { @MainActor in
+                guard self?.error == nil else { return }
+                self?.loadReminders()
+            }
+        }
     }
     
     isolated deinit {
@@ -213,21 +224,6 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
             self.error = .reminderDestinationListUnavailable
         } else {
             self.error = fallbackError
-        }
-    }
-    
-    func setup() {
-        guard notificationToken == nil else { return }
-        
-        notificationToken = NotificationCenter.default.addObserver(
-            forName: reminderStore.remindersMayHaveChangedNotification,
-            object: nil,
-            queue: nil
-        ) { [weak self] _ in
-            Task { @MainActor in
-                guard self?.error == nil else { return }
-                self?.loadReminders()
-            }
         }
     }
 }
