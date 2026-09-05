@@ -224,6 +224,7 @@ struct CreateReminderSheet: View {
             focus = nil
         }
         .buttonStyle(.glass)
+        .glassEffect(.regular.tint(colorScheme == .light ? .clear : .gray))
         .labelStyle(.iconOnly)
     }
     
