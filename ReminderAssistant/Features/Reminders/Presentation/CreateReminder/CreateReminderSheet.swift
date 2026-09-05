@@ -45,6 +45,18 @@ struct CreateReminderSheet: View {
     let betweenDividerAndContentSpacing: CGFloat = 18
     let betweenDividerAndTextFieldSpacing: CGFloat = 8
     
+    var labelTextColor: Color {
+        let grayLevel = colorScheme == .light ? 0.5 : 0.6
+        return Color(red: grayLevel, green: grayLevel, blue: grayLevel)
+    }
+    
+    var borderColor: Color {
+        let grayLevel = colorScheme == .light ? 0.8 : 0.3
+        return .init(red: grayLevel, green: grayLevel, blue: grayLevel)
+    }
+    
+    let borderWidth: CGFloat = 1.0
+    
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -71,7 +83,7 @@ struct CreateReminderSheet: View {
                 }
             }
             .scrollIndicators(.hidden)
-            .background(Color(uiColor: .secondarySystemBackground))
+            .background(Color(uiColor: .systemGroupedBackground))
             .contentMargins(.horizontal, 20)
             .contentMargins(.top, 18)
             .contentMargins(.bottom, 12)
@@ -130,7 +142,7 @@ struct CreateReminderSheet: View {
             .lineLimit(6...30)
             .focused($focus, equals: .notes)
             .padding(10)
-            .overlay(.secondary.opacity(0.35), in: .rect(cornerRadius: 8).stroke(lineWidth: 0.8))
+            .overlay(borderColor, in: .rect(cornerRadius: 8).stroke(lineWidth: borderWidth))
         }
     }
     
@@ -138,15 +150,15 @@ struct CreateReminderSheet: View {
         VStack(alignment: .leading, spacing: labelToContentSpacing) {
             Label(label, systemImage: systemImage)
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(labelTextColor)
             content()
         }
     }
     
     var formDivider: some View {
         Rectangle()
-            .fill(.secondary.opacity(0.35))
-            .frame(height: 0.8)
+            .fill(borderColor)
+            .frame(height: borderWidth)
     }
     
     func priorityButton(_ priority: RAReminder.Priority) -> some View {
