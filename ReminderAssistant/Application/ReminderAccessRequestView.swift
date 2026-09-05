@@ -7,6 +7,7 @@ struct ReminderAccessRequestView: View {
     @State private var task: Task<Void, Never>? = nil
     @State private var errorMessage: String?
     @Environment(\.colorScheme) private var colorScheme: ColorScheme
+    @Environment(\.openURL) private var openURL: OpenURLAction
     
     init(onReminderAccessGranted: @escaping () -> Void) {
         self.reminderAccessGrantedHandler = onReminderAccessGranted
@@ -43,7 +44,9 @@ struct ReminderAccessRequestView: View {
             }
         }
         .alert("リマインダーにアクセスできません", isPresented: errorMessageBinding) {
-            Button("OK", role: .cancel) {}
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                Button("設定を開く") { openURL(url) }
+            }
         } message: {
             Text(errorMessage ?? "")
         }
