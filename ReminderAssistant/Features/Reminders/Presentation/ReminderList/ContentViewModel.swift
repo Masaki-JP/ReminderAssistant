@@ -269,7 +269,7 @@ extension Array<ReminderOperation> {
     }
 }
 
-enum ContentViewModelError: Error, Equatable {
+enum ContentViewModelError: Error {
     case createReminderFailed
     case loadRemindersFailed
     case toggleCompletionFailed
