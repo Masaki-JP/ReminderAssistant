@@ -30,8 +30,8 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     }
     
     init(
-        reminderStore: ReminderStoreType = ReminderStore.shared,
-        reminderStoreCache: ReminderStoreCache? = nil,
+        reminderStore: ReminderStoreType,
+        reminderStoreCache: ReminderStoreCache?,
         onReminderAccessRevoked: @escaping () -> Void,
     ) {
         self.reminderStore = reminderStore
