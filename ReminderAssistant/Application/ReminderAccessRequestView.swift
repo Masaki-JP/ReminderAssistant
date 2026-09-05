@@ -5,19 +5,11 @@ struct ReminderAccessRequestView: View {
     private let eventStore = EKEventStore()
     private let reminderAccessGrantedHandler: () -> Void
     @State private var task: Task<Void, Never>? = nil
-    @State private var errorMessage: String?
     @Environment(\.colorScheme) private var colorScheme: ColorScheme
     @Environment(\.openURL) private var openURL: OpenURLAction
     
     init(onReminderAccessGranted: @escaping () -> Void) {
         self.reminderAccessGrantedHandler = onReminderAccessGranted
-    }
-    
-    private var errorMessageBinding: Binding<Bool> {
-        .init(
-            get: { errorMessage != nil },
-            set: { if $0 == false { errorMessage = nil } }
-        )
     }
     
     static private let previewReminderStore: FakeReminderStore = {
@@ -39,16 +31,9 @@ struct ReminderAccessRequestView: View {
         ))
         .overlay {
             contentCover.ignoresSafeArea()
-            if task == nil, errorMessage == nil {
+            if task == nil {
                 accessRequestPrompt
             }
-        }
-        .alert("リマインダーにアクセスできません", isPresented: errorMessageBinding) {
-            if let url = URL(string: UIApplication.openSettingsURLString) {
-                Button("設定を開く") { openURL(url) }
-            }
-        } message: {
-            Text(errorMessage ?? "")
         }
     }
     
@@ -76,9 +61,19 @@ struct ReminderAccessRequestView: View {
             }
             .multilineTextAlignment(.center)
             
-            Button("アクセスを許可", action: requestAccess)
-                .buttonStyle(.borderedProminent)
-                .controlSize(.regular)
+            if EKEventStore.authorizationStatus(for: .reminder) == .notDetermined {
+                Button("アクセスを許可", action: requestAccess)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.regular)
+            } else {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    Button("設定を開く") { openURL(url) }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.regular)
+                } else {
+                    Text("（設定アプリからリマインダーへのアクセスを許可してください。）")
+                }
+            }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 24)
@@ -89,11 +84,9 @@ struct ReminderAccessRequestView: View {
         task = Task {
             defer { task = nil }
             
-            guard (try? await eventStore.requestFullAccessToReminders()) == true else {
-                errorMessage = "設定アプリからリマインダーへのアクセスを許可してください。"; return
+            if (try? await eventStore.requestFullAccessToReminders()) == true {
+                reminderAccessGrantedHandler()
             }
-            
-            reminderAccessGrantedHandler()
         }
     }
 }
