@@ -33,12 +33,9 @@ struct ReminderAccessRequestView: View {
     }()
     
     var body: some View {
-        ContentView(
+        ContentView(configuration: .accessRequestPreview(
             reminderStore: Self.previewReminderStore,
-            reminderStoreCache: nil,
-            onReminderAccessRevoked: {},
-            isAccessRequestPreview: true,
-        )
+        ))
         .overlay {
             contentCover.ignoresSafeArea()
             if task == nil, errorMessage == nil {
