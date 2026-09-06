@@ -194,7 +194,8 @@ extension ContentView {
         )
     }
 
-    /// 一覧の表示対象が未設定、または現在の編集可能なリストに存在しない場合、デフォルトリストまたは「すべて」を選択する。
+    /// 表示対象のリスト（``selectedListID``）が未設定、または現在の編集可能なリストに存在しない場合、表示対象のリストにデフォルトリスト、または「すべて（`nil`）」を設定する。
+    ///
     func selectListIfNeeded(from lists: [RAReminderList]) {
         guard isPlaceholder == false else { return }
         
@@ -209,7 +210,8 @@ extension ContentView {
         }
     }
     
-    /// 初回はデフォルトリストまたは先頭のリストを選択し、設定済みの作成先が無効な場合はエラーを通知する。
+    /// 初回はリマインダーの作成先のリスト（``reminderDestinationListID``）をデフォルトリスト、または先頭のリストに設定する。設定済みのリマインダー作成先が無効な場合はエラーを通知する。
+    ///
     func selectReminderDestinationListIfNeeded(from lists: [RAReminderList]) {
         guard isPlaceholder == false else { return }
         
