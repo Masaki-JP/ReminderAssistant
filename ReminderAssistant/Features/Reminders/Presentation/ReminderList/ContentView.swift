@@ -102,17 +102,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
                 .preferredColorScheme(colorScheme)
             }
             .sheet(isPresented: $isCreateReminderSheetPresented) {
-                CreateReminderSheet { title, deadline, priority, notes in
-                    guard isPlaceholder == false else { return }
-                    
-                    viewModel.createReminder(
-                        title: title,
-                        deadline: deadline,
-                        priority: priority,
-                        notes: notes,
-                        listIdentifier: reminderDestinationListID
-                    )
-                }
+                CreateReminderSheet(onConfirm: createReminder)
             }
             .navigationTitle(selectedList?.title ?? "すべて")
             .navigationBarTitleDisplayMode(.inline)
@@ -187,6 +177,23 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
 }
 
 extension ContentView {
+    func createReminder(
+        _ title: String,
+        _ deadline: String,
+        _ priority: RAReminder.Priority,
+        _ notes: String
+    ) async throws(CreateReminderError) {
+        guard isPlaceholder == false else { throw .cancelled }
+
+        try await viewModel.createReminder(
+            title: title,
+            deadline: deadline,
+            priority: priority,
+            notes: notes,
+            listIdentifier: reminderDestinationListID
+        )
+    }
+
     /// 一覧の表示対象が未設定、または現在の編集可能なリストに存在しない場合、デフォルトリストまたは「すべて」を選択する。
     func selectListIfNeeded(from lists: [RAReminderList]) {
         guard isPlaceholder == false else { return }

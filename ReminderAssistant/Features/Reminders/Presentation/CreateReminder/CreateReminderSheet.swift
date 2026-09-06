@@ -6,20 +6,39 @@ struct CreateReminderSheet: View {
     @State var priority: RAReminder.Priority = .none
     @State var notes = ""
     @State var isDismissConfirmationDialogPresented = false
-    
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var colorScheme: ColorScheme
-    
     @ScaledMetric(relativeTo: .body) var singleLineTextFieldHight = 22.0
+    
+    @State var creationTask: Task<Void, Never>? = nil
+    var isCreating: Bool { creationTask != nil }
     
     @FocusState var focus: Field?
     var focusBinding: Binding<Field?> {
         .init(get: { focus }, set: { focus = $0 })
     }
     
-    let confirmAction: (_ title: String, _ deadline: String, _ priority: RAReminder.Priority, _ notes: String) -> Void
+    @State var creationError: CreateReminderError?
+    var creationErrorBinding: Binding<Bool> { .init(
+        get: { creationError != nil },
+        set: { if $0 == false { creationError = nil } }
+    ) }
     
-    init(onConfirm: @escaping (_ title: String, _ deadline: String, _ priority: RAReminder.Priority, _ notes: String) -> Void) {
+    let confirmAction: (
+        _ title: String,
+        _ deadline: String,
+        _ priority: RAReminder.Priority,
+        _ notes: String
+    ) async throws(CreateReminderError) -> Void
+    
+    init(
+        onConfirm: @escaping (
+            _ title: String,
+            _ deadline: String,
+            _ priority: RAReminder.Priority,
+            _ notes: String
+        ) async throws(CreateReminderError) -> Void
+    ) {
         self.confirmAction = onConfirm
     }
     
@@ -28,7 +47,9 @@ struct CreateReminderSheet: View {
     }
     
     var isConfirmButtonDisabled: Bool {
-        title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || deadline.isEmpty
+        isCreating
+        || title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        || deadline.isEmpty
     }
     
     var isPad: Bool {
@@ -82,6 +103,7 @@ struct CreateReminderSheet: View {
                     notesSection
                 }
             }
+            .disabled(isCreating)
             .scrollIndicators(.hidden)
             .background(Color(uiColor: .systemGroupedBackground))
             .contentMargins(.horizontal, 20)
@@ -98,11 +120,19 @@ struct CreateReminderSheet: View {
                 }
             }
         }
-        .interactiveDismissDisabled(!canDismissWithoutConfirmation)
+        .interactiveDismissDisabled(isCreating || !canDismissWithoutConfirmation)
+        .alert("作成失敗", isPresented: creationErrorBinding) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            if let creationError {
+                Text(creationError.message)
+            }
+        }
         .task {
             try? await Task.sleep(for: .seconds(0.03))
             focus = .title
         }
+        .onDisappear { creationTask?.cancel() }
     }
     
     var titleSection: some View {
@@ -179,6 +209,7 @@ struct CreateReminderSheet: View {
     var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
             Button(role: .cancel, action: dismissSheet)
+                .disabled(isCreating)
                 .confirmationDialog(
                     "現在の入力を破棄して中断しますか？",
                     isPresented: $isDismissConfirmationDialogPresented,
@@ -189,11 +220,8 @@ struct CreateReminderSheet: View {
         }
         
         ToolbarItem(placement: .confirmationAction) {
-            Button(role: .confirm) {
-                confirmAction(title, deadline, priority, notes)
-                dismiss()
-            }
-            .disabled(isConfirmButtonDisabled)
+            Button(role: .confirm, action: createReminder)
+                .disabled(isConfirmButtonDisabled)
         }
         
         if isPad == true {
@@ -229,13 +257,10 @@ struct CreateReminderSheet: View {
     }
     
     var createReminderButton: some View {
-        Button("作成", systemImage: "checkmark") {
-            confirmAction(title, deadline, priority, notes)
-            dismiss()
-        }
-        .buttonStyle(.glassProminent)
-        .labelStyle(.iconOnly)
-        .disabled(isConfirmButtonDisabled)
+        Button("作成", systemImage: "checkmark", action: createReminder)
+            .buttonStyle(.glassProminent)
+            .labelStyle(.iconOnly)
+            .disabled(isConfirmButtonDisabled)
     }
 }
 
@@ -259,6 +284,39 @@ extension CreateReminderSheet {
             dismiss()
         } else {
             isDismissConfirmationDialogPresented = true
+        }
+    }
+    
+    func createReminder() {
+        guard creationTask == nil else { return }
+        
+        creationTask = .init {
+            defer { creationTask = nil }
+            
+            do {
+                try await confirmAction(title, deadline, priority, notes)
+                dismiss()
+            } catch let error as CreateReminderError {
+                if case .cancelled = error { return }
+                creationError = error
+            } catch {
+                creationError = .saveFailed
+            }
+        }
+    }
+}
+
+extension CreateReminderError {
+    var message: String {
+        switch self {
+        case .invalidDeadline:
+            "期限を認識できませんでした。入力内容を確認し、もう一度お試しください。"
+        case .destinationListUnavailable:
+            "作成先のリストを利用できません。設定画面で作成先を選択してください。"
+        case .saveFailed:
+            "新規リマインダーの保存に失敗しました。もう一度お試しください。"
+        case .cancelled:
+            ""
         }
     }
 }

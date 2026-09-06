@@ -67,9 +67,9 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         priority: RAReminder.Priority,
         notes: String,
         listIdentifier: String?,
-    ) {
+    ) async throws(CreateReminderError) {
         let operationID = UUID()
-        let task = Task { [weak self] in
+        let task = Task { [weak self] () -> Result<Void, CreateReminderError> in
             defer { self?.reminderOperations.removeOperation(with: .create(operationID)) }
             
             do {
@@ -84,16 +84,35 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
                     notes: notes,
                     list: list,
                 ))
-                
-                guard self != nil else { return }
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
             } catch {
-                self?.handleError(error, as: .createReminderFailed)
+                guard let self else { return .failure(.cancelled) }
+                let createReminderError = self.resolveCreateReminderError(error)
+
+                switch createReminderError {
+                case .cancelled: break
+                default: UINotificationFeedbackGenerator().notificationOccurred(.error)
+                }
+
+                return .failure(createReminderError)
             }
+
+            guard self != nil else { return .failure(.cancelled) }
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            return .success(())
         }
         
         reminderOperations.append(.create(operationID: operationID, task: task))
         cancelLoad()
+
+        let result = await withTaskCancellationHandler {
+            await task.value
+        } onCancel: {
+            task.cancel()
+        }
+
+        if case .failure(let error) = result {
+            throw error
+        }
     }
     
     func onToggleCompletion(_ reminder: RAReminder) {
@@ -203,27 +222,49 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     }
     
     private func handleError(_ error: any Error, as fallbackError: ContentViewModelError) {
+        guard let error = resolveError(error, as: fallbackError) else { return }
+        presentError(error)
+    }
+
+    private func resolveCreateReminderError(_ error: any Error) -> CreateReminderError {
+        guard let preparedError = resolveError(error, as: .createReminderFailed) else {
+            return .cancelled
+        }
+
+        return if (error as? ReminderStoreError) == .deadlineConversionFailed {
+            .invalidDeadline
+        } else if case .reminderDestinationListUnavailable = preparedError {
+            .destinationListUnavailable
+        } else {
+            .saveFailed
+        }
+    }
+    
+    private func resolveError(
+        _ error: any Error,
+        as fallbackError: ContentViewModelError
+    ) -> ContentViewModelError? {
         if (error as? ReminderStoreError) == .accessNotAuthorized {
             reminderOperations.removeAll { operation in
                 operation.cancel(); return true
             }
-            reminderAccessRevokedHandler(); return
+            reminderAccessRevokedHandler(); return nil
         }
         
         if error is CancellationError || (error as? ReminderStoreError) == .cancelled {
-            return
+            return nil
         }
         
         reminderOperations.removeAll { operation in
             operation.cancel(); return true
         }
         
-        if let contentViewModelError = error as? ContentViewModelError {
-            presentError(contentViewModelError)
+        return if let contentViewModelError = error as? ContentViewModelError {
+            contentViewModelError
         } else if let reminderStoreError = error as? ReminderStoreError, case .listNotFound = reminderStoreError {
-            presentError(.reminderDestinationListUnavailable)
+            .reminderDestinationListUnavailable
         } else {
-            presentError(fallbackError)
+            fallbackError
         }
     }
 
@@ -240,13 +281,15 @@ enum ReminderOperation {
         case load(UUID)
     }
 
-    case create(operationID: UUID, task: Task<Void, Never>)
+    case create(operationID: UUID, task: Task<Result<Void, CreateReminderError>, Never>)
     case toggleCompletion(reminderID: RAReminder.ID, task: Task<Void, Never>)
     case load(operationID: UUID, task: Task<Void, Never>)
     
     func cancel() {
         switch self {
-        case .create(_, let task), .toggleCompletion(_, let task), .load(_, let task):
+        case .create(_, let task):
+            task.cancel()
+        case .toggleCompletion(_, let task), .load(_, let task):
             task.cancel()
         }
     }
@@ -274,4 +317,11 @@ enum ContentViewModelError: Error {
     case loadRemindersFailed
     case toggleCompletionFailed
     case reminderDestinationListUnavailable
+}
+
+enum CreateReminderError: Error {
+    case invalidDeadline
+    case destinationListUnavailable
+    case saveFailed
+    case cancelled
 }
