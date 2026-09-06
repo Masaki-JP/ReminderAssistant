@@ -12,10 +12,10 @@ struct ReminderAccessRequestView: View {
         self.reminderAccessGrantedHandler = onReminderAccessGranted
     }
     
-    static private let previewReminderStore: FakeReminderStore = {
+    static private let fakeReminderStore: FakeReminderStore = {
         let defaultListIdentifier = "xxx"
         let list = RAReminderList(calendarIdentifier: defaultListIdentifier, title: "xxx")
-        let reminders = RAReminderSample.accessRequestPreviewReminders(for: list)
+        let reminders = RAReminderSample.placeholderReminders(for: list)
         
         return .init(
             reminders: reminders,
@@ -26,8 +26,8 @@ struct ReminderAccessRequestView: View {
     }()
     
     var body: some View {
-        ContentView(configuration: .accessRequestPreview(
-            reminderStore: Self.previewReminderStore,
+        ContentView(configuration: .placeholder(
+            reminderStore: Self.fakeReminderStore,
         ))
         .overlay {
             contentCover.ignoresSafeArea()
