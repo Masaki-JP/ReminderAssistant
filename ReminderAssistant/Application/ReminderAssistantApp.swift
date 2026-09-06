@@ -2,7 +2,8 @@ import SwiftUI
 
 @main
 struct ReminderAssistantApp: App {
-    @AppStorage("colorScheme") var colorSchemeSetting = ColorSchemeSetting.defaultValue
+    @AppStorage(UserDefaultsKey.AppStorageKey.colorScheme.rawValue)
+    var colorSchemeSetting = ColorSchemeSetting.defaultValue
     
     var body: some Scene {
         WindowGroup {

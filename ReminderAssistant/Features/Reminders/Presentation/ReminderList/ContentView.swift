@@ -8,9 +8,12 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
     @State var isCreateReminderSheetPresented = false
     @State var isSettingsViewPresented = false
     @Environment(\.colorScheme) var colorScheme: ColorScheme
-    @AppStorage("lastSelectedListID") var selectedListID: String?
-    @AppStorage("reminderDestinationListID") var reminderDestinationListID: String?
-    @AppStorage("hasInitializedReminderDestinationList") var hasInitializedReminderDestinationList = false
+    @AppStorage(UserDefaultsKey.AppStorageKey.lastSelectedListID.rawValue)
+    var selectedListID: String?
+    @AppStorage(UserDefaultsKey.AppStorageKey.reminderDestinationListID.rawValue)
+    var reminderDestinationListID: String?
+    @AppStorage(UserDefaultsKey.AppStorageKey.hasInitializedReminderDestinationList.rawValue)
+    var hasInitializedReminderDestinationList = UserDefaultsKey.AppStorageDefaultValue.hasInitializedReminderDestinationList
     
     private let isPlaceholder: Bool
 
