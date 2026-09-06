@@ -1,2 +1,4 @@
 
 本アプリは、Appleのリマインダーアプリに依存しているが、端末からリマインダーアプリが削除されている可能性は考慮していない。
+
+ReminderAccessRequestView.requestAccess()内のEKEventStore.requestFullAccessToReminders()で例外が発生した場合、個別のエラー表示やログ記録は行わず、アクセス許可ボタンの再表示による再試行に委ねる。
