@@ -54,12 +54,14 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         if let notificationToken {
             NotificationCenter.default.removeObserver(notificationToken)
         }
-
+        
         /// 作成と更新の処理が完了しないリスクは許容する。
         reminderOperations.removeAll { operation in
             operation.cancel(); return true
         }
     }
+    
+    // MARK: - Reminder Creation
     
     func createReminder(
         title: String,
@@ -87,15 +89,15 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
             } catch {
                 guard let self else { return .failure(.cancelled) }
                 let createReminderError = self.resolveCreateReminderError(error)
-
+                
                 switch createReminderError {
                 case .cancelled: break
                 default: UINotificationFeedbackGenerator().notificationOccurred(.error)
                 }
-
+                
                 return .failure(createReminderError)
             }
-
+            
             guard self != nil else { return .failure(.cancelled) }
             UINotificationFeedbackGenerator().notificationOccurred(.success)
             return .success(())
@@ -103,31 +105,19 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         
         reminderOperations.append(.create(operationID: operationID, task: task))
         cancelLoad()
-
+        
         let result = await withTaskCancellationHandler {
             await task.value
         } onCancel: {
             task.cancel()
         }
-
+        
         if case .failure(let error) = result {
             throw error
         }
     }
     
-    func onToggleCompletion(_ reminder: RAReminder) {
-        let isPending = hasPendingCompletionToggle(for: reminder)
-        
-        if isPending == false {
-            requestCompletionToggle(for: reminder)
-        } else {
-            cancelCompletionToggle(for: reminder)
-        }
-        
-        guard let index = reminderIndex(for: reminder) else { return }
-        let newValue = isPending ? reminder.isCompleted : !reminder.isCompleted
-        reminders[index].setDisplayedIsCompleted(newValue)
-    }
+    // MARK: - Reminder Loading
     
     func loadReminders() {
         cancelLoad()
@@ -160,10 +150,36 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         reminderOperations.append(.load(operationID: operationID, task: task))
     }
     
+    func cancelLoad() {
+        reminderOperations.removeAll { operation in
+            if case .load(_, let loadTask) = operation {
+                loadTask.cancel(); return true
+            } else {
+                return false
+            }
+        }
+    }
+    
     private func apply(_ result: ReminderStoreFetchResult) {
         reminders = result.reminders
         editableLists = result.editableLists
         defaultListIdentifier = result.defaultListIdentifier
+    }
+    
+    // MARK: - Reminder Completion
+    
+    func onToggleCompletion(_ reminder: RAReminder) {
+        let isPending = hasPendingCompletionToggle(for: reminder)
+        
+        if isPending == false {
+            requestCompletionToggle(for: reminder)
+        } else {
+            cancelCompletionToggle(for: reminder)
+        }
+        
+        guard let index = reminderIndex(for: reminder) else { return }
+        let newValue = isPending ? reminder.isCompleted : !reminder.isCompleted
+        reminders[index].setDisplayedIsCompleted(newValue)
     }
     
     private func reminderIndex(for reminder: RAReminder) -> [RAReminder].Index? {
@@ -207,39 +223,35 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         }
     }
     
-    func cancelLoad() {
-        reminderOperations.removeAll { operation in
-            if case .load(_, let loadTask) = operation {
-                loadTask.cancel(); return true
-            } else {
-                return false
-            }
-        }
-    }
-
+    // MARK: - Error Handling
+    
+    /// 作成先リストを利用できないことを、画面に表示するエラーとして通知する。
     func reportReminderDestinationListUnavailable() {
         presentError(.reminderDestinationListUnavailable)
     }
     
+    /// 共通処理で解決したエラーを、画面に表示する。
     private func handleError(_ error: any Error, as fallbackError: ContentViewModelError) {
         guard let error = resolveError(error, as: fallbackError) else { return }
         presentError(error)
     }
-
+    
+    /// リマインダー作成時のエラーを、作成画面で扱うエラーに解決する。
     private func resolveCreateReminderError(_ error: any Error) -> CreateReminderError {
-        guard let preparedError = resolveError(error, as: .createReminderFailed) else {
+        guard let resolvedError = resolveError(error, as: .createReminderFailed) else {
             return .cancelled
         }
-
+        
         return if (error as? ReminderStoreError) == .deadlineConversionFailed {
             .invalidDeadline
-        } else if case .reminderDestinationListUnavailable = preparedError {
+        } else if case .reminderDestinationListUnavailable = resolvedError {
             .destinationListUnavailable
         } else {
             .saveFailed
         }
     }
     
+    /// 権限失効とキャンセルを処理し、それ以外を画面表示用エラーに解決する。
     private func resolveError(
         _ error: any Error,
         as fallbackError: ContentViewModelError
@@ -267,7 +279,8 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
             fallbackError
         }
     }
-
+    
+    /// エラーを保持し、エラー用の触覚フィードバックを発生させる。
     private func presentError(_ error: ContentViewModelError) {
         self.error = error
         UINotificationFeedbackGenerator().notificationOccurred(.error)
@@ -280,7 +293,7 @@ enum ReminderOperation {
         case toggleCompletion(RAReminder.ID)
         case load(UUID)
     }
-
+    
     case create(operationID: UUID, task: Task<Result<Void, CreateReminderError>, Never>)
     case toggleCompletion(reminderID: RAReminder.ID, task: Task<Void, Never>)
     case load(operationID: UUID, task: Task<Void, Never>)
@@ -312,6 +325,7 @@ extension Array<ReminderOperation> {
     }
 }
 
+/// リマインダー一覧画面で表示するエラー。
 enum ContentViewModelError: Error {
     case createReminderFailed
     case loadRemindersFailed
@@ -319,6 +333,7 @@ enum ContentViewModelError: Error {
     case reminderDestinationListUnavailable
 }
 
+/// リマインダー作成画面へ通知するエラー。
 enum CreateReminderError: Error {
     case invalidDeadline
     case destinationListUnavailable
