@@ -6,6 +6,6 @@ extension ContentView {
             onReminderAccessRevoked: () -> Void,
         )
 
-        case accessRequestPreview(reminderStore: ReminderStoreType)
+        case placeholder(reminderStore: ReminderStoreType)
     }
 }

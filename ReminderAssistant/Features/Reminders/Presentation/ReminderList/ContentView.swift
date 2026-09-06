@@ -12,7 +12,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
     @AppStorage("reminderDestinationListID") var reminderDestinationListID: String?
     @AppStorage("hasInitializedReminderDestinationList") var hasInitializedReminderDestinationList = false
     
-    private let isAccessRequestPreview: Bool
+    private let isPlaceholder: Bool
 
     init(configuration: Configuration) {
         switch configuration {
@@ -24,8 +24,8 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
                     onReminderAccessRevoked: onReminderAccessRevoked,
                 )
             )
-            self.isAccessRequestPreview = false
-        case .accessRequestPreview(let reminderStore):
+            self.isPlaceholder = false
+        case .placeholder(let reminderStore):
             _viewModel = .init(
                 wrappedValue: .init(
                     reminderStore: reminderStore,
@@ -33,7 +33,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
                     onReminderAccessRevoked: {},
                 )
             )
-            self.isAccessRequestPreview = true
+            self.isPlaceholder = true
         }
     }
     
@@ -49,7 +49,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
                 && filter.matches(reminder)
                 
                 let matchesSelectedList =
-                isAccessRequestPreview || selectedListID.map { reminder.list.id == $0 } ?? true
+                isPlaceholder || selectedListID.map { reminder.list.id == $0 } ?? true
                 
                 return matchesSelectedList && matchesSearchAndFilter
             }
@@ -69,12 +69,12 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
             ReminderList(
                 sections: reminderSections,
                 onToggleCompletion: { reminder in
-                    guard isAccessRequestPreview == false else { return }
+                    guard isPlaceholder == false else { return }
                     viewModel.onToggleCompletion(reminder)
                 },
             )
-            .privacySensitive(isAccessRequestPreview)
-            .redacted(reason: isAccessRequestPreview ? .privacy : [])
+            .privacySensitive(isPlaceholder)
+            .redacted(reason: isPlaceholder ? .privacy : [])
             .contentMargins(.top, 8, for: .scrollContent)
             .overlay {
                 if viewModel.isLoading && viewModel.editableLists.isEmpty && viewModel.reminders.isEmpty {
@@ -100,7 +100,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
             }
             .sheet(isPresented: $isCreateReminderSheetPresented) {
                 CreateReminderSheet { title, deadline, priority, notes in
-                    guard isAccessRequestPreview == false else { return }
+                    guard isPlaceholder == false else { return }
                     
                     viewModel.createReminder(
                         title: title,
@@ -147,7 +147,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
                 Button("OK", role: .cancel) {}
             } else {
                 Button("再読み込み") {
-                    guard isAccessRequestPreview == false else { return }
+                    guard isPlaceholder == false else { return }
                     viewModel.loadReminders()
                 }
             }
@@ -186,7 +186,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
 extension ContentView {
     /// 一覧の表示対象が未設定、または現在の編集可能なリストに存在しない場合、デフォルトリストまたは「すべて」を選択する。
     func selectListIfNeeded(from lists: [RAReminderList]) {
-        guard isAccessRequestPreview == false else { return }
+        guard isPlaceholder == false else { return }
         
         guard selectedListID.map({ selectedListID in
             lists.contains(where: { $0.id == selectedListID })
@@ -201,7 +201,7 @@ extension ContentView {
     
     /// 初回はデフォルトリストまたは先頭のリストを選択し、設定済みの作成先が無効な場合はエラーを通知する。
     func selectReminderDestinationListIfNeeded(from lists: [RAReminderList]) {
-        guard isAccessRequestPreview == false else { return }
+        guard isPlaceholder == false else { return }
         
         if hasInitializedReminderDestinationList == false {
             if reminderDestinationListID == nil {

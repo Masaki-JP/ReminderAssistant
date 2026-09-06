@@ -1420,7 +1420,7 @@ enum RAReminderSample {
         ),
     ]
     
-    static func accessRequestPreviewReminders(for list: RAReminderList) -> [RAReminder] {
+    static func placeholderReminders(for list: RAReminderList) -> [RAReminder] {
         let dueDate1 = DateInput(date: "50日前", time: "9:00")
         let dueDate2 = DateInput(date: "50日後", time: "9:00")
         let creationDate = DateInput(date: "100日前", time: "9:00")
