@@ -2,7 +2,8 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss: DismissAction
-    @AppStorage("colorScheme") var colorSchemeSetting = ColorSchemeSetting.defaultValue
+    @AppStorage(UserDefaultsKey.AppStorageKey.colorScheme.rawValue)
+    var colorSchemeSetting = ColorSchemeSetting.defaultValue
     @Binding var reminderDestinationListID: String?
     let lists: [RAReminderList]
     
