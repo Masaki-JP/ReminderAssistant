@@ -14,6 +14,8 @@ UserDefaults（AppStorageを含む）に関する変更があったときは、�
 
 iOS向けのローカルSwift Packageを検証するときは、macOS向けにビルドされる`swift build`ではなく、iOS SDKを指定した`xcodebuild`を使用すること。macOS対応は予定していないため、Package.swiftのplatformsにmacOSを追加しないこと。
 
+ビューのプロパティとメソッドには、アクセスレベルを付けないこと。
+
 HistoryListやSuggestionListのようにXXXList形式のビューを切り出す場合は、渡される配列が空配列ではないことを前提として作成すること。
 
 mainにマージするときはファストフォワードを使わないこと。
