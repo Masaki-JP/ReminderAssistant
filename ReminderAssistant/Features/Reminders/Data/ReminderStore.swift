@@ -50,8 +50,9 @@ final actor ReminderStore: ReminderStoreProtocol {
                 )
             }
             
+            let dueDateCalendar = Calendar.gregorianCalendar()
             let dueDate = JapaneseDateConverter().convert(from: request.deadline).map {
-                Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: $0)
+                dueDateCalendar.dateComponents([.year, .month, .day, .hour, .minute], from: $0)
             }
             
             try checkCancel()
