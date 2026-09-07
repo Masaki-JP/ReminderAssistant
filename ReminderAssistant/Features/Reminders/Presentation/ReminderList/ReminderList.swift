@@ -23,7 +23,7 @@ struct ReminderList: View {
         .environment(\.defaultMinListHeaderHeight, 0)
         .environment(\.defaultMinListRowHeight, 0)
         .scrollIndicators(isScrollIndicatorsVisible == true ? .visible : .hidden)
-        .background(backgroundColor)
+        .background(listBackgroundColor)
     }
     
     func section(_ section: ReminderListSection) -> some View {
@@ -37,7 +37,7 @@ struct ReminderList: View {
                 .padding([.top, .leading, .bottom], 12)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(rowBackgroundColor, in: .rect(cornerRadius: 16))
-                .listRowBackground(backgroundColor)
+                .listRowBackground(Color.clear)
                 .listRowInsets(.init())
                 .listRowSeparator(.hidden)
             }
@@ -80,7 +80,7 @@ struct ReminderList: View {
         return .init(red: grayLevel, green: grayLevel, blue: grayLevel)
     }
     
-    var backgroundColor: Color {
+    var listBackgroundColor: Color {
         .init(uiColor: .systemGroupedBackground)
     }
 }
