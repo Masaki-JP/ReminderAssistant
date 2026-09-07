@@ -15,7 +15,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
     @AppStorage(UserDefaultsKey.AppStorageKey.hasInitializedReminderDestinationList.rawValue)
     var hasInitializedReminderDestinationList = UserDefaultsKey.AppStorageDefaultValue.hasInitializedReminderDestinationList
     
-    private let isPlaceholder: Bool
+    let isPlaceholder: Bool
 
     init(configuration: Configuration) {
         switch configuration {

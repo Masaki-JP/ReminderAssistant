@@ -4,15 +4,15 @@ import EventKit
 struct ReminderAccessRequestView: View {
     private let eventStore = EKEventStore()
     private let reminderAccessGrantedHandler: () -> Void
-    @State private var task: Task<Void, Never>? = nil
-    @Environment(\.colorScheme) private var colorScheme: ColorScheme
-    @Environment(\.openURL) private var openURL: OpenURLAction
+    @State var task: Task<Void, Never>? = nil
+    @Environment(\.colorScheme) var colorScheme: ColorScheme
+    @Environment(\.openURL) var openURL: OpenURLAction
     
     init(onReminderAccessGranted: @escaping () -> Void) {
         self.reminderAccessGrantedHandler = onReminderAccessGranted
     }
     
-    static private let fakeReminderStore: FakeReminderStore = {
+    static let fakeReminderStore: FakeReminderStore = {
         let defaultListIdentifier = "xxx"
         let list = RAReminderList(calendarIdentifier: defaultListIdentifier, title: "xxx")
         let reminders = RAReminderSample.placeholderReminders(for: list)
@@ -80,7 +80,7 @@ struct ReminderAccessRequestView: View {
         .glassEffect(.clear.tint(bgColor), in: .rect(cornerRadius: 40))
     }
     
-    private func requestAccess() {
+    func requestAccess() {
         task = Task {
             defer { task = nil }
             
