@@ -10,7 +10,7 @@
 
 Xcodeが空行に入れるインデント用スペースはXcodeの仕様として扱い、不要な空白整理として削除しないこと。
 
-UserDefaults（AppStorageを含む）に関する変更があったときは、必要に応じて`development-rules`のUserDefaults Keysを更新すること。
+UserDefaults（AppStorageを含む）に関する変更があったときは、必要に応じて`development-rules.txt`のUserDefaults Keysを更新すること。
 
 iOS向けのローカルSwift Packageを検証するときは、macOS向けにビルドされる`swift build`ではなく、iOS SDKを指定した`xcodebuild`を使用すること。macOS対応は予定していないため、Package.swiftのplatformsにmacOSを追加しないこと。
 
