@@ -129,7 +129,7 @@ extension ReminderRow {
         .preferredColorScheme(.dark)
 }
 
-func previewContent(reminders: Binding<[RAReminder]>) -> some View {
+private func previewContent(reminders: Binding<[RAReminder]>) -> some View {
     VStack(spacing: 24) {
         ForEach(reminders.wrappedValue.indices, id: \.self) { i in
             ReminderRow(
@@ -168,7 +168,7 @@ private func previewDateComponents(
     return components
 }
 
-var sampleReminders: [RAReminder] = [
+private var sampleReminders: [RAReminder] = [
     .init(
         calendarItemIdentifier: "preview-reminder-1",
         list: previewList,

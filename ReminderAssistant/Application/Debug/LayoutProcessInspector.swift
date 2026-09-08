@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct LayoutProcessInspector: Layout {
+private struct LayoutProcessInspector: Layout {
     var tag: String
     var printPosition: Bool
     

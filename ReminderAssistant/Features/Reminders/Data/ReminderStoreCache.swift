@@ -11,8 +11,6 @@ actor ReminderStoreCache {
     private static let cacheLifetime: TimeInterval = 24 * 60 * 60
     private let fileURL: URL?
 
-    static let shared = ReminderStoreCache()
-
     init(fileManager: FileManager = .default) {
         let applicationSupportURL = try? fileManager.url(
             for: .applicationSupportDirectory,
