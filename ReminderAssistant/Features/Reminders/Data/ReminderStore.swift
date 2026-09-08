@@ -22,7 +22,7 @@ final actor ReminderStore: ReminderStoreProtocol {
     private var token: NotificationCenter.ObservationToken
     
     static let shared = ReminderStore()
-    static let remindersMayHaveChanged = Notification.Name("remindersMayHaveChanged")
+    private static let remindersMayHaveChanged = Notification.Name("remindersMayHaveChanged")
     
     nonisolated var remindersMayHaveChangedNotification: Notification.Name {
         Self.remindersMayHaveChanged

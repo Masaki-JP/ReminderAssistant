@@ -85,7 +85,7 @@ struct RAReminder: Codable, Identifiable, Hashable {
 nonisolated
 extension DateComponents {
     /// グレゴリオ暦とコンポーネントに指定されたタイムゾーンで期日を解釈する。
-    func resolvedCalendar(fallback: Calendar = .current) -> Calendar {
+    fileprivate func resolvedCalendar(fallback: Calendar = .current) -> Calendar {
         Calendar.gregorianCalendar(timeZone: timeZone ?? fallback.timeZone)
     }
 }

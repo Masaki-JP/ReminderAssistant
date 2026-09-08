@@ -4,7 +4,7 @@ import JapaneseDateConverter
 actor FakeReminderStore: ReminderStoreProtocol {
     struct ScheduledAdditions {
         /// リマインダーを追加する間隔。（fetchDelayより長い時間を指定するのが好ましい）
-        let interval: Duration
+        fileprivate let interval: Duration
         /// 定期的に追加するリマインダー。配列の先頭から順に追加する。
         fileprivate var pendingReminders: [RAReminder]
         

@@ -4,18 +4,18 @@ import Foundation
 /// `date` には「今日」や「3日後」、`time` には「09:30」のような値を指定する。
 /// 日時を指定しない場合は、`.init(date: nil, time: nil)` を使用する。
 nonisolated
-struct DateInput {
+private struct DateInput {
     let date: String?; let time: String?
 }
 
 nonisolated
-let sampleCalendar = Calendar.gregorianCalendar()
+private let sampleCalendar = Calendar.gregorianCalendar()
 
 /// サンプルデータの各入力値を検証して、RAReminderを生成する。
 /// 相対日時の文字列をアプリ内で扱う日時へ変換する。
 /// 不正な入力値や日時の前後関係は、実行時エラーとして検出する。
 nonisolated
-func makeSample(
+private func makeSample(
     calendarItemIdentifier: String,
     list: RAReminderList,
     title: String,

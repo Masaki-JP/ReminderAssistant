@@ -1,7 +1,7 @@
 import WidgetKit
 import SwiftUI
 
-struct Provider: TimelineProvider {
+private struct Provider: TimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
         SimpleEntry(date: .init())
     }
@@ -18,11 +18,11 @@ struct Provider: TimelineProvider {
     }
 }
 
-struct SimpleEntry: TimelineEntry {
+private struct SimpleEntry: TimelineEntry {
     let date: Date
 }
 
-struct RAWidgetEntryView : View {
+private struct RAWidgetEntryView : View {
     var entry: Provider.Entry
     
     var body: some View {

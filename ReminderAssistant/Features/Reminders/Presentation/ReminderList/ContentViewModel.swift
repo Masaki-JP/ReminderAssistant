@@ -150,7 +150,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         reminderOperations.append(.load(operationID: operationID, task: task))
     }
     
-    func cancelLoad() {
+    private func cancelLoad() {
         reminderOperations.removeAll { operation in
             if case .load(_, let loadTask) = operation {
                 loadTask.cancel(); return true
@@ -287,7 +287,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     }
 }
 
-enum ReminderOperation {
+private enum ReminderOperation {
     enum ID {
         case create(UUID)
         case toggleCompletion(RAReminder.ID)
@@ -308,7 +308,7 @@ enum ReminderOperation {
     }
 }
 
-extension Array<ReminderOperation> {
+private extension Array<ReminderOperation> {
     mutating func removeOperation(with id: ReminderOperation.ID) {
         removeAll { operation in
             switch (operation, id) {
