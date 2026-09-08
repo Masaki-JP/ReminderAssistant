@@ -52,10 +52,6 @@ struct CreateReminderSheet: View {
         || deadline.isEmpty
     }
     
-    var isPad: Bool {
-        UIDevice.current.userInterfaceIdiom == .pad
-    }
-    
     let notesTextFiledPlaceholder = """
     - モンステラは粒状肥料
     - ポトスは薄めた液体肥料
@@ -113,8 +109,8 @@ struct CreateReminderSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
             .safeAreaInset(edge: .bottom) {
-                if isPad == false, focus != nil {
-                    customKeyboardToolbar
+                if focus != nil, case .phone = InterfaceIdiom.current {
+                    customPhoneKeyboardToolbar
                         .padding(.horizontal)
                         .padding(.bottom, 8)
                 }
@@ -224,13 +220,14 @@ struct CreateReminderSheet: View {
                 .disabled(isConfirmButtonDisabled)
         }
         
-        if isPad == true {
+        if case .pad(let isPhysicalKeyboardConnected) = InterfaceIdiom.current,
+           isPhysicalKeyboardConnected == false {
             ToolbarItem(placement: .keyboard) { focusPicker }
             ToolbarItem(placement: .keyboard) { dismissKeyboardButton }
         }
     }
     
-    var customKeyboardToolbar: some View {
+    var customPhoneKeyboardToolbar: some View {
         HStack(spacing: nil) {
             focusPicker
             dismissKeyboardButton
