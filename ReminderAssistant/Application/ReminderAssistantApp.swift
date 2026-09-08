@@ -10,5 +10,8 @@ struct ReminderAssistantApp: App {
             RootView()
                 .preferredColorScheme(colorSchemeSetting.colorScheme)
         }
+        .commands {
+            NewReminderCommands()
+        }
     }
 }

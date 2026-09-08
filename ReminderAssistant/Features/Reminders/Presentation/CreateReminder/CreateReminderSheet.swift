@@ -217,6 +217,7 @@ struct CreateReminderSheet: View {
         
         ToolbarItem(placement: .confirmationAction) {
             Button(role: .confirm, action: createReminder)
+                .keyboardShortcut(.return, modifiers: .command)
                 .disabled(isConfirmButtonDisabled)
         }
         

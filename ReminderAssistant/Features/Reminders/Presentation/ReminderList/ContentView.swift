@@ -66,6 +66,15 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
     var isReminderListEmpty: Bool {
         reminderSections.allSatisfy { $0.reminders.isEmpty }
     }
+
+    var newReminderAction: (() -> Void)? {
+        guard isPlaceholder == false,
+              viewModel.editableLists.isEmpty == false,
+              isSettingsViewPresented == false,
+              isCreateReminderSheetPresented == false else { return nil }
+
+        return { isCreateReminderSheetPresented = true }
+    }
     
     var body: some View {
         NavigationStack {
@@ -149,6 +158,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
                 Text("新規リマインダーの作成先を設定画面で選択してください。")
             }
         }
+        .focusedSceneValue(\.newReminderAction, newReminderAction)
     }
     
     var emptyRemindersPlaceholder: some View {
