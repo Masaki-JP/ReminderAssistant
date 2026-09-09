@@ -52,6 +52,13 @@
 			);
 			target = 4C57A4553044F89000DA18DF /* RAWidgetExtension */;
 		};
+		4CA6780A3051385300C89595 /* Exceptions for "ReminderAssistant" folder in "ReminderAssistant" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 4CADDAEF30447DFE003808B3 /* ReminderAssistant */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -65,6 +72,9 @@
 		};
 		4CADDAF230447DFE003808B3 /* ReminderAssistant */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4CA6780A3051385300C89595 /* Exceptions for "ReminderAssistant" folder in "ReminderAssistant" target */,
+			);
 			path = ReminderAssistant;
 			sourceTree = "<group>";
 		};
@@ -456,9 +466,9 @@
 				DEVELOPMENT_TEAM = QJC45QJ28B;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ReminderAssistant/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Reminder Assistant";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "リマインダーを表示・作成・管理するために、リマインダーへのアクセスを許可してください。";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -490,9 +500,9 @@
 				DEVELOPMENT_TEAM = QJC45QJ28B;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ReminderAssistant/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Reminder Assistant";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "リマインダーを表示・作成・管理するために、リマインダーへのアクセスを許可してください。";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
