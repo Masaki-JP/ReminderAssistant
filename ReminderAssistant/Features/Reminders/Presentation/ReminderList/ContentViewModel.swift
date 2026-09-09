@@ -7,7 +7,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     private(set) var defaultListIdentifier: String?
     
     private(set) var error: ContentViewModelError? = nil
-    var errorBindng: Binding<Bool> {
+    var errorBinding: Binding<Bool> {
         .init(
             get: { self.error != nil },
             set: { if $0 == false { self.error = nil } }
@@ -16,6 +16,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     
     private var reminderOperations: [ReminderOperation] = .init()
     private var hasReadInitialCache = false
+    private var shouldReloadAfterCompletionToggleFailure = false
     
     private let reminderStore: ReminderStoreType
     private let reminderStoreCache: ReminderStoreCache?
@@ -72,7 +73,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     ) async throws(CreateReminderError) {
         let operationID = UUID()
         let task = Task { [weak self] () -> Result<Void, CreateReminderError> in
-            defer { self?.reminderOperations.removeOperation(with: .create(operationID)) }
+            defer { self?.finishReminderMutation(with: .create(operationID)) }
             
             do {
                 guard let list = self?.editableLists.first(where: { $0.calendarIdentifier == listIdentifier }) else {
@@ -195,7 +196,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     private func requestCompletionToggle(for reminder: RAReminder) {
         let completion = !reminder.isCompleted
         let task = Task { [weak self] in
-            defer { self?.reminderOperations.removeOperation(with: .toggleCompletion(reminder.id)) }
+            defer { self?.finishReminderMutation(with: .toggleCompletion(reminder.id)) }
             
             try? await Task.sleep(for: .seconds(0.3))
             
@@ -205,7 +206,9 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
                 guard let index = self?.reminderIndex(for: reminder) else { return }
                 self?.reminders[index].setIsCompleted(completion)
             } catch {
-                self?.handleError(error, as: .toggleCompletionFailed)
+                guard let self else { return }
+                guard handleError(error, as: .toggleCompletionFailed) == true else { return }
+                shouldReloadAfterCompletionToggleFailure = true
             }
         }
         
@@ -222,6 +225,28 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
             }
         }
     }
+
+    /// 作成・完了状態更新の終了を記録し、必要であれば再読み込みする。
+    private func finishReminderMutation(with id: ReminderOperation.ID) {
+        reminderOperations.removeOperation(with: id)
+        reloadRemindersAfterCompletionToggleFailureIfNeeded()
+    }
+
+    /// 進行中の作成・完了状態更新がなくなった後、最新状態を再読み込みする。
+    private func reloadRemindersAfterCompletionToggleFailureIfNeeded() {
+        guard shouldReloadAfterCompletionToggleFailure == true else { return }
+
+        let hasPendingMutation = reminderOperations.contains { operation in
+            switch operation {
+            case .create, .toggleCompletion: true
+            case .load: false
+            }
+        }
+        guard hasPendingMutation == false else { return }
+
+        shouldReloadAfterCompletionToggleFailure = false
+        loadReminders()
+    }
     
     // MARK: - Error Handling
     
@@ -230,10 +255,12 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         presentError(.reminderDestinationListUnavailable)
     }
     
-    /// 共通処理で解決したエラーを、画面に表示する。
-    private func handleError(_ error: any Error, as fallbackError: ContentViewModelError) {
-        guard let error = resolveError(error, as: fallbackError) else { return }
+    /// 共通処理で解決したエラーを画面に表示し、表示したかどうかを返す。
+    @discardableResult
+    private func handleError(_ error: any Error, as fallbackError: ContentViewModelError) -> Bool {
+        guard let error = resolveError(error, as: fallbackError) else { return false }
         presentError(error)
+        return true
     }
     
     /// リマインダー作成時のエラーを、作成画面で扱うエラーに解決する。
@@ -257,6 +284,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         as fallbackError: ContentViewModelError
     ) -> ContentViewModelError? {
         if (error as? ReminderStoreError) == .accessNotAuthorized {
+            shouldReloadAfterCompletionToggleFailure = false
             reminderOperations.removeAll { operation in
                 operation.cancel(); return true
             }
@@ -265,10 +293,6 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         
         if error is CancellationError || (error as? ReminderStoreError) == .cancelled {
             return nil
-        }
-        
-        reminderOperations.removeAll { operation in
-            operation.cancel(); return true
         }
         
         return if let contentViewModelError = error as? ContentViewModelError {
@@ -331,6 +355,46 @@ enum ContentViewModelError: Error {
     case loadRemindersFailed
     case toggleCompletionFailed
     case reminderDestinationListUnavailable
+
+    enum RecoveryAction {
+        case dismiss
+        case reload
+    }
+
+    var title: String {
+        switch self {
+        case .createReminderFailed:
+            "作成失敗"
+        case .loadRemindersFailed:
+            "読み込み失敗"
+        case .toggleCompletionFailed:
+            "更新失敗"
+        case .reminderDestinationListUnavailable:
+            "作成先を選択してください"
+        }
+    }
+
+    var message: String {
+        switch self {
+        case .createReminderFailed:
+            "新規リマインダーを作成できませんでした。もう一度お試しください。"
+        case .loadRemindersFailed:
+            "リマインダーを読み込めませんでした。もう一度お試しください。"
+        case .toggleCompletionFailed:
+            "完了状態を更新できませんでした。最新の状態を再読み込みします。"
+        case .reminderDestinationListUnavailable:
+            "新規リマインダーの作成先を設定画面で選択してください。"
+        }
+    }
+
+    var recoveryAction: RecoveryAction {
+        switch self {
+        case .loadRemindersFailed:
+            .reload
+        case .createReminderFailed, .toggleCompletionFailed, .reminderDestinationListUnavailable:
+            .dismiss
+        }
+    }
 }
 
 /// リマインダー作成画面へ通知するエラー。
