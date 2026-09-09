@@ -7,7 +7,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     private(set) var defaultListIdentifier: String?
     
     private(set) var error: ContentViewModelError? = nil
-    var errorBindng: Binding<Bool> {
+    var errorBinding: Binding<Bool> {
         .init(
             get: { self.error != nil },
             set: { if $0 == false { self.error = nil } }
@@ -355,6 +355,46 @@ enum ContentViewModelError: Error {
     case loadRemindersFailed
     case toggleCompletionFailed
     case reminderDestinationListUnavailable
+
+    enum RecoveryAction {
+        case dismiss
+        case reload
+    }
+
+    var title: String {
+        switch self {
+        case .createReminderFailed:
+            "作成失敗"
+        case .loadRemindersFailed:
+            "読み込み失敗"
+        case .toggleCompletionFailed:
+            "更新失敗"
+        case .reminderDestinationListUnavailable:
+            "作成先を選択してください"
+        }
+    }
+
+    var message: String {
+        switch self {
+        case .createReminderFailed:
+            "新規リマインダーを作成できませんでした。もう一度お試しください。"
+        case .loadRemindersFailed:
+            "リマインダーを読み込めませんでした。もう一度お試しください。"
+        case .toggleCompletionFailed:
+            "完了状態を更新できませんでした。最新の状態を再読み込みします。"
+        case .reminderDestinationListUnavailable:
+            "新規リマインダーの作成先を設定画面で選択してください。"
+        }
+    }
+
+    var recoveryAction: RecoveryAction {
+        switch self {
+        case .loadRemindersFailed:
+            .reload
+        case .createReminderFailed, .toggleCompletionFailed, .reminderDestinationListUnavailable:
+            .dismiss
+        }
+    }
 }
 
 /// リマインダー作成画面へ通知するエラー。

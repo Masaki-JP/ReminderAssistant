@@ -144,18 +144,19 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
             selectListIfNeeded(from: lists)
             selectReminderDestinationListIfNeeded(from: lists)
         }
-        .alert("エラー", isPresented: viewModel.errorBindng) {
-            if viewModel.error == .reminderDestinationListUnavailable {
-                Button("OK", role: .cancel) {}
-            } else {
+        .alert(viewModel.error?.title ?? "エラー", isPresented: viewModel.errorBinding) {
+            switch viewModel.error?.recoveryAction {
+            case .reload:
                 Button("再読み込み") {
                     guard isPlaceholder == false else { return }
                     viewModel.loadReminders()
                 }
+            case .dismiss, nil:
+                Button("OK", role: .cancel) {}
             }
         } message: {
-            if viewModel.error == .reminderDestinationListUnavailable {
-                Text("新規リマインダーの作成先を設定画面で選択してください。")
+            if let error = viewModel.error {
+                Text(error.message)
             }
         }
         .focusedSceneValue(\.newReminderAction, newReminderAction)
