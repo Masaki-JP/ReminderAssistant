@@ -8,13 +8,12 @@ struct CreateReminderSheet: View {
     @State var isDismissConfirmationDialogPresented = false
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var colorScheme: ColorScheme
-    @ScaledMetric(relativeTo: .body) var singleLineTextFieldHight = 22.0
     
     @State var creationTask: Task<Void, Never>? = nil
     var isCreating: Bool { creationTask != nil }
     
-    @FocusState var focus: Field?
-    var focusBinding: Binding<Field?> {
+    @FocusState var focus: CreateReminderField?
+    var focusBinding: Binding<CreateReminderField?> {
         .init(get: { focus }, set: { focus = $0 })
     }
     
@@ -52,59 +51,16 @@ struct CreateReminderSheet: View {
         || deadline.isEmpty
     }
     
-    let notesTextFiledPlaceholder = """
-    - モンステラは粒状肥料
-    - ポトスは薄めた液体肥料
-    - サンスベリアは未使用でOK
-    """
-    
-    let labelToContentSpacing: CGFloat = 12
-    let betweenDividerAndContentSpacing: CGFloat = 18
-    let betweenDividerAndTextFieldSpacing: CGFloat = 8
-    
-    var labelTextColor: Color {
-        let grayLevel = colorScheme == .light ? 0.5 : 0.6
-        return Color(red: grayLevel, green: grayLevel, blue: grayLevel)
-    }
-    
-    var borderColor: Color {
-        let grayLevel = colorScheme == .light ? 0.8 : 0.3
-        return .init(red: grayLevel, green: grayLevel, blue: grayLevel)
-    }
-    
-    let borderWidth: CGFloat = 1.0
-    
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: .zero) {
-                    titleSection
-                    
-                    formDivider
-                        .padding(.top, betweenDividerAndTextFieldSpacing)
-                        .padding(.bottom, betweenDividerAndContentSpacing)
-                    
-                    deadlineSection
-                    
-                    formDivider
-                        .padding(.top, betweenDividerAndTextFieldSpacing)
-                        .padding(.bottom, betweenDividerAndContentSpacing)
-                    
-                    prioritySection
-                    
-                    formDivider
-                        .padding(.top, betweenDividerAndContentSpacing)
-                        .padding(.bottom, betweenDividerAndContentSpacing)
-                    
-                    notesSection
-                }
-            }
+            CreateReminderForm(
+                title: $title,
+                deadline: $deadline,
+                priority: $priority,
+                notes: $notes,
+                focus: $focus
+            )
             .disabled(isCreating)
-            .scrollIndicators(.hidden)
-            .background(Color(uiColor: .systemGroupedBackground))
-            .contentMargins(.horizontal, 20)
-            .contentMargins(.top, 18)
-            .contentMargins(.bottom, 12)
             .navigationTitle("新規作成")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
@@ -129,76 +85,6 @@ struct CreateReminderSheet: View {
             focus = .title
         }
         .onDisappear { creationTask?.cancel() }
-    }
-    
-    var titleSection: some View {
-        section(label: "件名", systemImage: "checklist") {
-            TextField("観葉植物に肥料を追加する", text: $title)
-                .frame(height: singleLineTextFieldHight)
-                .focused($focus, equals: .title)
-        }
-    }
-    
-    var deadlineSection: some View {
-        section(label: "期限", systemImage: "clock") {
-            TextField("来月15日の昼", text: $deadline)
-                .frame(height: singleLineTextFieldHight)
-                .focused($focus, equals: .deadline)
-        }
-    }
-    
-    var prioritySection: some View {
-        section(label: "優先度", systemImage: "flag") {
-            HStack(spacing: 8) {
-                ForEach(RAReminder.Priority.allCases) { priority in
-                    priorityButton(priority)
-                }
-            }
-        }
-    }
-    
-    var notesSection: some View {
-        section(label: "備考", systemImage: "text.alignleft") {
-            TextField(
-                "備考",
-                text: $notes,
-                prompt: Text(notesTextFiledPlaceholder),
-                axis: .vertical
-            )
-            .lineLimit(6...30)
-            .focused($focus, equals: .notes)
-            .padding(10)
-            .overlay(borderColor, in: .rect(cornerRadius: 8).stroke(lineWidth: borderWidth))
-        }
-    }
-    
-    func section<Content: View>(label: String, systemImage: String, content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: labelToContentSpacing) {
-            Label(label, systemImage: systemImage)
-                .font(.footnote)
-                .foregroundStyle(labelTextColor)
-            content()
-        }
-    }
-    
-    var formDivider: some View {
-        Rectangle()
-            .fill(borderColor)
-            .frame(height: borderWidth)
-    }
-    
-    func priorityButton(_ priority: RAReminder.Priority) -> some View {
-        Button {
-            self.priority = priority
-        } label: {
-            Text(priority.displayName)
-                .font(.subheadline.weight(.medium))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 7)
-                .foregroundStyle(self.priority == priority ? .white : .primary)
-                .background(self.priority == priority ? .secondary : colorScheme == .light ? .quinary : .quaternary, in: .capsule)
-        }
-        .foregroundStyle(.primary)
     }
     
     @ToolbarContentBuilder
@@ -238,7 +124,7 @@ struct CreateReminderSheet: View {
     
     var focusPicker: some View {
         Picker("フォーカス", selection: focusBinding) {
-            ForEach(Field.allCases) { field in
+            ForEach(CreateReminderField.allCases) { field in
                 Text(field.displayName).tag(field)
             }
         }
@@ -263,20 +149,6 @@ struct CreateReminderSheet: View {
 }
 
 extension CreateReminderSheet {
-    enum Field: CaseIterable, Identifiable {
-        case title, deadline, notes
-        
-        var id: Self { self }
-        
-        var displayName: String {
-            switch self {
-            case .title: "件名"
-            case .deadline: "期限"
-            case .notes: "備考"
-            }
-        }
-    }
-    
     func dismissSheet() {
         if canDismissWithoutConfirmation == true {
             dismiss()
