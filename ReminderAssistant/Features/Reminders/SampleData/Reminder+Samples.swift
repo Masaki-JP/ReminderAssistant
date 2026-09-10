@@ -1,12 +1,12 @@
-nonisolated extension RAReminder {
+nonisolated extension Reminder {
     /*
      期限が設定されたサンプルは、期限が早い順に並んでいます。期限未設定のサンプルは末尾に配置しています。
      隣接する期限どうしは、最低でも21分空けています。
      */
-    static let samples: [RAReminder] = [
-        RAReminder.sample(
+    static let samples: [Reminder] = [
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000001",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "家計簿をつける",
             dueDate: .init(date: "昨日", time: "7:38"),
             priority: .medium,
@@ -16,9 +16,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "2日前", time: "12:12"),
             completionDate: .init(date: "2日前", time: "12:12")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000002",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "財布の中身を確認する",
             dueDate: .init(date: "昨日", time: "8:00"),
             priority: .none,
@@ -28,9 +28,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "2日前", time: "12:12"),
             completionDate: .init(date: "2日前", time: "12:12")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000003",
-            list: RAReminderList.Sample.work,
+            list: ReminderList.Sample.work,
             title: "GitHubの通知を確認する",
             dueDate: .init(date: "昨日", time: "8:21"),
             priority: .high,
@@ -40,9 +40,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "12:42"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000004",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "明日の服を準備する",
             dueDate: .init(date: "昨日", time: "8:50"),
             priority: .medium,
@@ -52,9 +52,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "12:42"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000005",
-            list: RAReminderList.Sample.work,
+            list: ReminderList.Sample.work,
             title: "コードをリファクタリングする",
             dueDate: .init(date: "昨日", time: "9:11"),
             priority: .high,
@@ -64,9 +64,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:07"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000006",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "寝る前にアラームを設定する",
             dueDate: .init(date: "昨日", time: "9:49"),
             priority: .high,
@@ -76,9 +76,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:07"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000007",
-            list: RAReminderList.Sample.other,
+            list: ReminderList.Sample.other,
             title: "不要なファイルを削除する",
             dueDate: .init(date: "昨日", time: "10:22"),
             priority: .none,
@@ -88,9 +88,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:37"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000008",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "明日の予定を整理する",
             dueDate: .init(date: "昨日", time: "11:02"),
             priority: .low,
@@ -100,9 +100,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:37"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000009",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "写真を整理する",
             dueDate: .init(date: "昨日", time: "11:23"),
             priority: .medium,
@@ -112,9 +112,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "14:02"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000010",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "カレンダーを確認する",
             dueDate: .init(date: "昨日", time: "12:06"),
             priority: .none,
@@ -124,9 +124,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "14:02"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000011",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "エアコンのフィルターを掃除する",
             dueDate: .init(date: "昨日", time: "12:42"),
             priority: .medium,
@@ -136,9 +136,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "2日前", time: "14:32"),
             completionDate: .init(date: "2日前", time: "14:32")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000012",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "メモを整理する",
             dueDate: .init(date: "昨日", time: "13:24"),
             priority: .high,
@@ -148,9 +148,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:27"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000013",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "自転車の空気を入れる",
             dueDate: .init(date: "昨日", time: "14:04"),
             priority: .medium,
@@ -160,9 +160,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:27"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000014",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "お風呂を掃除する",
             dueDate: .init(date: "昨日", time: "14:32"),
             priority: .none,
@@ -172,9 +172,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:57"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000015",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "服をたたむ",
             dueDate: .init(date: "昨日", time: "15:10"),
             priority: .low,
@@ -184,9 +184,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "13:22"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000016",
-            list: RAReminderList.Sample.work,
+            list: ReminderList.Sample.work,
             title: "テストコードを書く",
             dueDate: .init(date: "昨日", time: "15:55"),
             priority: .low,
@@ -196,9 +196,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "2日前", time: "13:52"),
             completionDate: .init(date: "2日前", time: "13:52")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000017",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "車を洗う",
             dueDate: .init(date: "昨日", time: "16:22"),
             priority: .low,
@@ -208,9 +208,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "2日前", time: "13:52"),
             completionDate: .init(date: "2日前", time: "13:52")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000018",
-            list: RAReminderList.Sample.work,
+            list: ReminderList.Sample.work,
             title: "プルリクエストを確認する",
             dueDate: .init(date: "昨日", time: "16:52"),
             priority: .none,
@@ -220,9 +220,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "14:17"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000019",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "車にガソリンを入れる",
             dueDate: .init(date: "昨日", time: "17:33"),
             priority: .none,
@@ -232,9 +232,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "14:17"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000020",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "買い物リストを作る",
             dueDate: .init(date: "昨日", time: "17:57"),
             priority: .none,
@@ -244,9 +244,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "14:47"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000021",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "ふるさと納税の書類を整理する",
             dueDate: .init(date: "今日", time: "7:51"),
             priority: .low,
@@ -256,9 +256,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:09"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000022",
-            list: RAReminderList.Sample.hobby,
+            list: ReminderList.Sample.hobby,
             title: "ストレッチをする",
             dueDate: .init(date: "今日", time: "8:29"),
             priority: .high,
@@ -268,9 +268,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "3日前", time: "13:04"),
             completionDate: .init(date: "3日前", time: "13:04")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000023",
-            list: RAReminderList.Sample.other,
+            list: ReminderList.Sample.other,
             title: "ケーブルを整理する",
             dueDate: .init(date: "今日", time: "8:52"),
             priority: .low,
@@ -280,9 +280,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:09"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000024",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "健康診断を予約する",
             dueDate: .init(date: "今日", time: "9:19"),
             priority: .low,
@@ -292,9 +292,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "14:14"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000025",
-            list: RAReminderList.Sample.other,
+            list: ReminderList.Sample.other,
             title: "スマホの写真をバックアップする",
             dueDate: .init(date: "今日", time: "10:04"),
             priority: .none,
@@ -304,9 +304,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:19"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000026",
-            list: RAReminderList.Sample.hobby,
+            list: ReminderList.Sample.hobby,
             title: "小説を読む",
             dueDate: .init(date: "今日", time: "10:29"),
             priority: .none,
@@ -316,9 +316,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "14:14"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000027",
-            list: RAReminderList.Sample.other,
+            list: ReminderList.Sample.other,
             title: "充電器を持ち出す",
             dueDate: .init(date: "今日", time: "11:05"),
             priority: .low,
@@ -328,9 +328,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:19"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000028",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "眼鏡を調整する",
             dueDate: .init(date: "今日", time: "11:34"),
             priority: .none,
@@ -340,9 +340,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "3日前", time: "12:24"),
             completionDate: .init(date: "3日前", time: "12:24")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000029",
-            list: RAReminderList.Sample.hobby,
+            list: ReminderList.Sample.hobby,
             title: "筋トレをする",
             dueDate: .init(date: "今日", time: "11:56"),
             priority: .low,
@@ -352,9 +352,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "14:29"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000030",
-            list: RAReminderList.Sample.hobby,
+            list: ReminderList.Sample.hobby,
             title: "Swiftを勉強する",
             dueDate: .init(date: "今日", time: "12:30"),
             priority: .none,
@@ -364,9 +364,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "3日前", time: "12:24"),
             completionDate: .init(date: "3日前", time: "12:24")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000031",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "クレジットカードの明細を確認する",
             dueDate: .init(date: "今日", time: "13:05"),
             priority: .high,
@@ -376,9 +376,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "13:34"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000032",
-            list: RAReminderList.Sample.hobby,
+            list: ReminderList.Sample.hobby,
             title: "近所を散歩する",
             dueDate: .init(date: "今日", time: "13:28"),
             priority: .none,
@@ -388,9 +388,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:39"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000033",
-            list: RAReminderList.Sample.work,
+            list: ReminderList.Sample.work,
             title: "マウスを掃除する",
             dueDate: .init(date: "今日", time: "14:11"),
             priority: .high,
@@ -400,9 +400,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "13:34"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000034",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "美容院を予約する",
             dueDate: .init(date: "今日", time: "14:42"),
             priority: .high,
@@ -412,9 +412,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:49"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000035",
-            list: RAReminderList.Sample.other,
+            list: ReminderList.Sample.other,
             title: "パスワードを更新する",
             dueDate: .init(date: "今日", time: "15:27"),
             priority: .none,
@@ -424,9 +424,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "3日前", time: "14:44"),
             completionDate: .init(date: "3日前", time: "14:44")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000036",
-            list: RAReminderList.Sample.hobby,
+            list: ReminderList.Sample.hobby,
             title: "英単語を覚える",
             dueDate: .init(date: "今日", time: "16:03"),
             priority: .low,
@@ -436,9 +436,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:49"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000037",
-            list: RAReminderList.Sample.work,
+            list: ReminderList.Sample.work,
             title: "モニターを拭く",
             dueDate: .init(date: "今日", time: "16:48"),
             priority: .low,
@@ -448,9 +448,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "3日前", time: "14:44"),
             completionDate: .init(date: "3日前", time: "14:44")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000038",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "レンタル品を返却する",
             dueDate: .init(date: "今日", time: "17:25"),
             priority: .none,
@@ -460,9 +460,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "14:59"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000039",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "Wi-Fiルーターを再起動する",
             dueDate: .init(date: "今日", time: "18:06"),
             priority: .medium,
@@ -472,9 +472,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "12:54"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000040",
-            list: RAReminderList.Sample.work,
+            list: ReminderList.Sample.work,
             title: "デスク周りを片付ける",
             dueDate: .init(date: "今日", time: "18:41"),
             priority: .low,
@@ -484,9 +484,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "14:59"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000041",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "作り置きを準備する",
             dueDate: .init(date: "明日", time: "8:07"),
             priority: .medium,
@@ -496,9 +496,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "4日前", time: "13:16"),
             completionDate: .init(date: "4日前", time: "13:16")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000042",
-            list: RAReminderList.Sample.work,
+            list: ReminderList.Sample.work,
             title: "次回の会議日程を調整する",
             dueDate: .init(date: "明日", time: "8:32"),
             priority: .none,
@@ -508,9 +508,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:21"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000043",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "粗大ゴミを申し込む",
             dueDate: .init(date: "明日", time: "9:00"),
             priority: .medium,
@@ -520,9 +520,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "14:26"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000044",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "ペットボトルを分別する",
             dueDate: .init(date: "明日", time: "9:24"),
             priority: .medium,
@@ -532,9 +532,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:01"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000045",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "タオルを交換する",
             dueDate: .init(date: "明日", time: "9:53"),
             priority: .medium,
@@ -544,9 +544,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "12:06"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000046",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "クローゼットを整理する",
             dueDate: .init(date: "明日", time: "10:19"),
             priority: .high,
@@ -556,9 +556,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "4日前", time: "14:56"),
             completionDate: .init(date: "4日前", time: "14:56")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000047",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "玄関の鍵を確認する",
             dueDate: .init(date: "明日", time: "10:52"),
             priority: .high,
@@ -568,9 +568,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "14:41"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000048",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "履歴書を見直す",
             dueDate: .init(date: "明日", time: "11:28"),
             priority: .none,
@@ -580,9 +580,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "13:46"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000049",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "トイレットペーパーを買う",
             dueDate: .init(date: "明日", time: "12:08"),
             priority: .low,
@@ -592,9 +592,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:51"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000050",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "本棚を整理する",
             dueDate: .init(date: "明日", time: "12:35"),
             priority: .none,
@@ -604,9 +604,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:21"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000051",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "コーヒー豆を買う",
             dueDate: .init(date: "明日", time: "13:19"),
             priority: .high,
@@ -616,9 +616,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "14:26"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000052",
-            list: RAReminderList.Sample.work,
+            list: ReminderList.Sample.work,
             title: "経費を精算する",
             dueDate: .init(date: "明日", time: "13:59"),
             priority: .medium,
@@ -628,9 +628,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:31"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000053",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "ベランダを掃除する",
             dueDate: .init(date: "明日", time: "14:26"),
             priority: .low,
@@ -640,9 +640,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "12:06"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000054",
-            list: RAReminderList.Sample.work,
+            list: ReminderList.Sample.work,
             title: "ポートフォリオを更新する",
             dueDate: .init(date: "明日", time: "14:49"),
             priority: .medium,
@@ -652,9 +652,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "14:11"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000055",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "洗面台を掃除する",
             dueDate: .init(date: "明日", time: "15:29"),
             priority: .low,
@@ -664,9 +664,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "4日前", time: "13:16"),
             completionDate: .init(date: "4日前", time: "13:16")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000056",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "お弁当のおかずを作る",
             dueDate: .init(date: "明日", time: "16:10"),
             priority: .high,
@@ -676,9 +676,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:51"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000057",
-            list: RAReminderList.Sample.work,
+            list: ReminderList.Sample.work,
             title: "議事録を共有する",
             dueDate: .init(date: "明日", time: "16:38"),
             priority: .none,
@@ -688,9 +688,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "4日前", time: "14:56"),
             completionDate: .init(date: "4日前", time: "14:56")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000058",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "靴箱を掃除する",
             dueDate: .init(date: "明日", time: "17:21"),
             priority: .high,
@@ -700,9 +700,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:31"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000059",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "段ボールをまとめる",
             dueDate: .init(date: "明日", time: "17:50"),
             priority: .medium,
@@ -712,9 +712,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "4日前", time: "12:36"),
             completionDate: .init(date: "4日前", time: "12:36")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000060",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "キッチンの排水口を掃除する",
             dueDate: .init(date: "明日", time: "18:17"),
             priority: .high,
@@ -724,9 +724,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "14:41"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000061",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "家族に電話する",
             dueDate: .init(date: "2日後", time: "8:19"),
             priority: .low,
@@ -736,9 +736,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:03"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000062",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "洗剤を補充する",
             dueDate: .init(date: "2日後", time: "8:59"),
             priority: .medium,
@@ -748,9 +748,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:03"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000063",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "クリーニングを受け取る",
             dueDate: .init(date: "2日後", time: "9:28"),
             priority: .none,
@@ -760,9 +760,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "12:18"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000064",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "日記を書く",
             dueDate: .init(date: "2日後", time: "10:12"),
             priority: .medium,
@@ -772,9 +772,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:33"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000065",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "定期券を更新する",
             dueDate: .init(date: "2日後", time: "10:44"),
             priority: .none,
@@ -784,9 +784,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:33"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000066",
-            list: RAReminderList.Sample.hobby,
+            list: ReminderList.Sample.hobby,
             title: "映画のチケットを予約する",
             dueDate: .init(date: "2日後", time: "11:12"),
             priority: .low,
@@ -796,9 +796,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "5日前", time: "12:48"),
             completionDate: .init(date: "5日前", time: "12:48")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000067",
-            list: RAReminderList.Sample.other,
+            list: ReminderList.Sample.other,
             title: "スマホを充電する",
             dueDate: .init(date: "2日後", time: "11:38"),
             priority: .none,
@@ -808,9 +808,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "5日前", time: "12:48"),
             completionDate: .init(date: "5日前", time: "12:48")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000068",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "旅行の宿を予約する",
             dueDate: .init(date: "3日後", time: "7:56"),
             priority: .high,
@@ -820,9 +820,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:13"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000069",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "役所の手続きを確認する",
             dueDate: .init(date: "3日後", time: "8:21"),
             priority: .low,
@@ -832,9 +832,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:13"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000070",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "友人に連絡する",
             dueDate: .init(date: "3日後", time: "8:48"),
             priority: .low,
@@ -844,9 +844,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "5日前", time: "13:28"),
             completionDate: .init(date: "5日前", time: "13:28")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000071",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "電池を買う",
             dueDate: .init(date: "3日後", time: "9:16"),
             priority: .medium,
@@ -856,9 +856,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "5日前", time: "13:28"),
             completionDate: .init(date: "5日前", time: "13:28")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000072",
-            list: RAReminderList.Sample.hobby,
+            list: ReminderList.Sample.hobby,
             title: "語学アプリで学習する",
             dueDate: .init(date: "3日後", time: "9:46"),
             priority: .none,
@@ -868,9 +868,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:43"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000073",
-            list: RAReminderList.Sample.hobby,
+            list: ReminderList.Sample.hobby,
             title: "ヨガをする",
             dueDate: .init(date: "3日後", time: "10:30"),
             priority: .medium,
@@ -880,9 +880,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "13:58"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000074",
-            list: RAReminderList.Sample.other,
+            list: ReminderList.Sample.other,
             title: "アプリをアップデートする",
             dueDate: .init(date: "3日後", time: "11:02"),
             priority: .low,
@@ -892,9 +892,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "13:58"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000075",
-            list: RAReminderList.Sample.hobby,
+            list: ReminderList.Sample.hobby,
             title: "読書メモをまとめる",
             dueDate: .init(date: "4日後", time: "8:12"),
             priority: .low,
@@ -904,9 +904,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "5日前", time: "14:08"),
             completionDate: .init(date: "5日前", time: "14:08")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000076",
-            list: RAReminderList.Sample.hobby,
+            list: ReminderList.Sample.hobby,
             title: "ランニングシューズを洗う",
             dueDate: .init(date: "4日後", time: "8:54"),
             priority: .high,
@@ -916,9 +916,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "14:23"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000077",
-            list: RAReminderList.Sample.other,
+            list: ReminderList.Sample.other,
             title: "パソコンをバックアップする",
             dueDate: .init(date: "4日後", time: "9:28"),
             priority: .medium,
@@ -928,9 +928,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "14:23"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000078",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "誕生日プレゼントを選ぶ",
             dueDate: .init(date: "4日後", time: "9:54"),
             priority: .low,
@@ -940,9 +940,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "14:38"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000079",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "シーツを洗う",
             dueDate: .init(date: "4日後", time: "10:29"),
             priority: .medium,
@@ -952,9 +952,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "14:38"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000080",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "宅配便を受け取る",
             dueDate: .init(date: "4日後", time: "10:50"),
             priority: .none,
@@ -964,9 +964,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "14:53"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000081",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "牛乳を買う",
             dueDate: .init(date: nil, time: nil),
             priority: .medium,
@@ -976,9 +976,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "1日前", time: "12:00"),
             completionDate: .init(date: "1日前", time: "12:00")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000082",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "卵を買う",
             dueDate: .init(date: nil, time: nil),
             priority: .none,
@@ -988,9 +988,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "14:35"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000083",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "燃えるゴミを出す",
             dueDate: .init(date: nil, time: nil),
             priority: .none,
@@ -1000,9 +1000,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "13:10"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000084",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "洗濯物を干す",
             dueDate: .init(date: nil, time: nil),
             priority: .high,
@@ -1012,9 +1012,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:45"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000085",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "リビングを掃除する",
             dueDate: .init(date: nil, time: nil),
             priority: .none,
@@ -1024,9 +1024,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "1日前", time: "14:20"),
             completionDate: .init(date: "1日前", time: "14:20")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000086",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "メールに返信する",
             dueDate: .init(date: nil, time: nil),
             priority: .medium,
@@ -1036,9 +1036,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:55"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000087",
-            list: RAReminderList.Sample.work,
+            list: ReminderList.Sample.work,
             title: "会議資料を確認する",
             dueDate: .init(date: nil, time: nil),
             priority: .low,
@@ -1048,9 +1048,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "12:30"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000088",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "銀行に行く",
             dueDate: .init(date: nil, time: nil),
             priority: .medium,
@@ -1060,9 +1060,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "14:05"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000089",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "郵便物を出す",
             dueDate: .init(date: nil, time: nil),
             priority: .none,
@@ -1072,9 +1072,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "1日前", time: "13:40"),
             completionDate: .init(date: "1日前", time: "13:40")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000090",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "図書館に本を返す",
             dueDate: .init(date: nil, time: nil),
             priority: .low,
@@ -1084,9 +1084,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:15"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000091",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "歯医者を予約する",
             dueDate: .init(date: nil, time: nil),
             priority: .low,
@@ -1096,9 +1096,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "14:50"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000092",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "薬を受け取る",
             dueDate: .init(date: nil, time: nil),
             priority: .none,
@@ -1108,9 +1108,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:25"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000093",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "水道料金を支払う",
             dueDate: .init(date: nil, time: nil),
             priority: .high,
@@ -1120,9 +1120,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "1日前", time: "12:00"),
             completionDate: .init(date: "1日前", time: "12:00")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000094",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "電気料金を確認する",
             dueDate: .init(date: nil, time: nil),
             priority: .high,
@@ -1132,9 +1132,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "14:35"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000095",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "保険証を更新する",
             dueDate: .init(date: nil, time: nil),
             priority: .low,
@@ -1144,9 +1144,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "13:10"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000096",
-            list: RAReminderList.Sample.personalTasks,
+            list: ReminderList.Sample.personalTasks,
             title: "靴を磨く",
             dueDate: .init(date: nil, time: nil),
             priority: .low,
@@ -1156,9 +1156,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "12:45"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000097",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "観葉植物に水をあげる",
             dueDate: .init(date: nil, time: nil),
             priority: .high,
@@ -1168,9 +1168,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "1日前", time: "14:20"),
             completionDate: .init(date: "1日前", time: "14:20")
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000098",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "冷蔵庫を整理する",
             dueDate: .init(date: nil, time: nil),
             priority: .high,
@@ -1180,9 +1180,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "昨日", time: "13:55"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000099",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "夕食の準備をする",
             dueDate: .init(date: nil, time: nil),
             priority: .high,
@@ -1192,9 +1192,9 @@ nonisolated extension RAReminder {
             lastModifiedDate: .init(date: "今日", time: "12:30"),
             completionDate: nil
         ),
-        RAReminder.sample(
+        Reminder.sample(
             calendarItemIdentifier: "00000000-0000-0000-0000-000000000100",
-            list: RAReminderList.Sample.household,
+            list: ReminderList.Sample.household,
             title: "朝食用のパンを買う",
             dueDate: .init(date: nil, time: nil),
             priority: .low,

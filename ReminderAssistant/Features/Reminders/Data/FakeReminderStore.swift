@@ -6,7 +6,7 @@ actor FakeReminderStore: ReminderStoreProtocol {
         /// リマインダーを追加する間隔。（fetchDelayより長い時間を指定するのが好ましい）
         fileprivate let interval: Duration
         /// 定期的に追加するリマインダー。配列の先頭から順に追加する。
-        fileprivate var pendingReminders: [RAReminder]
+        fileprivate var pendingReminders: [Reminder]
         
         /// 定期的なリマインダー追加の設定を生成する。
         /// - Parameters:
@@ -14,7 +14,7 @@ actor FakeReminderStore: ReminderStoreProtocol {
         ///   - reminders: 定期的に追加するリマインダー。配列の先頭から順に追加する。
         init(
             interval: Duration = .seconds(1.5),
-            reminders: [RAReminder],
+            reminders: [Reminder],
         ) {
             self.interval = interval
             pendingReminders = reminders
@@ -26,9 +26,9 @@ actor FakeReminderStore: ReminderStoreProtocol {
     }
     
     /// 現在ストアが保持しているリマインダー。
-    private var reminders: [RAReminder]
+    private var reminders: [Reminder]
     /// リマインダーを作成できる編集可能なリスト。
-    private let editableLists: [RAReminderList]
+    private let editableLists: [ReminderList]
     /// 新規リマインダーの作成先として扱うデフォルトリストのID。
     private let defaultListIdentifier: String?
     
@@ -53,14 +53,14 @@ actor FakeReminderStore: ReminderStoreProtocol {
     ///   - oneTimeFailureOperation: 一度だけ失敗させる操作。nilの場合は意図的なエラーを発生させない。
     ///   - scheduledAdditions: 定期的なリマインダー追加の設定。nilの場合は定期追加を行わない。
     init(
-        reminders: [RAReminder] = .init(RAReminder.samples[0...29]),
-        editableLists: [RAReminderList]? = nil,
+        reminders: [Reminder] = .init(Reminder.samples[0...29]),
+        editableLists: [ReminderList]? = nil,
         defaultListIdentifier: String? = nil,
         fetchDelay: Duration = .seconds(0.75),
         oneTimeFailureOperation: FailureOperation? = nil,
         scheduledAdditions: ScheduledAdditions? = nil
     ) {
-        let lists: [RAReminderList] = {
+        let lists: [ReminderList] = {
             if let editableLists {
                 return editableLists
             } else {
@@ -111,7 +111,7 @@ actor FakeReminderStore: ReminderStoreProtocol {
             guard let dueDate else { throw ReminderStoreError.deadlineConversionFailed }
             
             let now = Date.now
-            let reminder = RAReminder(
+            let reminder = Reminder(
                 calendarItemIdentifier: UUID().uuidString,
                 list: request.list,
                 title: request.title,
@@ -140,7 +140,7 @@ actor FakeReminderStore: ReminderStoreProtocol {
             try checkCancel()
             let reminder = reminders[index]
             let now = Date.now
-            reminders[index] = RAReminder(
+            reminders[index] = Reminder(
                 calendarItemIdentifier: reminder.calendarItemIdentifier,
                 list: reminder.list,
                 title: reminder.title,

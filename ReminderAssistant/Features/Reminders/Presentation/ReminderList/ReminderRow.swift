@@ -2,12 +2,12 @@ import Foundation
 import SwiftUI
 
 struct ReminderRow: View {
-    let reminder: RAReminder
+    let reminder: Reminder
     let toggleCompletionAction: () -> Void
     
     @Environment(\.scenePhase) var scenePhase: ScenePhase
     
-    init(reminder: RAReminder, onToggleCompletion: @escaping () -> Void) {
+    init(reminder: Reminder, onToggleCompletion: @escaping () -> Void) {
         self.reminder = reminder
         self.toggleCompletionAction = onToggleCompletion
     }
@@ -129,7 +129,7 @@ extension ReminderRow {
         .preferredColorScheme(.dark)
 }
 
-private func previewContent(reminders: Binding<[RAReminder]>) -> some View {
+private func previewContent(reminders: Binding<[Reminder]>) -> some View {
     VStack(spacing: 24) {
         ForEach(reminders.wrappedValue.indices, id: \.self) { i in
             ReminderRow(
@@ -145,7 +145,7 @@ private func previewContent(reminders: Binding<[RAReminder]>) -> some View {
     .border(.gray.opacity(0.1))
 }
 
-private let previewList = RAReminderList(
+private let previewList = ReminderList(
     calendarIdentifier: "preview-reminder-list",
     title: "プレビュー用リスト"
 )
@@ -168,7 +168,7 @@ private func previewDateComponents(
     return components
 }
 
-private var sampleReminders: [RAReminder] = [
+private var sampleReminders: [Reminder] = [
     .init(
         calendarItemIdentifier: "preview-reminder-1",
         list: previewList,

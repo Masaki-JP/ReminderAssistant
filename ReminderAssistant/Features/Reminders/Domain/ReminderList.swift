@@ -1,7 +1,7 @@
 import Foundation
 
 nonisolated
-struct RAReminderList: Codable, Identifiable, Hashable {
+struct ReminderList: Codable, Identifiable, Hashable {
     let calendarIdentifier: String
     let title: String
     

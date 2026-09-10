@@ -1,11 +1,11 @@
-nonisolated extension RAReminder {
-    static func placeholders(for list: RAReminderList) -> [RAReminder] {
+nonisolated extension Reminder {
+    static func placeholders(for list: ReminderList) -> [Reminder] {
         let dueDate1 = DateInput(date: "50日前", time: "9:00")
         let dueDate2 = DateInput(date: "50日後", time: "9:00")
         let creationDate = DateInput(date: "100日前", time: "9:00")
         
         return [
-            RAReminder.sample(
+            Reminder.sample(
                 calendarItemIdentifier: "00000000-0000-0000-0000-000000000001",
                 list: list,
                 title: "xxxxxxxxxxx",
@@ -14,7 +14,7 @@ nonisolated extension RAReminder {
                 creationDate: creationDate,
                 lastModifiedDate: creationDate,
             ),
-            RAReminder.sample(
+            Reminder.sample(
                 calendarItemIdentifier: "00000000-0000-0000-0000-000000000002",
                 list: list,
                 title: "xxxxxxxxxxxxxx",
@@ -23,7 +23,7 @@ nonisolated extension RAReminder {
                 creationDate: creationDate,
                 lastModifiedDate: creationDate,
             ),
-            RAReminder.sample(
+            Reminder.sample(
                 calendarItemIdentifier: "00000000-0000-0000-0000-000000000003",
                 list: list,
                 title: "xxxxxxxxxxxxxxxxxxx",
@@ -32,7 +32,7 @@ nonisolated extension RAReminder {
                 creationDate: creationDate,
                 lastModifiedDate: creationDate,
             ),
-            RAReminder.sample(
+            Reminder.sample(
                 calendarItemIdentifier: "00000000-0000-0000-0000-000000000004",
                 list: list,
                 title: "xxxxxxxxxxxxxxx",
@@ -41,7 +41,7 @@ nonisolated extension RAReminder {
                 creationDate: creationDate,
                 lastModifiedDate: creationDate,
             ),
-            RAReminder.sample(
+            Reminder.sample(
                 calendarItemIdentifier: "00000000-0000-0000-0000-000000000005",
                 list: list,
                 title: "xxxxxxxxxxxxxxxxxx",
@@ -50,7 +50,7 @@ nonisolated extension RAReminder {
                 creationDate: creationDate,
                 lastModifiedDate: creationDate,
             ),
-            RAReminder.sample(
+            Reminder.sample(
                 calendarItemIdentifier: "00000000-0000-0000-0000-000000000006",
                 list: list,
                 title: "xxxxxxxxxxxxxxxxxx",
@@ -59,7 +59,7 @@ nonisolated extension RAReminder {
                 creationDate: creationDate,
                 lastModifiedDate: creationDate,
             ),
-            RAReminder.sample(
+            Reminder.sample(
                 calendarItemIdentifier: "00000000-0000-0000-0000-000000000007",
                 list: list,
                 title: "xxxxxxxxxxxxxxxxxx",
@@ -68,7 +68,7 @@ nonisolated extension RAReminder {
                 creationDate: creationDate,
                 lastModifiedDate: creationDate,
             ),
-            RAReminder.sample(
+            Reminder.sample(
                 calendarItemIdentifier: "00000000-0000-0000-0000-000000000008",
                 list: list,
                 title: "xxxxxxxxxxxxxxxx",
@@ -77,7 +77,7 @@ nonisolated extension RAReminder {
                 creationDate: creationDate,
                 lastModifiedDate: creationDate,
             ),
-            RAReminder.sample(
+            Reminder.sample(
                 calendarItemIdentifier: "00000000-0000-0000-0000-000000000009",
                 list: list,
                 title: "xxxxxxxxxx",
@@ -86,7 +86,7 @@ nonisolated extension RAReminder {
                 creationDate: creationDate,
                 lastModifiedDate: creationDate,
             ),
-            RAReminder.sample(
+            Reminder.sample(
                 calendarItemIdentifier: "00000000-0000-0000-0000-000000000010",
                 list: list,
                 title: "xxxxxxxxxxxxxx",

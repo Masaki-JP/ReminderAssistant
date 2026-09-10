@@ -1,13 +1,13 @@
 import SwiftUI
 
 struct ReminderSectionBuilder {
-    private let reminders: [RAReminder]
+    private let reminders: [Reminder]
     private let sortOrder: ReminderSortOrder
     private let calendar: Calendar
     private let now: Date
     
     init(
-        reminders: [RAReminder],
+        reminders: [Reminder],
         sortOrder: ReminderSortOrder,
         calendar: Calendar = .current,
         now: Date = .now
@@ -75,11 +75,11 @@ struct ReminderSectionBuilder {
         ]
     }
     
-    private func reminders(with priority: RAReminder.Priority) -> [RAReminder] {
+    private func reminders(with priority: Reminder.Priority) -> [Reminder] {
         reminders.filter { $0.priority == priority }
     }
     
-    private func dateSections(for keyPath: KeyPath<RAReminder, Date?>) -> [ReminderListSection] {
+    private func dateSections(for keyPath: KeyPath<Reminder, Date?>) -> [ReminderListSection] {
         let todayReminders = reminders.filter { reminder in
             reminder[keyPath: keyPath].map { calendar.isDate($0, inSameDayAs: now) } ?? false
         }

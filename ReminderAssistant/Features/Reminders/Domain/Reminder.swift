@@ -1,10 +1,10 @@
 import Foundation
 
 nonisolated
-struct RAReminder: Codable, Identifiable, Hashable {
+struct Reminder: Codable, Identifiable, Hashable {
     /// ``id``と同じ値。
     let calendarItemIdentifier: String
-    let list: RAReminderList
+    let list: ReminderList
     let title: String
     let dueDateComponents: DateComponents?
     let priority: Self.Priority
@@ -20,7 +20,7 @@ struct RAReminder: Codable, Identifiable, Hashable {
 
     init(
         calendarItemIdentifier: String,
-        list: RAReminderList,
+        list: ReminderList,
         title: String,
         dueDateComponents: DateComponents? = nil,
         priority: Self.Priority = .none,
@@ -91,7 +91,7 @@ extension DateComponents {
 }
 
 nonisolated
-extension RAReminder {
+extension Reminder {
     enum DueDateStatus {
         case noDueDate
         case overdue

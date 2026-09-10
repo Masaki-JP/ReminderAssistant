@@ -40,11 +40,11 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
         }
     }
     
-    var selectedList: RAReminderList? {
+    var selectedList: ReminderList? {
         viewModel.editableLists.first { $0.id == selectedListID }
     }
     
-    var displayedReminders: [RAReminder] {
+    var displayedReminders: [Reminder] {
         sortOrder.sorted(
             viewModel.reminders.filter { reminder in
                 let matchesSearchAndFilter =
@@ -78,7 +78,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
     
     var body: some View {
         NavigationStack {
-            ReminderList(
+            ReminderListView(
                 sections: reminderSections,
                 onToggleCompletion: { reminder in
                     guard isPlaceholder == false else { return }
@@ -191,7 +191,7 @@ extension ContentView {
     func createReminder(
         _ title: String,
         _ deadline: String,
-        _ priority: RAReminder.Priority,
+        _ priority: Reminder.Priority,
         _ notes: String
     ) async throws(CreateReminderError) {
         guard isPlaceholder == false else { throw .cancelled }
@@ -207,7 +207,7 @@ extension ContentView {
 
     /// 表示対象のリスト（``selectedListID``）が未設定、または現在の編集可能なリストに存在しない場合、表示対象のリストにデフォルトリスト、または「すべて（`nil`）」を設定する。
     ///
-    func selectListIfNeeded(from lists: [RAReminderList]) {
+    func selectListIfNeeded(from lists: [ReminderList]) {
         guard isPlaceholder == false else { return }
         
         guard selectedListID.map({ selectedListID in
@@ -223,7 +223,7 @@ extension ContentView {
     
     /// 初回はリマインダーの作成先のリスト（``reminderDestinationListID``）をデフォルトリスト、または先頭のリストに設定する。設定済みのリマインダー作成先が無効な場合はエラーを通知する。
     ///
-    func selectReminderDestinationListIfNeeded(from lists: [RAReminderList]) {
+    func selectReminderDestinationListIfNeeded(from lists: [ReminderList]) {
         guard isPlaceholder == false else { return }
         
         if hasInitializedReminderDestinationList == false {

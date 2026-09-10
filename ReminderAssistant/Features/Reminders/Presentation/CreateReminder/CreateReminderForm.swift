@@ -4,7 +4,7 @@ struct CreateReminderForm: View {
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     @Binding var title: String
     @Binding var deadline: String
-    @Binding var priority: RAReminder.Priority
+    @Binding var priority: Reminder.Priority
     @Binding var notes: String
     var focus: FocusState<CreateReminderField?>.Binding
     
@@ -81,7 +81,7 @@ struct CreateReminderForm: View {
     var prioritySection: some View {
         section(label: "優先度", systemImage: "flag") {
             HStack(spacing: 8) {
-                ForEach(RAReminder.Priority.allCases) { priority in
+                ForEach(Reminder.Priority.allCases) { priority in
                     priorityButton(priority)
                 }
             }
@@ -118,7 +118,7 @@ struct CreateReminderForm: View {
             .frame(height: borderWidth)
     }
     
-    func priorityButton(_ priority: RAReminder.Priority) -> some View {
+    func priorityButton(_ priority: Reminder.Priority) -> some View {
         Button {
             self.priority = priority
         } label: {
@@ -150,7 +150,7 @@ nonisolated enum CreateReminderField: CaseIterable, Identifiable {
 #Preview("Light・Empty") {
     @Previewable @State var title = ""
     @Previewable @State var deadline = ""
-    @Previewable @State var priority: RAReminder.Priority = .none
+    @Previewable @State var priority: Reminder.Priority = .none
     @Previewable @State var notes = ""
     @Previewable @FocusState var focus: CreateReminderField?
     
@@ -167,7 +167,7 @@ nonisolated enum CreateReminderField: CaseIterable, Identifiable {
 #Preview("Dark・Input") {
     @Previewable @State var title = "観葉植物に肥料を追加する"
     @Previewable @State var deadline = "来月15日の昼"
-    @Previewable @State var priority: RAReminder.Priority = .medium
+    @Previewable @State var priority: Reminder.Priority = .medium
     @Previewable @State var notes = "ポトスには薄めた液体肥料を使用する"
     @Previewable @FocusState var focus: CreateReminderField?
     
