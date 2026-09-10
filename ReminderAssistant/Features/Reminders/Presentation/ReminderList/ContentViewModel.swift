@@ -294,11 +294,8 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         as fallbackError: ContentViewModelError
     ) -> ContentViewModelError? {
         if (error as? ReminderStoreError) == .accessNotAuthorized {
-            shouldReloadAfterCompletionToggleFailure = false
-            reminderOperations.removeAll { operation in
-                operation.cancel(); return true
-            }
-            reminderAccessRevokedHandler(); return nil
+            handleReminderAccessRevoked()
+            return nil
         }
         
         if error is CancellationError || (error as? ReminderStoreError) == .cancelled {
@@ -312,6 +309,15 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         } else {
             fallbackError
         }
+    }
+    
+    /// 再読み込み予約を解除し、すべての操作をキャンセルして権限失効を通知する。
+    private func handleReminderAccessRevoked() {
+        shouldReloadAfterCompletionToggleFailure = false
+        reminderOperations.removeAll { operation in
+            operation.cancel(); return true
+        }
+        reminderAccessRevokedHandler()
     }
     
     /// エラーを保持し、エラー用の触覚フィードバックを発生させる。
