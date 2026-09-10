@@ -79,20 +79,26 @@ actor FakeReminderStore: ReminderStoreProtocol {
         }
     }
     
-    func create(_ request: CreateReminderRequest) async throws(ReminderStoreError) {
+    func create(
+        title: String,
+        deadline: String,
+        priority: Reminder.Priority,
+        notes: String,
+        list: ReminderList,
+    ) async throws(ReminderStoreError) {
         try await operation(priority: .normal) { () async throws(ReminderStoreError) -> Void in
             try throwOneTimeErrorIfNeeded(for: .create)
             
             guard let listIndex = editableLists.firstIndex(where: { editableList in
-                editableList.calendarIdentifier == request.list.calendarIdentifier
+                editableList.calendarIdentifier == list.calendarIdentifier
             }) else {
                 throw ReminderStoreError.listNotFound(
-                    calendarIdentifier: request.list.calendarIdentifier
+                    calendarIdentifier: list.calendarIdentifier
                 )
             }
             
             let dueDateCalendar = Calendar.gregorianCalendar()
-            let dueDate = JapaneseDateConverter().convert(from: request.deadline).map {
+            let dueDate = JapaneseDateConverter().convert(from: deadline).map {
                 dueDateCalendar.dateComponents([.year, .month, .day, .hour, .minute], from: $0)
             }
             
@@ -102,10 +108,10 @@ actor FakeReminderStore: ReminderStoreProtocol {
             let now = Date.now
             let reminder = Reminder(
                 calendarItemIdentifier: UUID().uuidString,
-                title: request.title,
+                title: title,
                 dueDateComponents: dueDate,
-                priority: request.priority,
-                notes: request.notes,
+                priority: priority,
+                notes: notes,
                 creationDate: now,
                 lastModifiedDate: now
             )

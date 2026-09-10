@@ -75,27 +75,20 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
             defer { self?.finishReminderMutation(with: .create(operationID)) }
             
             do {
-                guard let list = self?.editableLists.first(where: { $0.calendarIdentifier == listIdentifier }) else {
-                    throw ContentViewModelError.reminderDestinationListUnavailable
+                guard let list = try self?.reminderDestinationList(for: listIdentifier) else {
+                    return .failure(.cancelled)
                 }
                 
-                try await self?.reminderStore.create(.init(
+                try await self?.reminderStore.create(
                     title: title,
                     deadline: deadline,
                     priority: priority,
                     notes: notes,
                     list: list,
-                ))
+                )
             } catch {
                 guard let self else { return .failure(.cancelled) }
-                let createReminderError = self.resolveCreateReminderError(error)
-                
-                switch createReminderError {
-                case .cancelled: break
-                default: UINotificationFeedbackGenerator().notificationOccurred(.error)
-                }
-                
-                return .failure(createReminderError)
+                return .failure(self.handleCreateReminderError(error))
             }
             
             guard self != nil else { return .failure(.cancelled) }
@@ -115,6 +108,25 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         if case .failure(let error) = result {
             throw error
         }
+    }
+    
+    private func reminderDestinationList(for listIdentifier: String?) throws(ContentViewModelError) -> ReminderList {
+        guard let list = editableLists.first(where: { $0.calendarIdentifier == listIdentifier }) else {
+            throw .reminderDestinationListUnavailable
+        }
+        
+        return list
+    }
+    
+    private func handleCreateReminderError(_ error: any Error) -> CreateReminderError {
+        let createReminderError = resolveCreateReminderError(error)
+        
+        switch createReminderError {
+        case .cancelled: break
+        default: UINotificationFeedbackGenerator().notificationOccurred(.error)
+        }
+        
+        return createReminderError
     }
     
     // MARK: - Reminder Loading
@@ -282,11 +294,8 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         as fallbackError: ContentViewModelError
     ) -> ContentViewModelError? {
         if (error as? ReminderStoreError) == .accessNotAuthorized {
-            shouldReloadAfterCompletionToggleFailure = false
-            reminderOperations.removeAll { operation in
-                operation.cancel(); return true
-            }
-            reminderAccessRevokedHandler(); return nil
+            handleReminderAccessRevoked()
+            return nil
         }
         
         if error is CancellationError || (error as? ReminderStoreError) == .cancelled {
@@ -300,6 +309,15 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         } else {
             fallbackError
         }
+    }
+    
+    /// 再読み込み予約を解除し、すべての操作をキャンセルして権限失効を通知する。
+    private func handleReminderAccessRevoked() {
+        shouldReloadAfterCompletionToggleFailure = false
+        reminderOperations.removeAll { operation in
+            operation.cancel(); return true
+        }
+        reminderAccessRevokedHandler()
     }
     
     /// エラーを保持し、エラー用の触覚フィードバックを発生させる。
