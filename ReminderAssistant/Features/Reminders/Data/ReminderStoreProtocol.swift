@@ -15,5 +15,5 @@ protocol ReminderStoreProtocol: Actor {
     
     func create(_ request: CreateReminderRequest) async throws(ReminderStoreError)
     func set(id: String, completion: Bool) async throws(ReminderStoreError)
-    func fetch() async throws(ReminderStoreError) -> ReminderStoreFetchResult
+    func fetch() async throws(ReminderStoreError) -> [ReminderList]
 }

@@ -78,9 +78,9 @@ struct SettingsView: View {
         SettingsView(
             reminderDestinationListID: $reminderDestinationListID,
             lists: [
-                .init(calendarIdentifier: "assistant", title: "Reminder Assistant"),
-                .init(calendarIdentifier: "shopping", title: "買い物リスト"),
-                .init(calendarIdentifier: "todo", title: "やることリスト"),
+                .init(calendarIdentifier: "assistant", title: "Reminder Assistant", isDefault: true, reminders: []),
+                .init(calendarIdentifier: "shopping", title: "買い物リスト", isDefault: false, reminders: []),
+                .init(calendarIdentifier: "todo", title: "やることリスト", isDefault: false, reminders: []),
             ]
         )
     }

@@ -46,15 +46,11 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
     
     var displayedReminders: [Reminder] {
         sortOrder.sorted(
-            viewModel.reminders.filter { reminder in
-                let matchesSearchAndFilter =
+            viewModel.editableLists.filter { list in
+                isPlaceholder || selectedListID.map { list.id == $0 } ?? true
+            }.flatMap(\.reminders).filter { reminder in
                 (searchText.isEmpty || reminder.title.localizedCaseInsensitiveContains(searchText))
                 && filter.matches(reminder)
-                
-                let matchesSelectedList =
-                isPlaceholder || selectedListID.map { reminder.list.id == $0 } ?? true
-                
-                return matchesSelectedList && matchesSearchAndFilter
             }
         )
     }
@@ -130,7 +126,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
                     Text("すべて")
                         .tag(Optional<String>.none)
                     
-                    ForEach(viewModel.editableLists, id: \.self) { list in
+                    ForEach(viewModel.editableLists) { list in
                         Text(list.title)
                             .tag(Optional(list.id))
                     }
@@ -214,7 +210,7 @@ extension ContentView {
             lists.contains(where: { $0.id == selectedListID })
         }) == false else { return }
         
-        if let defaultList = lists.first(where: { $0.id == viewModel.defaultListIdentifier }) {
+        if let defaultList = lists.first(where: \.isDefault) {
             selectedListID = defaultList.id
         } else {
             selectedListID = nil
@@ -228,7 +224,7 @@ extension ContentView {
         
         if hasInitializedReminderDestinationList == false {
             if reminderDestinationListID == nil {
-                guard let list = lists.first(where: { $0.id == viewModel.defaultListIdentifier })
+                guard let list = lists.first(where: \.isDefault)
                         ?? lists.first else { return }
                 
                 reminderDestinationListID = list.id

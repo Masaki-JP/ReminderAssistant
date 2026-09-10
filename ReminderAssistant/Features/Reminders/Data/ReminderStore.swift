@@ -89,8 +89,8 @@ final actor ReminderStore: ReminderStoreProtocol {
         }
     }
     
-    func fetch() async throws(ReminderStoreError) -> ReminderStoreFetchResult {
-        try await operation(priority: .low) { () async throws(ReminderStoreError) -> ReminderStoreFetchResult in
+    func fetch() async throws(ReminderStoreError) -> [ReminderList] {
+        try await operation(priority: .low) { () async throws(ReminderStoreError) -> [ReminderList] in
             try checkAuthorization()
             
             let editableCalendars: [EKCalendar] = eventStore.calendars(for: .reminder)
@@ -100,8 +100,12 @@ final actor ReminderStore: ReminderStoreProtocol {
                 let predicate = eventStore.predicateForReminders(in: editableCalendars)
                 
                 eventStore.fetchReminders(matching: predicate) { reminders in
-                    let result: Result<[Reminder], ReminderStoreError> = if let reminders {
-                        .success(reminders.compactMap(\.reminder))
+                    let result: Result<[String: [Reminder]], ReminderStoreError> = if let reminders {
+                        .success(reminders.reduce(into: [String: [Reminder]]()) { lists, ekReminder in
+                            guard let reminder = ekReminder.reminder,
+                                  let calendarIdentifier = ekReminder.calendar?.calendarIdentifier else { return }
+                            lists[calendarIdentifier, default: []].append(reminder)
+                        })
                     } else {
                         .failure(.fetchFailed)
                     }
@@ -115,21 +119,16 @@ final actor ReminderStore: ReminderStoreProtocol {
             
             switch result {
             case .success(let reminders):
-                let editableLists: [ReminderList] = editableCalendars.map { calendar in
-                        .init(
-                            calendarIdentifier: calendar.calendarIdentifier,
-                            title: calendar.title
-                        )
+                let defaultListIdentifier = eventStore.defaultCalendarForNewReminders()?.calendarIdentifier
+                
+                return editableCalendars.map { calendar in
+                    .init(
+                        calendarIdentifier: calendar.calendarIdentifier,
+                        title: calendar.title,
+                        isDefault: calendar.calendarIdentifier == defaultListIdentifier,
+                        reminders: reminders[calendar.calendarIdentifier] ?? []
+                    )
                 }
-                
-                let defaultListIdentifier: String? = eventStore.defaultCalendarForNewReminders()
-                    .flatMap { $0.allowsContentModifications ? $0.calendarIdentifier : nil }
-                
-                return ReminderStoreFetchResult(
-                    reminders: reminders,
-                    editableLists: editableLists,
-                    defaultListIdentifier: defaultListIdentifier
-                )
             case .failure(let error):
                 throw error
             }

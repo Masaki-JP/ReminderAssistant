@@ -60,10 +60,6 @@ extension EKReminder {
         
         return Reminder(
             calendarItemIdentifier: calendarItemIdentifier,
-            list: .init(
-                calendarIdentifier: calendar.calendarIdentifier,
-                title: calendar.title
-            ),
             title: title,
             dueDateComponents: dueDateComponents,
             priority: priority,

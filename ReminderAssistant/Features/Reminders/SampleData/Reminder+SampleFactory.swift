@@ -17,7 +17,6 @@ nonisolated extension Reminder {
     /// 不正な入力値や日時の前後関係は、実行時エラーとして検出する。
     static func sample(
         calendarItemIdentifier: String,
-        list: ReminderList,
         title: String,
         dueDate: DateInput = .init(date: nil, time: nil),
         priority: Priority = .none,
@@ -29,14 +28,6 @@ nonisolated extension Reminder {
     ) -> Self {
         guard calendarItemIdentifier.isEmpty == false else {
             fatalError("カレンダー項目IDを入力してください。")
-        }
-        
-        guard list.calendarIdentifier.isEmpty == false else {
-            fatalError("リマインダーリストIDを入力してください。")
-        }
-        
-        guard list.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false else {
-            fatalError("リマインダーリスト名を入力してください。")
         }
         
         guard title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false else {
@@ -82,7 +73,6 @@ nonisolated extension Reminder {
         
         return Self(
             calendarItemIdentifier: calendarItemIdentifier,
-            list: list,
             title: title,
             dueDateComponents: dueDateComponents,
             priority: priority,
