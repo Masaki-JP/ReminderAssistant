@@ -75,15 +75,17 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
             defer { self?.finishReminderMutation(with: .create(operationID)) }
             
             do {
-                guard let request = try self?.makeCreateReminderRequest(
+                guard let list = try self?.reminderDestinationList(for: listIdentifier) else {
+                    return .failure(.cancelled)
+                }
+                
+                try await self?.reminderStore.create(
                     title: title,
                     deadline: deadline,
                     priority: priority,
                     notes: notes,
-                    listIdentifier: listIdentifier,
-                ) else { return .failure(.cancelled) }
-                
-                try await self?.reminderStore.create(request)
+                    list: list,
+                )
             } catch {
                 guard let self else { return .failure(.cancelled) }
                 return .failure(self.handleCreateReminderError(error))
@@ -108,24 +110,12 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         }
     }
     
-    private func makeCreateReminderRequest(
-        title: String,
-        deadline: String,
-        priority: Reminder.Priority,
-        notes: String,
-        listIdentifier: String?,
-    ) throws(ContentViewModelError) -> CreateReminderRequest {
+    private func reminderDestinationList(for listIdentifier: String?) throws(ContentViewModelError) -> ReminderList {
         guard let list = editableLists.first(where: { $0.calendarIdentifier == listIdentifier }) else {
             throw .reminderDestinationListUnavailable
         }
         
-        return .init(
-            title: title,
-            deadline: deadline,
-            priority: priority,
-            notes: notes,
-            list: list,
-        )
+        return list
     }
     
     private func handleCreateReminderError(_ error: any Error) -> CreateReminderError {

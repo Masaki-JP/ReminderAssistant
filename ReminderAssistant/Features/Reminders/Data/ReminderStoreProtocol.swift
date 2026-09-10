@@ -13,7 +13,15 @@ enum ReminderStoreError: Error, Equatable {
 protocol ReminderStoreProtocol: Actor {
     nonisolated var remindersMayHaveChangedNotification: Notification.Name { get }
     
-    func create(_ request: CreateReminderRequest) async throws(ReminderStoreError)
+    func create(
+        title: String,
+        deadline: String,
+        priority: Reminder.Priority,
+        notes: String,
+        list: ReminderList,
+    ) async throws(ReminderStoreError)
+    
     func set(id: String, completion: Bool) async throws(ReminderStoreError)
+    
     func fetch() async throws(ReminderStoreError) -> [ReminderList]
 }

@@ -39,19 +39,25 @@ final actor ReminderStore: ReminderStoreProtocol {
     
     deinit { NotificationCenter.default.removeObserver(token) }
     
-    func create(_ request: CreateReminderRequest) async throws(ReminderStoreError) {
+    func create(
+        title: String,
+        deadline: String,
+        priority: Reminder.Priority,
+        notes: String,
+        list: ReminderList,
+    ) async throws(ReminderStoreError) {
         try await operation(priority: .normal) { () async throws(ReminderStoreError) -> Void in
             try checkAuthorization()
             
-            guard let calendar = eventStore.calendar(withIdentifier: request.list.calendarIdentifier) else {
+            guard let calendar = eventStore.calendar(withIdentifier: list.calendarIdentifier) else {
                 try checkAuthorization()
                 throw ReminderStoreError.listNotFound(
-                    calendarIdentifier: request.list.calendarIdentifier
+                    calendarIdentifier: list.calendarIdentifier
                 )
             }
             
             let dueDateCalendar = Calendar.gregorianCalendar()
-            let dueDate = JapaneseDateConverter().convert(from: request.deadline).map {
+            let dueDate = JapaneseDateConverter().convert(from: deadline).map {
                 dueDateCalendar.dateComponents([.year, .month, .day, .hour, .minute], from: $0)
             }
             
@@ -59,12 +65,12 @@ final actor ReminderStore: ReminderStoreProtocol {
             guard let dueDate else { throw ReminderStoreError.deadlineConversionFailed }
             
             let reminder = EKReminder(eventStore: eventStore)
-            reminder.title = request.title
+            reminder.title = title
             reminder.dueDateComponents = dueDate
             reminder.startDateComponents = nil
             reminder.addAlarm(.init(relativeOffset: 0))
-            reminder.priority = request.priority.ekReminderPriority
-            reminder.notes = request.notes
+            reminder.priority = priority.ekReminderPriority
+            reminder.notes = notes
             reminder.calendar = calendar
             
             try checkCancel()
