@@ -98,10 +98,10 @@ private let reminderListPreviewCalendar = Calendar.gregorianCalendar()
 #Preview("Light") {
     let startOfToday = reminderListPreviewCalendar.startOfDay(for: .now)
     let overduePreviewReminders = Array(
-        RAReminderSample.samples.filter { $0.dueDate().map { $0 < startOfToday } ?? false }.prefix(7)
+        RAReminder.samples.filter { $0.dueDate().map { $0 < startOfToday } ?? false }.prefix(7)
     )
     let upcomingPreviewReminders = Array(
-        RAReminderSample.samples.filter { $0.dueDate().map { $0 >= startOfToday } ?? false }.prefix(7)
+        RAReminder.samples.filter { $0.dueDate().map { $0 >= startOfToday } ?? false }.prefix(7)
     )
     
     let sections = [
@@ -120,10 +120,10 @@ private let reminderListPreviewCalendar = Calendar.gregorianCalendar()
 #Preview("Dark") {
     let startOfToday = reminderListPreviewCalendar.startOfDay(for: .now)
     let overduePreviewReminders = Array(
-        RAReminderSample.samples.filter { $0.dueDate().map { $0 < startOfToday } ?? false }.prefix(3)
+        RAReminder.samples.filter { $0.dueDate().map { $0 < startOfToday } ?? false }.prefix(3)
     )
     let upcomingPreviewReminders = Array(
-        RAReminderSample.samples.filter { $0.dueDate().map { $0 >= startOfToday } ?? false }.prefix(3)
+        RAReminder.samples.filter { $0.dueDate().map { $0 >= startOfToday } ?? false }.prefix(3)
     )
     
     let sections = [
