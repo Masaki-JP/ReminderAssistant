@@ -15,7 +15,7 @@ struct ReminderAccessRequestView: View {
     static let fakeReminderStore: FakeReminderStore = {
         let defaultListIdentifier = "xxx"
         let list = RAReminderList(calendarIdentifier: defaultListIdentifier, title: "xxx")
-        let reminders = RAReminderSample.placeholderReminders(for: list)
+        let reminders = RAReminder.placeholders(for: list)
         
         return .init(
             reminders: reminders,

@@ -53,7 +53,7 @@ actor FakeReminderStore: ReminderStoreProtocol {
     ///   - oneTimeFailureOperation: 一度だけ失敗させる操作。nilの場合は意図的なエラーを発生させない。
     ///   - scheduledAdditions: 定期的なリマインダー追加の設定。nilの場合は定期追加を行わない。
     init(
-        reminders: [RAReminder] = .init(RAReminderSample.samples[0...29]),
+        reminders: [RAReminder] = .init(RAReminder.samples[0...29]),
         editableLists: [RAReminderList]? = nil,
         defaultListIdentifier: String? = nil,
         fetchDelay: Duration = .seconds(0.75),
