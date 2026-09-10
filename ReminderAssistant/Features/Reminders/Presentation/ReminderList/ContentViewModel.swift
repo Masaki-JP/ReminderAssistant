@@ -75,27 +75,18 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
             defer { self?.finishReminderMutation(with: .create(operationID)) }
             
             do {
-                guard let list = self?.editableLists.first(where: { $0.calendarIdentifier == listIdentifier }) else {
-                    throw ContentViewModelError.reminderDestinationListUnavailable
-                }
-                
-                try await self?.reminderStore.create(.init(
+                guard let request = try self?.makeCreateReminderRequest(
                     title: title,
                     deadline: deadline,
                     priority: priority,
                     notes: notes,
-                    list: list,
-                ))
+                    listIdentifier: listIdentifier,
+                ) else { return .failure(.cancelled) }
+                
+                try await self?.reminderStore.create(request)
             } catch {
                 guard let self else { return .failure(.cancelled) }
-                let createReminderError = self.resolveCreateReminderError(error)
-                
-                switch createReminderError {
-                case .cancelled: break
-                default: UINotificationFeedbackGenerator().notificationOccurred(.error)
-                }
-                
-                return .failure(createReminderError)
+                return .failure(self.handleCreateReminderError(error))
             }
             
             guard self != nil else { return .failure(.cancelled) }
@@ -115,6 +106,37 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         if case .failure(let error) = result {
             throw error
         }
+    }
+    
+    private func makeCreateReminderRequest(
+        title: String,
+        deadline: String,
+        priority: Reminder.Priority,
+        notes: String,
+        listIdentifier: String?,
+    ) throws(ContentViewModelError) -> CreateReminderRequest {
+        guard let list = editableLists.first(where: { $0.calendarIdentifier == listIdentifier }) else {
+            throw .reminderDestinationListUnavailable
+        }
+        
+        return .init(
+            title: title,
+            deadline: deadline,
+            priority: priority,
+            notes: notes,
+            list: list,
+        )
+    }
+    
+    private func handleCreateReminderError(_ error: any Error) -> CreateReminderError {
+        let createReminderError = resolveCreateReminderError(error)
+        
+        switch createReminderError {
+        case .cancelled: break
+        default: UINotificationFeedbackGenerator().notificationOccurred(.error)
+        }
+        
+        return createReminderError
     }
     
     // MARK: - Reminder Loading
