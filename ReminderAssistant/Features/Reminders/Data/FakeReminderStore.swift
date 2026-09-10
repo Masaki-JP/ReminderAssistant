@@ -6,18 +6,24 @@ actor FakeReminderStore: ReminderStoreProtocol {
         /// リマインダーを追加する間隔。（fetchDelayより長い時間を指定するのが好ましい）
         fileprivate let interval: Duration
         /// 定期的に追加するリマインダー。配列の先頭から順に追加する。
-        fileprivate var pendingReminders: [Reminder]
+        fileprivate var pendingReminders: [(listID: String, reminder: Reminder)]
+        fileprivate let lists: [ReminderList]
         
         /// 定期的なリマインダー追加の設定を生成する。
         /// - Parameters:
         ///   - interval: リマインダーを追加する間隔。（fetchDelayより長い時間を指定するのが好ましい）
-        ///   - reminders: 定期的に追加するリマインダー。配列の先頭から順に追加する。
+        ///   - lists: 定期的に追加するリマインダーを格納したリスト。リスト順・配列順に追加する。
         init(
             interval: Duration = .seconds(1.5),
-            reminders: [Reminder],
+            lists: [ReminderList],
         ) {
             self.interval = interval
-            pendingReminders = reminders
+            self.lists = lists.map {
+                ReminderList(calendarIdentifier: $0.id, title: $0.title, isDefault: $0.isDefault, reminders: [])
+            }
+            pendingReminders = lists.flatMap { list in
+                list.reminders.map { (list.id, $0) }
+            }
         }
     }
     
@@ -25,12 +31,8 @@ actor FakeReminderStore: ReminderStoreProtocol {
         case create, fetch, setCompletion
     }
     
-    /// 現在ストアが保持しているリマインダー。
-    private var reminders: [Reminder]
     /// リマインダーを作成できる編集可能なリスト。
-    private let editableLists: [ReminderList]
-    /// 新規リマインダーの作成先として扱うデフォルトリストのID。
-    private let defaultListIdentifier: String?
+    private var editableLists: [ReminderList]
     
     /// fetchが結果を返すまでの待機時間。
     private let fetchDelay: Duration
@@ -46,41 +48,28 @@ actor FakeReminderStore: ReminderStoreProtocol {
     
     /// 指定された初期状態と振る舞いでFakeReminderStoreを生成する。
     /// - Parameters:
-    ///   - reminders: 最初からストアが保持するリマインダー。
-    ///   - editableLists: 編集可能なリスト。nilの場合は初期リマインダーと定期追加するリマインダーから生成する。
-    ///   - defaultListIdentifier: デフォルトリストのID。nilの場合は利用可能なリストから決定する。
+    ///   - editableLists: 最初からストアが保持するリマインダーを格納した編集可能なリスト。
     ///   - fetchDelay: fetchが結果を返すまでの待機時間。
     ///   - oneTimeFailureOperation: 一度だけ失敗させる操作。nilの場合は意図的なエラーを発生させない。
     ///   - scheduledAdditions: 定期的なリマインダー追加の設定。nilの場合は定期追加を行わない。
     init(
-        reminders: [Reminder] = .init(Reminder.samples[0...29]),
-        editableLists: [ReminderList]? = nil,
-        defaultListIdentifier: String? = nil,
+        editableLists: [ReminderList] = {
+            let reminderIDs = Set(Reminder.samples.prefix(30).map(\.id))
+            return ReminderList.samples.map { list in
+                var list = list
+                list.reminders = list.reminders.filter { reminderIDs.contains($0.id) }
+                return list
+            }
+        }(),
         fetchDelay: Duration = .seconds(0.75),
         oneTimeFailureOperation: FailureOperation? = nil,
         scheduledAdditions: ScheduledAdditions? = nil
     ) {
-        let lists: [ReminderList] = {
-            if let editableLists {
-                return editableLists
-            } else {
-                let scheduledReminders =
-                scheduledAdditions?.pendingReminders ?? []
-                let allReminders =
-                reminders + scheduledReminders
-                
-                return .init(Set(allReminders.map(\.list)))
-            }
-        }()
-        
-        let defaultListIdentifier = defaultListIdentifier
-        ?? editableLists?.first?.id
-        ?? reminders.first?.list.id
-        ?? scheduledAdditions?.pendingReminders.first?.list.id
-        
-        self.reminders = reminders
+        var lists = editableLists
+        for list in scheduledAdditions?.lists ?? [] where !lists.contains(where: { $0.id == list.id }) {
+            lists.append(list)
+        }
         self.editableLists = lists
-        self.defaultListIdentifier = defaultListIdentifier
         self.fetchDelay = fetchDelay
         self.oneTimeFailureOperation = oneTimeFailureOperation
         self.scheduledAdditions = scheduledAdditions
@@ -94,7 +83,7 @@ actor FakeReminderStore: ReminderStoreProtocol {
         try await operation(priority: .normal) { () async throws(ReminderStoreError) -> Void in
             try throwOneTimeErrorIfNeeded(for: .create)
             
-            guard editableLists.contains(where: { editableList in
+            guard let listIndex = editableLists.firstIndex(where: { editableList in
                 editableList.calendarIdentifier == request.list.calendarIdentifier
             }) else {
                 throw ReminderStoreError.listNotFound(
@@ -113,7 +102,6 @@ actor FakeReminderStore: ReminderStoreProtocol {
             let now = Date.now
             let reminder = Reminder(
                 calendarItemIdentifier: UUID().uuidString,
-                list: request.list,
                 title: request.title,
                 dueDateComponents: dueDate,
                 priority: request.priority,
@@ -122,7 +110,7 @@ actor FakeReminderStore: ReminderStoreProtocol {
                 lastModifiedDate: now
             )
             
-            reminders.append(reminder)
+            editableLists[listIndex].reminders.append(reminder)
             notifyRemindersMayHaveChanged()
         }
     }
@@ -131,18 +119,18 @@ actor FakeReminderStore: ReminderStoreProtocol {
         try await operation(priority: .normal) { () async throws(ReminderStoreError) -> Void in
             try throwOneTimeErrorIfNeeded(for: .setCompletion)
             
-            guard let index = reminders.firstIndex(where: { $0.id == id }) else {
+            guard let listIndex = editableLists.firstIndex(where: { $0.reminders.contains(where: { $0.id == id }) }),
+                  let index = editableLists[listIndex].reminders.firstIndex(where: { $0.id == id }) else {
                 throw ReminderStoreError.reminderNotFound(
                     calendarItemIdentifier: id
                 )
             }
             
             try checkCancel()
-            let reminder = reminders[index]
+            let reminder = editableLists[listIndex].reminders[index]
             let now = Date.now
-            reminders[index] = Reminder(
+            editableLists[listIndex].reminders[index] = Reminder(
                 calendarItemIdentifier: reminder.calendarItemIdentifier,
-                list: reminder.list,
                 title: reminder.title,
                 dueDateComponents: reminder.dueDateComponents,
                 priority: reminder.priority,
@@ -156,8 +144,8 @@ actor FakeReminderStore: ReminderStoreProtocol {
         }
     }
     
-    func fetch() async throws(ReminderStoreError) -> ReminderStoreFetchResult {
-        try await operation(priority: .low) { () async throws(ReminderStoreError) -> ReminderStoreFetchResult in
+    func fetch() async throws(ReminderStoreError) -> [ReminderList] {
+        try await operation(priority: .low) { () async throws(ReminderStoreError) -> [ReminderList] in
             do {
                 try await Task.sleep(for: fetchDelay)
             } catch {
@@ -166,15 +154,7 @@ actor FakeReminderStore: ReminderStoreProtocol {
             try checkCancel()
             try throwOneTimeErrorIfNeeded(for: .fetch)
             
-            return .init(
-                reminders: reminders.filter { reminder in
-                    editableLists.contains { editableList in
-                        editableList.calendarIdentifier == reminder.list.calendarIdentifier
-                    }
-                },
-                editableLists: editableLists,
-                defaultListIdentifier: defaultListIdentifier
-            )
+            return editableLists
         }
     }
     
@@ -202,11 +182,12 @@ actor FakeReminderStore: ReminderStoreProtocol {
     
     private func addNextScheduledReminder() async throws(ReminderStoreError) -> Bool {
         try await operation(priority: .normal) { () async throws(ReminderStoreError) -> Bool in
-            guard let reminder = scheduledAdditions?.pendingReminders.first else {
+            guard let addition = scheduledAdditions?.pendingReminders.first,
+                  let listIndex = editableLists.firstIndex(where: { $0.id == addition.listID }) else {
                 return false
             }
             
-            reminders.append(reminder)
+            editableLists[listIndex].reminders.append(addition.reminder)
             scheduledAdditions?.pendingReminders.removeFirst()
             notifyRemindersMayHaveChanged()
             return true

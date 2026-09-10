@@ -13,14 +13,15 @@ struct ReminderAccessRequestView: View {
     }
     
     static let fakeReminderStore: FakeReminderStore = {
-        let defaultListIdentifier = "xxx"
-        let list = ReminderList(calendarIdentifier: defaultListIdentifier, title: "xxx")
-        let reminders = Reminder.placeholders(for: list)
+        let list = ReminderList(
+            calendarIdentifier: "xxx",
+            title: "xxx",
+            isDefault: true,
+            reminders: Reminder.placeholders()
+        )
         
         return .init(
-            reminders: reminders,
             editableLists: [list],
-            defaultListIdentifier: defaultListIdentifier,
             fetchDelay: .zero,
         )
     }()

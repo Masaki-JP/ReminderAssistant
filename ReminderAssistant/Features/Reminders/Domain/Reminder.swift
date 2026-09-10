@@ -4,7 +4,6 @@ nonisolated
 struct Reminder: Codable, Identifiable, Hashable {
     /// ``id``と同じ値。
     let calendarItemIdentifier: String
-    let list: ReminderList
     let title: String
     let dueDateComponents: DateComponents?
     let priority: Self.Priority
@@ -20,7 +19,6 @@ struct Reminder: Codable, Identifiable, Hashable {
 
     init(
         calendarItemIdentifier: String,
-        list: ReminderList,
         title: String,
         dueDateComponents: DateComponents? = nil,
         priority: Self.Priority = .none,
@@ -31,7 +29,6 @@ struct Reminder: Codable, Identifiable, Hashable {
         completionDate: Date? = nil
     ) {
         self.calendarItemIdentifier = calendarItemIdentifier
-        self.list = list
         self.title = title
         self.dueDateComponents = dueDateComponents
         self.priority = priority

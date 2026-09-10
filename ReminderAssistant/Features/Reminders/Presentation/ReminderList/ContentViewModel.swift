@@ -2,9 +2,8 @@ import SwiftUI
 
 @Observable
 final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
-    private(set) var reminders: [Reminder] = []
+    var reminders: [Reminder] { editableLists.flatMap(\.reminders) }
     private(set) var editableLists: [ReminderList] = []
-    private(set) var defaultListIdentifier: String?
     
     private(set) var error: ContentViewModelError? = nil
     var errorBinding: Binding<Bool> {
@@ -131,18 +130,18 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
             defer { self?.reminderOperations.removeOperation(with: .load(operationID)) }
             
             do {
-                async let fetchedResult = reminderStore.fetch()
+                async let fetchedLists = reminderStore.fetch()
                 
                 if shouldReadInitialCache,
-                   let cachedResult = await reminderStoreCache?.fetch() {
+                   let cachedLists = await reminderStoreCache?.fetch() {
                     try Task.checkCancellation()
-                    self?.apply(cachedResult)
+                    self?.editableLists = cachedLists
                 }
                 
-                let fetchResult = try await fetchedResult
+                let lists = try await fetchedLists
                 try Task.checkCancellation()
-                self?.apply(fetchResult)
-                await reminderStoreCache?.save(fetchResult)
+                self?.editableLists = lists
+                await reminderStoreCache?.save(lists)
             } catch {
                 self?.handleError(error, as: .loadRemindersFailed)
             }
@@ -161,12 +160,6 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         }
     }
     
-    private func apply(_ result: ReminderStoreFetchResult) {
-        reminders = result.reminders
-        editableLists = result.editableLists
-        defaultListIdentifier = result.defaultListIdentifier
-    }
-    
     // MARK: - Reminder Completion
     
     func onToggleCompletion(_ reminder: Reminder) {
@@ -180,11 +173,16 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         
         guard let index = reminderIndex(for: reminder) else { return }
         let newValue = isPending ? reminder.isCompleted : !reminder.isCompleted
-        reminders[index].setDisplayedIsCompleted(newValue)
+        editableLists[index.list].reminders[index.reminder].setDisplayedIsCompleted(newValue)
     }
     
-    private func reminderIndex(for reminder: Reminder) -> [Reminder].Index? {
-        reminders.firstIndex { $0.id == reminder.id }
+    private func reminderIndex(for reminder: Reminder) -> (list: Int, reminder: Int)? {
+        for listIndex in editableLists.indices {
+            if let reminderIndex = editableLists[listIndex].reminders.firstIndex(where: { $0.id == reminder.id }) {
+                return (listIndex, reminderIndex)
+            }
+        }
+        return nil
     }
     
     private func hasPendingCompletionToggle(for reminder: Reminder) -> Bool {
@@ -204,7 +202,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
                 try await self?.reminderStore.set(id: reminder.id, completion: completion)
                 
                 guard let index = self?.reminderIndex(for: reminder) else { return }
-                self?.reminders[index].setIsCompleted(completion)
+                self?.editableLists[index.list].reminders[index.reminder].setIsCompleted(completion)
             } catch {
                 guard let self else { return }
                 guard handleError(error, as: .toggleCompletionFailed) == true else { return }

@@ -4,10 +4,10 @@ actor ReminderStoreCache {
     private struct StoredValue: Codable {
         let version: Int
         let cachedAt: Date
-        let result: ReminderStoreFetchResult
+        let editableLists: [ReminderList]
     }
 
-    private static let currentVersion = 2
+    private static let currentVersion = 4
     private static let cacheLifetime: TimeInterval = 24 * 60 * 60
     private let fileURL: URL?
 
@@ -23,7 +23,7 @@ actor ReminderStoreCache {
             .appending(path: "ReminderStoreCache.json")
     }
 
-    func fetch() -> ReminderStoreFetchResult? {
+    func fetch() -> [ReminderList]? {
         guard let fileURL,
               let data = try? Data(contentsOf: fileURL),
               let storedValue = try? JSONDecoder().decode(StoredValue.self, from: data),
@@ -33,10 +33,10 @@ actor ReminderStoreCache {
             return nil
         }
 
-        return storedValue.result
+        return storedValue.editableLists
     }
 
-    func save(_ result: ReminderStoreFetchResult) {
+    func save(_ editableLists: [ReminderList]) {
         guard let fileURL else { return }
 
         do {
@@ -48,7 +48,7 @@ actor ReminderStoreCache {
             let storedValue = StoredValue(
                 version: Self.currentVersion,
                 cachedAt: .now,
-                result: result
+                editableLists: editableLists
             )
             let data = try JSONEncoder().encode(storedValue)
             try data.write(to: fileURL, options: .atomic)
