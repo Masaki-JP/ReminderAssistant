@@ -412,11 +412,3 @@ enum ContentViewModelError: Error {
         }
     }
 }
-
-/// リマインダー作成画面へ通知するエラー。
-enum CreateReminderError: Error {
-    case invalidDeadline
-    case destinationListUnavailable
-    case saveFailed
-    case cancelled
-}

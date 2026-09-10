@@ -176,6 +176,14 @@ extension CreateReminderSheet {
     }
 }
 
+/// リマインダー作成画面で扱うエラー。
+enum CreateReminderError: Error {
+    case invalidDeadline
+    case destinationListUnavailable
+    case saveFailed
+    case cancelled
+}
+
 extension CreateReminderError {
     var message: String {
         switch self {
