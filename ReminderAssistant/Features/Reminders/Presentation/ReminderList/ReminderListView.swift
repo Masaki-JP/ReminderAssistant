@@ -29,7 +29,7 @@ struct ReminderListView: View {
     func section(_ section: ReminderListSection) -> some View {
         Section {
             ForEach(section.reminders) { reminder in
-                ReminderRow(
+                ReminderRowView(
                     reminder: reminder,
                     onToggleCompletion: { onToggleCompletion(reminder) }
                 )

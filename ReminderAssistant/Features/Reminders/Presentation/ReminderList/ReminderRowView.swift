@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-struct ReminderRow: View {
+struct ReminderRowView: View {
     let reminder: Reminder
     let toggleCompletionAction: () -> Void
     
@@ -66,7 +66,7 @@ struct ReminderRow: View {
     }
 }
 
-extension ReminderRow {
+extension ReminderRowView {
     func dueDateText(_ date: Date) -> String {
         let calendar = reminder.dueDateCalendar()
         let dateText = if calendar.isDateInYesterday(date) {
@@ -132,7 +132,7 @@ extension ReminderRow {
 private func previewContent(reminders: Binding<[Reminder]>) -> some View {
     VStack(spacing: 24) {
         ForEach(reminders.wrappedValue.indices, id: \.self) { i in
-            ReminderRow(
+            ReminderRowView(
                 reminder: reminders.wrappedValue[i],
                 onToggleCompletion: {
                     let isCompleted = reminders.wrappedValue[i].displayedIsCompleted
