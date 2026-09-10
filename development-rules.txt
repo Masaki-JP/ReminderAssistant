@@ -5,7 +5,7 @@ UserDefaults Keys（AppStorageも含む）
 現在使用中
 - colorScheme
 - hasInitializedReminderDestinationList
-- lastSelectedListID
+- lastDisplayedListID
 - reminderDestinationListID
 
 過去に使用

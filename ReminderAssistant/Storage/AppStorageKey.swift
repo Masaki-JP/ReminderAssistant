@@ -6,7 +6,7 @@ extension UserDefaultsKey {
     enum AppStorageKey: String {
         case colorScheme
         case hasInitializedReminderDestinationList
-        case lastSelectedListID
+        case lastDisplayedListID = "lastSelectListID"
         case reminderDestinationListID
     }
     

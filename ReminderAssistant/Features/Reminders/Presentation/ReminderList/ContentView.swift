@@ -8,15 +8,15 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
     @State var isCreateReminderSheetPresented = false
     @State var isSettingsViewPresented = false
     @Environment(\.colorScheme) var colorScheme: ColorScheme
-    @AppStorage(UserDefaultsKey.AppStorageKey.lastSelectedListID.rawValue)
-    var selectedListID: String?
+    let isPlaceholder: Bool
+    
+    @AppStorage(UserDefaultsKey.AppStorageKey.lastDisplayedListID.rawValue)
+    var displayedListID: String?
     @AppStorage(UserDefaultsKey.AppStorageKey.reminderDestinationListID.rawValue)
     var reminderDestinationListID: String?
     @AppStorage(UserDefaultsKey.AppStorageKey.hasInitializedReminderDestinationList.rawValue)
     var hasInitializedReminderDestinationList = UserDefaultsKey.AppStorageDefaultValue.hasInitializedReminderDestinationList
     
-    let isPlaceholder: Bool
-
     init(configuration: Configuration) {
         switch configuration {
         case .production(let reminderStore, let reminderStoreCache, let onReminderAccessRevoked):
@@ -40,14 +40,14 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
         }
     }
     
-    var selectedList: ReminderList? {
-        viewModel.editableLists.first { $0.id == selectedListID }
+    var displayedList: ReminderList? {
+        viewModel.editableLists.first { $0.id == displayedListID }
     }
     
     var displayedReminders: [Reminder] {
         sortOrder.sorted(
             viewModel.editableLists.filter { list in
-                isPlaceholder || selectedListID.map { list.id == $0 } ?? true
+                isPlaceholder || displayedListID.map { list.id == $0 } ?? true
             }.flatMap(\.reminders).filter { reminder in
                 (searchText.isEmpty || reminder.title.localizedCaseInsensitiveContains(searchText))
                 && filter.matches(reminder)
@@ -109,7 +109,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
             .sheet(isPresented: $isCreateReminderSheetPresented) {
                 CreateReminderSheet(onConfirm: createReminder)
             }
-            .navigationTitle(selectedList?.title ?? "すべて")
+            .navigationTitle(displayedList?.title ?? "すべて")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 Toolbar(
@@ -122,7 +122,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
                 )
             }
             .toolbarTitleMenu {
-                Picker("リスト選択", selection: $selectedListID) {
+                Picker("リスト選択", selection: $displayedListID) {
                     Text("すべて")
                         .tag(Optional<String>.none)
                     
@@ -201,19 +201,19 @@ extension ContentView {
         )
     }
 
-    /// 表示対象のリスト（``selectedListID``）が未設定、または現在の編集可能なリストに存在しない場合、表示対象のリストにデフォルトリスト、または「すべて（`nil`）」を設定する。
+    /// 表示対象のリスト（``displayedListID``）が未設定、または現在の編集可能なリストに存在しない場合、表示対象のリストにデフォルトリスト、または「すべて（`nil`）」を設定する。
     ///
     func selectListIfNeeded(from lists: [ReminderList]) {
         guard isPlaceholder == false else { return }
         
-        guard selectedListID.map({ selectedListID in
-            lists.contains(where: { $0.id == selectedListID })
+        guard displayedListID.map({ displayedListID in
+            lists.contains(where: { $0.id == displayedListID })
         }) == false else { return }
         
         if let defaultList = lists.first(where: \.isDefault) {
-            selectedListID = defaultList.id
+            displayedListID = defaultList.id
         } else {
-            selectedListID = nil
+            displayedListID = nil
         }
     }
     
