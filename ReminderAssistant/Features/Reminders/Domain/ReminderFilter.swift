@@ -4,7 +4,7 @@ struct ReminderFilter: Equatable {
     var completionStatus: CompletionStatus = .incomplete
     var dueDateCondition: DueDateCondition = .all
     var notesAvailability: NotesAvailability = .all
-    var priorities: Set<RAReminder.Priority> = []
+    var priorities: Set<Reminder.Priority> = []
     var creationDateCondition: DateCondition = .all
     var lastModifiedDateCondition: DateCondition = .all
     var completionDateCondition: DateCondition = .all
@@ -16,7 +16,7 @@ struct ReminderFilter: Equatable {
     }
     
     func matches(
-        _ reminder: RAReminder,
+        _ reminder: Reminder,
         calendar: Calendar = .current,
         now: Date = .now
     ) -> Bool {
@@ -129,7 +129,7 @@ extension ReminderFilter {
 
 private extension ReminderFilter.DueDateCondition {
     /// リマインダーの期限日が、この期限日条件に一致するかを判定する。
-    func matches(_ reminder: RAReminder, calendar: Calendar, now: Date) -> Bool {
+    func matches(_ reminder: Reminder, calendar: Calendar, now: Date) -> Bool {
         let dueDateCalendar = reminder.dueDateCalendar(fallback: calendar)
         let dueDate = reminder.dueDate(calendar: dueDateCalendar)
         let today = dueDateCalendar.startOfDay(for: now)

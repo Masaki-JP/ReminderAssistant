@@ -1,8 +1,8 @@
 import SwiftUI
 
-struct ReminderList: View {
+struct ReminderListView: View {
     let sections: [ReminderListSection]
-    let onToggleCompletion: (RAReminder) -> Void
+    let onToggleCompletion: (Reminder) -> Void
     
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     
@@ -88,7 +88,7 @@ struct ReminderList: View {
 struct ReminderListSection: Identifiable {
     let title: String
     let tint: Color
-    let reminders: [RAReminder]
+    let reminders: [Reminder]
     
     var id: String { title }
 }
@@ -98,10 +98,10 @@ private let reminderListPreviewCalendar = Calendar.gregorianCalendar()
 #Preview("Light") {
     let startOfToday = reminderListPreviewCalendar.startOfDay(for: .now)
     let overduePreviewReminders = Array(
-        RAReminder.samples.filter { $0.dueDate().map { $0 < startOfToday } ?? false }.prefix(7)
+        Reminder.samples.filter { $0.dueDate().map { $0 < startOfToday } ?? false }.prefix(7)
     )
     let upcomingPreviewReminders = Array(
-        RAReminder.samples.filter { $0.dueDate().map { $0 >= startOfToday } ?? false }.prefix(7)
+        Reminder.samples.filter { $0.dueDate().map { $0 >= startOfToday } ?? false }.prefix(7)
     )
     
     let sections = [
@@ -109,7 +109,7 @@ private let reminderListPreviewCalendar = Calendar.gregorianCalendar()
         ReminderListSection(title: "期限前", tint: .blue, reminders: upcomingPreviewReminders),
     ]
     
-    ReminderList(
+    ReminderListView(
         sections: sections,
         onToggleCompletion: { _ in }
     )
@@ -120,10 +120,10 @@ private let reminderListPreviewCalendar = Calendar.gregorianCalendar()
 #Preview("Dark") {
     let startOfToday = reminderListPreviewCalendar.startOfDay(for: .now)
     let overduePreviewReminders = Array(
-        RAReminder.samples.filter { $0.dueDate().map { $0 < startOfToday } ?? false }.prefix(3)
+        Reminder.samples.filter { $0.dueDate().map { $0 < startOfToday } ?? false }.prefix(3)
     )
     let upcomingPreviewReminders = Array(
-        RAReminder.samples.filter { $0.dueDate().map { $0 >= startOfToday } ?? false }.prefix(3)
+        Reminder.samples.filter { $0.dueDate().map { $0 >= startOfToday } ?? false }.prefix(3)
     )
     
     let sections = [
@@ -131,7 +131,7 @@ private let reminderListPreviewCalendar = Calendar.gregorianCalendar()
         ReminderListSection(title: "期限前", tint: .blue, reminders: upcomingPreviewReminders),
     ]
     
-    ReminderList(
+    ReminderListView(
         sections: sections,
         onToggleCompletion: { _ in }
     )

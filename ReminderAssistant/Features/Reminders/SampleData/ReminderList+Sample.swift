@@ -1,26 +1,26 @@
-nonisolated extension RAReminderList {
+nonisolated extension ReminderList {
     enum Sample {
-        static let household = RAReminderList(
+        static let household = ReminderList(
             calendarIdentifier: "00000000-0000-0000-0000-000000000101",
             title: "家事"
         )
         
-        static let personalTasks = RAReminderList(
+        static let personalTasks = ReminderList(
             calendarIdentifier: "00000000-0000-0000-0000-000000000102",
             title: "個人"
         )
         
-        static let work = RAReminderList(
+        static let work = ReminderList(
             calendarIdentifier: "00000000-0000-0000-0000-000000000103",
             title: "仕事"
         )
         
-        static let hobby = RAReminderList(
+        static let hobby = ReminderList(
             calendarIdentifier: "00000000-0000-0000-0000-000000000104",
             title: "趣味"
         )
         
-        static let other = RAReminderList(
+        static let other = ReminderList(
             calendarIdentifier: "00000000-0000-0000-0000-000000000105",
             title: "その他"
         )

@@ -5,7 +5,7 @@ struct SettingsView: View {
     @AppStorage(UserDefaultsKey.AppStorageKey.colorScheme.rawValue)
     var colorSchemeSetting = ColorSchemeSetting.defaultValue
     @Binding var reminderDestinationListID: String?
-    let lists: [RAReminderList]
+    let lists: [ReminderList]
     
     var body: some View {
         NavigationStack {

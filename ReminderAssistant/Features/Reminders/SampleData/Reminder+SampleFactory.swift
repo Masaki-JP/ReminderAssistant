@@ -11,13 +11,13 @@ nonisolated struct DateInput {
 
 nonisolated private let sampleCalendar = Calendar.gregorianCalendar()
 
-nonisolated extension RAReminder {
-    /// サンプルデータの各入力値を検証して、RAReminderを生成する。
+nonisolated extension Reminder {
+    /// サンプルデータの各入力値を検証して、Reminderを生成する。
     /// 相対日時の文字列をアプリ内で扱う日時へ変換する。
     /// 不正な入力値や日時の前後関係は、実行時エラーとして検出する。
     static func sample(
         calendarItemIdentifier: String,
-        list: RAReminderList,
+        list: ReminderList,
         title: String,
         dueDate: DateInput = .init(date: nil, time: nil),
         priority: Priority = .none,

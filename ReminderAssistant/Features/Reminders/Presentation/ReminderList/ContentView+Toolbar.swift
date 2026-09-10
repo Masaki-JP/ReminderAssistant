@@ -145,7 +145,7 @@ private struct FilterMenu: View {
             Divider()
             
             Section {
-                ForEach(RAReminder.Priority.allCases) { priority in
+                ForEach(Reminder.Priority.allCases) { priority in
                     Toggle(priority.displayName, isOn: priorityBinding(for: priority))
                 }
             } header: {
@@ -191,7 +191,7 @@ private struct FilterMenu: View {
             .count { $0 }
     }
     
-    func priorityBinding(for priority: RAReminder.Priority) -> Binding<Bool> {
+    func priorityBinding(for priority: Reminder.Priority) -> Binding<Bool> {
         .init(
             get: { filter.priorities.contains(priority) },
             set: { if $0 { filter.priorities.insert(priority) } else { filter.priorities.remove(priority) } }

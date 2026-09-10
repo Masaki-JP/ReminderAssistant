@@ -4,7 +4,7 @@ nonisolated
 struct CreateReminderRequest {
     let title: String
     let deadline: String
-    let priority: RAReminder.Priority
+    let priority: Reminder.Priority
     let notes: String
-    let list: RAReminderList
+    let list: ReminderList
 }

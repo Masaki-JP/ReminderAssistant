@@ -3,7 +3,7 @@ import SwiftUI
 struct CreateReminderSheet: View {
     @State var title = ""
     @State var deadline = ""
-    @State var priority: RAReminder.Priority = .none
+    @State var priority: Reminder.Priority = .none
     @State var notes = ""
     @State var isDismissConfirmationDialogPresented = false
     @Environment(\.dismiss) var dismiss
@@ -26,7 +26,7 @@ struct CreateReminderSheet: View {
     let confirmAction: (
         _ title: String,
         _ deadline: String,
-        _ priority: RAReminder.Priority,
+        _ priority: Reminder.Priority,
         _ notes: String
     ) async throws(CreateReminderError) -> Void
     
@@ -34,7 +34,7 @@ struct CreateReminderSheet: View {
         onConfirm: @escaping (
             _ title: String,
             _ deadline: String,
-            _ priority: RAReminder.Priority,
+            _ priority: Reminder.Priority,
             _ notes: String
         ) async throws(CreateReminderError) -> Void
     ) {

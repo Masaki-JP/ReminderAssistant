@@ -2,7 +2,7 @@ import EventKit
 
 nonisolated
 extension EKReminder {
-    var reminder: RAReminder? {
+    var reminder: Reminder? {
         let calendarItemIdentifier = self.calendarItemIdentifier
         let calendar = self.calendar
         let title = self.title
@@ -25,13 +25,13 @@ extension EKReminder {
             guard dueDateComponents.year != nil,
                   dueDateComponents.month != nil,
                   dueDateComponents.day != nil,
-                  RAReminder.dueDate(from: dueDateComponents) != nil else {
+                  Reminder.dueDate(from: dueDateComponents) != nil else {
                 return nil
             }
         }
         
         /// EventKitの優先度がアプリで扱える値であることを確認する。
-        guard let priority = RAReminder.Priority(ekReminderPriority: self.priority) else {
+        guard let priority = Reminder.Priority(ekReminderPriority: self.priority) else {
             return nil
         }
         
@@ -58,7 +58,7 @@ extension EKReminder {
             }
         }
         
-        return RAReminder(
+        return Reminder(
             calendarItemIdentifier: calendarItemIdentifier,
             list: .init(
                 calendarIdentifier: calendar.calendarIdentifier,

@@ -2,7 +2,7 @@ import Foundation
 
 nonisolated
 struct ReminderStoreFetchResult: Codable {
-    let reminders: [RAReminder]
-    let editableLists: [RAReminderList]
+    let reminders: [Reminder]
+    let editableLists: [ReminderList]
     let defaultListIdentifier: String?
 }

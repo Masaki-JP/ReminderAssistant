@@ -11,7 +11,7 @@ struct ReminderSortOrder: Equatable {
     }
     
     /// 現在の並び順設定に従ってリマインダーをソートする。
-    func sorted(_ reminders: [RAReminder]) -> [RAReminder] {
+    func sorted(_ reminders: [Reminder]) -> [Reminder] {
         reminders.sorted { lhs, rhs in
             let lhsHasSortValue = hasSortValue(lhs)
             let rhsHasSortValue = hasSortValue(rhs)
@@ -33,7 +33,7 @@ struct ReminderSortOrder: Equatable {
     }
     
     /// 未設定の日時・タイトルは、方向にかかわらず常に末尾に配置する。
-    private func hasSortValue(_ reminder: RAReminder) -> Bool {
+    private func hasSortValue(_ reminder: Reminder) -> Bool {
         switch field {
         case .dueDate:
             reminder.dueDate() != nil
@@ -51,7 +51,7 @@ struct ReminderSortOrder: Equatable {
     }
     
     /// 指定したソート項目の値で2件のリマインダーを比較する。
-    private func comparisonResult(_ lhs: RAReminder, _ rhs: RAReminder) -> ComparisonResult {
+    private func comparisonResult(_ lhs: Reminder, _ rhs: Reminder) -> ComparisonResult {
         switch field {
         case .dueDate:
             optionalComparison(lhs.dueDate(), rhs.dueDate())
@@ -88,21 +88,21 @@ struct ReminderSortOrder: Equatable {
     }
     
     /// 空白を除いたタイトルをローカライズされた標準順で比較する。
-    private func titleComparison(_ lhs: RAReminder, _ rhs: RAReminder) -> ComparisonResult {
+    private func titleComparison(_ lhs: Reminder, _ rhs: Reminder) -> ComparisonResult {
         optionalComparison(normalizedTitle(lhs), normalizedTitle(rhs)) { lhs, rhs in
             lhs.localizedStandardCompare(rhs)
         }
     }
     
     /// 同じソート値のリマインダーをタイトル、次にIDで安定して比較する。
-    private func fallbackComparisonResult(_ lhs: RAReminder, _ rhs: RAReminder) -> ComparisonResult {
+    private func fallbackComparisonResult(_ lhs: Reminder, _ rhs: Reminder) -> ComparisonResult {
         let titleResult = titleComparison(lhs, rhs)
         guard titleResult == .orderedSame else { return titleResult }
         return lhs.id.localizedStandardCompare(rhs.id)
     }
     
     /// 前後の空白を除いたタイトルを返し、空の場合は未設定として扱う。
-    private func normalizedTitle(_ reminder: RAReminder) -> String? {
+    private func normalizedTitle(_ reminder: Reminder) -> String? {
         let title = reminder.title.trimmingCharacters(in: .whitespacesAndNewlines)
         return title.isEmpty == true ? nil : title
     }

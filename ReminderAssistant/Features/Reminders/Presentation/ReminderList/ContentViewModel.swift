@@ -2,8 +2,8 @@ import SwiftUI
 
 @Observable
 final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
-    private(set) var reminders: [RAReminder] = []
-    private(set) var editableLists: [RAReminderList] = []
+    private(set) var reminders: [Reminder] = []
+    private(set) var editableLists: [ReminderList] = []
     private(set) var defaultListIdentifier: String?
     
     private(set) var error: ContentViewModelError? = nil
@@ -67,7 +67,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     func createReminder(
         title: String,
         deadline: String,
-        priority: RAReminder.Priority,
+        priority: Reminder.Priority,
         notes: String,
         listIdentifier: String?,
     ) async throws(CreateReminderError) {
@@ -169,7 +169,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     
     // MARK: - Reminder Completion
     
-    func onToggleCompletion(_ reminder: RAReminder) {
+    func onToggleCompletion(_ reminder: Reminder) {
         let isPending = hasPendingCompletionToggle(for: reminder)
         
         if isPending == false {
@@ -183,17 +183,17 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         reminders[index].setDisplayedIsCompleted(newValue)
     }
     
-    private func reminderIndex(for reminder: RAReminder) -> [RAReminder].Index? {
+    private func reminderIndex(for reminder: Reminder) -> [Reminder].Index? {
         reminders.firstIndex { $0.id == reminder.id }
     }
     
-    private func hasPendingCompletionToggle(for reminder: RAReminder) -> Bool {
+    private func hasPendingCompletionToggle(for reminder: Reminder) -> Bool {
         reminderOperations.contains { operation in
             if case .toggleCompletion(let id, _) = operation, id == reminder.id { true } else { false }
         }
     }
     
-    private func requestCompletionToggle(for reminder: RAReminder) {
+    private func requestCompletionToggle(for reminder: Reminder) {
         let completion = !reminder.isCompleted
         let task = Task { [weak self] in
             defer { self?.finishReminderMutation(with: .toggleCompletion(reminder.id)) }
@@ -216,7 +216,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         cancelLoad()
     }
     
-    private func cancelCompletionToggle(for reminder: RAReminder) {
+    private func cancelCompletionToggle(for reminder: Reminder) {
         reminderOperations.removeAll { operation in
             if case let .toggleCompletion(id, task) = operation, id == reminder.id {
                 task.cancel(); return true
@@ -314,12 +314,12 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
 private enum ReminderOperation {
     enum ID {
         case create(UUID)
-        case toggleCompletion(RAReminder.ID)
+        case toggleCompletion(Reminder.ID)
         case load(UUID)
     }
     
     case create(operationID: UUID, task: Task<Result<Void, CreateReminderError>, Never>)
-    case toggleCompletion(reminderID: RAReminder.ID, task: Task<Void, Never>)
+    case toggleCompletion(reminderID: Reminder.ID, task: Task<Void, Never>)
     case load(operationID: UUID, task: Task<Void, Never>)
     
     func cancel() {

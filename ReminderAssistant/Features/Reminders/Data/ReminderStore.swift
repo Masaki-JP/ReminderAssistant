@@ -100,7 +100,7 @@ final actor ReminderStore: ReminderStoreProtocol {
                 let predicate = eventStore.predicateForReminders(in: editableCalendars)
                 
                 eventStore.fetchReminders(matching: predicate) { reminders in
-                    let result: Result<[RAReminder], ReminderStoreError> = if let reminders {
+                    let result: Result<[Reminder], ReminderStoreError> = if let reminders {
                         .success(reminders.compactMap(\.reminder))
                     } else {
                         .failure(.fetchFailed)
@@ -115,7 +115,7 @@ final actor ReminderStore: ReminderStoreProtocol {
             
             switch result {
             case .success(let reminders):
-                let editableLists: [RAReminderList] = editableCalendars.map { calendar in
+                let editableLists: [ReminderList] = editableCalendars.map { calendar in
                         .init(
                             calendarIdentifier: calendar.calendarIdentifier,
                             title: calendar.title
