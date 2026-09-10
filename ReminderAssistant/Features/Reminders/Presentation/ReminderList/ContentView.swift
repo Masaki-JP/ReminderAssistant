@@ -63,7 +63,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
         reminderSections.allSatisfy { $0.reminders.isEmpty }
     }
 
-    var newReminderAction: (() -> Void)? {
+    var presentCreateReminderSheetAction: (() -> Void)? {
         guard isPlaceholder == false,
               viewModel.editableLists.isEmpty == false,
               isSettingsViewPresented == false,
@@ -155,7 +155,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
                 Text(error.message)
             }
         }
-        .focusedSceneValue(\.newReminderAction, newReminderAction)
+        .focusedSceneValue(\.presentCreateReminderSheetAction, presentCreateReminderSheetAction)
     }
     
     var emptyRemindersPlaceholder: some View {
