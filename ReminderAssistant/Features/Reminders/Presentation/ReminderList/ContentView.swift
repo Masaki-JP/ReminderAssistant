@@ -62,13 +62,13 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
     var isReminderListEmpty: Bool {
         reminderSections.allSatisfy { $0.reminders.isEmpty }
     }
-
+    
     var presentCreateReminderSheetAction: (() -> Void)? {
         guard isPlaceholder == false,
               viewModel.editableLists.isEmpty == false,
               isSettingsViewPresented == false,
               isCreateReminderSheetPresented == false else { return nil }
-
+        
         return { isCreateReminderSheetPresented = true }
     }
     
@@ -191,7 +191,7 @@ extension ContentView {
         _ notes: String
     ) async throws(CreateReminderError) {
         guard isPlaceholder == false else { throw .cancelled }
-
+        
         try await viewModel.createReminder(
             title: title,
             deadline: deadline,
@@ -200,7 +200,7 @@ extension ContentView {
             listIdentifier: reminderDestinationListID
         )
     }
-
+    
     /// 表示対象のリスト（``displayedListID``）が未設定、または現在の編集可能なリストに存在しない場合、表示対象のリストにデフォルトリスト、または「すべて（`nil`）」を設定する。
     ///
     func selectListIfNeeded(from lists: [ReminderList]) {
@@ -242,20 +242,13 @@ extension ContentView {
     }
 }
 
-#Preview("Light") {
-    ContentView(configuration: .production(
-        reminderStore: FakeReminderStore(fetchDelay: .seconds(0.3)),
-        reminderStoreCache: nil,
-        onReminderAccessRevoked: {},
-    ))
-    .preferredColorScheme(.light)
-}
+#if DEBUG
+private let previewContent = ContentView(configuration: .production(
+    reminderStore: FakeReminderStore(fetchDelay: .seconds(0.3)),
+    reminderStoreCache: nil,
+    onReminderAccessRevoked: {},
+))
 
-#Preview("Dark") {
-    ContentView(configuration: .production(
-        reminderStore: FakeReminderStore(fetchDelay: .seconds(0.3)),
-        reminderStoreCache: nil,
-        onReminderAccessRevoked: {},
-    ))
-    .preferredColorScheme(.dark)
-}
+#Preview("Light") { previewContent.preferredColorScheme(.light) }
+#Preview("Dark") { previewContent.preferredColorScheme(.dark) }
+#endif
