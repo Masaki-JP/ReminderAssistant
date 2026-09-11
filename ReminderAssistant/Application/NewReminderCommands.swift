@@ -1,19 +1,19 @@
 import SwiftUI
 
 struct NewReminderCommands: Commands {
-    @FocusedValue(\.newReminderAction) var newReminderAction
+    @FocusedValue(\.presentCreateReminderSheetAction) var presentCreateReminderSheetAction
     
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
             Button("新規作成") {
-                newReminderAction?()
+                presentCreateReminderSheetAction?()
             }
             .keyboardShortcut("n", modifiers: .command)
-            .disabled(newReminderAction == nil)
+            .disabled(presentCreateReminderSheetAction == nil)
         }
     }
 }
 
 extension FocusedValues {
-    @Entry var newReminderAction: (() -> Void)? = nil
+    @Entry var presentCreateReminderSheetAction: (() -> Void)? = nil
 }

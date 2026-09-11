@@ -8,15 +8,15 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
     @State var isCreateReminderSheetPresented = false
     @State var isSettingsViewPresented = false
     @Environment(\.colorScheme) var colorScheme: ColorScheme
-    @AppStorage(UserDefaultsKey.AppStorageKey.lastSelectedListID.rawValue)
-    var selectedListID: String?
+    let isPlaceholder: Bool
+    
+    @AppStorage(UserDefaultsKey.AppStorageKey.lastDisplayedListID.rawValue)
+    var displayedListID: String?
     @AppStorage(UserDefaultsKey.AppStorageKey.reminderDestinationListID.rawValue)
     var reminderDestinationListID: String?
     @AppStorage(UserDefaultsKey.AppStorageKey.hasInitializedReminderDestinationList.rawValue)
     var hasInitializedReminderDestinationList = UserDefaultsKey.AppStorageDefaultValue.hasInitializedReminderDestinationList
     
-    let isPlaceholder: Bool
-
     init(configuration: Configuration) {
         switch configuration {
         case .production(let reminderStore, let reminderStoreCache, let onReminderAccessRevoked):
@@ -40,14 +40,14 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
         }
     }
     
-    var selectedList: ReminderList? {
-        viewModel.editableLists.first { $0.id == selectedListID }
+    var displayedList: ReminderList? {
+        viewModel.editableLists.first { $0.id == displayedListID }
     }
     
     var displayedReminders: [Reminder] {
         sortOrder.sorted(
             viewModel.editableLists.filter { list in
-                isPlaceholder || selectedListID.map { list.id == $0 } ?? true
+                isPlaceholder || displayedListID.map { list.id == $0 } ?? true
             }.flatMap(\.reminders).filter { reminder in
                 (searchText.isEmpty || reminder.title.localizedCaseInsensitiveContains(searchText))
                 && filter.matches(reminder)
@@ -62,13 +62,13 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
     var isReminderListEmpty: Bool {
         reminderSections.allSatisfy { $0.reminders.isEmpty }
     }
-
-    var newReminderAction: (() -> Void)? {
+    
+    var presentCreateReminderSheetAction: (() -> Void)? {
         guard isPlaceholder == false,
               viewModel.editableLists.isEmpty == false,
               isSettingsViewPresented == false,
               isCreateReminderSheetPresented == false else { return nil }
-
+        
         return { isCreateReminderSheetPresented = true }
     }
     
@@ -84,21 +84,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
             .privacySensitive(isPlaceholder)
             .redacted(reason: isPlaceholder ? .privacy : [])
             .contentMargins(.top, 8, for: .scrollContent)
-            .overlay {
-                if viewModel.isLoading && viewModel.editableLists.isEmpty && viewModel.reminders.isEmpty {
-                    ProgressView()
-                } else if viewModel.editableLists.isEmpty == true {
-                    noEditableReminderListsPlaceholder
-                } else if viewModel.reminders.isEmpty == true {
-                    emptyRemindersPlaceholder
-                } else if isReminderListEmpty == true {
-                    if searchText.isEmpty == false {
-                        ContentUnavailableView.search(text: searchText)
-                    } else {
-                        noMatchingRemindersPlaceholder
-                    }
-                }
-            }
+            .overlay { reminderListOverlay }
             .sheet(isPresented: $isSettingsViewPresented) {
                 SettingsView(
                     reminderDestinationListID: $reminderDestinationListID,
@@ -109,53 +95,77 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
             .sheet(isPresented: $isCreateReminderSheetPresented) {
                 CreateReminderSheet(onConfirm: createReminder)
             }
-            .navigationTitle(selectedList?.title ?? "すべて")
+            .navigationTitle(displayedList?.title ?? "すべて")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                Toolbar(
-                    sortOrder: $sortOrder,
-                    filter: $filter,
-                    isCreateReminderSheetPresented: $isCreateReminderSheetPresented,
-                    isSettingsViewPresented: $isSettingsViewPresented,
-                    isCreateReminderDisabled: viewModel.editableLists.isEmpty,
-                    isLoading: viewModel.isLoading,
-                )
-            }
-            .toolbarTitleMenu {
-                Picker("リスト選択", selection: $selectedListID) {
-                    Text("すべて")
-                        .tag(Optional<String>.none)
-                    
-                    ForEach(viewModel.editableLists) { list in
-                        Text(list.title)
-                            .tag(Optional(list.id))
-                    }
-                }
-            }
+            .toolbar { toolbar }
+            .toolbarTitleMenu { reminderListPicker }
         }
         .searchable(text: $searchText, prompt: "リマインダーを検索")
         .animation(.default, value: viewModel.reminders)
         .task(viewModel.loadReminders)
         .onChange(of: viewModel.editableLists) { _, lists in
-            selectListIfNeeded(from: lists)
-            selectReminderDestinationListIfNeeded(from: lists)
+            ensureDisplayedList(from: lists)
+            ensureReminderDestinationList(from: lists)
         }
         .alert(viewModel.error?.title ?? "エラー", isPresented: viewModel.errorBinding) {
-            switch viewModel.error?.recoveryAction {
-            case .reload:
-                Button("再読み込み") {
-                    guard isPlaceholder == false else { return }
-                    viewModel.loadReminders()
-                }
-            case .dismiss, nil:
-                Button("OK", role: .cancel) {}
-            }
+            errorAlertActions
         } message: {
-            if let error = viewModel.error {
-                Text(error.message)
+            Text(viewModel.error?.message ?? "")
+        }
+        .focusedSceneValue(\.presentCreateReminderSheetAction, presentCreateReminderSheetAction)
+    }
+    
+    @ViewBuilder
+    var reminderListOverlay: some View {
+        if viewModel.isLoading && viewModel.editableLists.isEmpty && viewModel.reminders.isEmpty {
+            ProgressView()
+        } else if viewModel.editableLists.isEmpty == true {
+            noEditableReminderListsPlaceholder
+        } else if viewModel.reminders.isEmpty == true {
+            emptyRemindersPlaceholder
+        } else if isReminderListEmpty == true {
+            if searchText.isEmpty == false {
+                ContentUnavailableView.search(text: searchText)
+            } else {
+                noMatchingRemindersPlaceholder
             }
         }
-        .focusedSceneValue(\.newReminderAction, newReminderAction)
+    }
+    
+    var toolbar: Toolbar {
+        Toolbar(
+            sortOrder: $sortOrder,
+            filter: $filter,
+            isCreateReminderSheetPresented: $isCreateReminderSheetPresented,
+            isSettingsViewPresented: $isSettingsViewPresented,
+            isCreateReminderDisabled: viewModel.editableLists.isEmpty,
+            isLoading: viewModel.isLoading,
+        )
+    }
+    
+    var reminderListPicker: some View {
+        Picker("リスト選択", selection: $displayedListID) {
+            Text("すべて")
+                .tag(Optional<String>.none)
+            
+            ForEach(viewModel.editableLists) { list in
+                Text(list.title)
+                    .tag(Optional(list.id))
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var errorAlertActions: some View {
+        switch viewModel.error?.recoveryAction {
+        case .reload:
+            Button("再読み込み") {
+                guard isPlaceholder == false else { return }
+                viewModel.loadReminders()
+            }
+        case .dismiss, nil:
+            Button("OK", role: .cancel) {}
+        }
     }
     
     var emptyRemindersPlaceholder: some View {
@@ -178,7 +188,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
         ContentUnavailableView {
             Label("該当なし", systemImage: "line.3.horizontal.decrease.circle")
         } description: {
-            Text("フィルター条件を変更してみてください。")
+            Text("絞り込み条件を変更してみてください。")
         }
     }
 }
@@ -191,7 +201,7 @@ extension ContentView {
         _ notes: String
     ) async throws(CreateReminderError) {
         guard isPlaceholder == false else { throw .cancelled }
-
+        
         try await viewModel.createReminder(
             title: title,
             deadline: deadline,
@@ -200,26 +210,26 @@ extension ContentView {
             listIdentifier: reminderDestinationListID
         )
     }
-
-    /// 表示対象のリスト（``selectedListID``）が未設定、または現在の編集可能なリストに存在しない場合、表示対象のリストにデフォルトリスト、または「すべて（`nil`）」を設定する。
+    
+    /// 表示対象のリスト（``displayedListID``）が未設定、または現在の編集可能なリストに存在しない場合、表示対象のリストにデフォルトリスト、または「すべて（`nil`）」を設定する。
     ///
-    func selectListIfNeeded(from lists: [ReminderList]) {
+    func ensureDisplayedList(from lists: [ReminderList]) {
         guard isPlaceholder == false else { return }
         
-        guard selectedListID.map({ selectedListID in
-            lists.contains(where: { $0.id == selectedListID })
+        guard displayedListID.map({ displayedListID in
+            lists.contains(where: { $0.id == displayedListID })
         }) == false else { return }
         
         if let defaultList = lists.first(where: \.isDefault) {
-            selectedListID = defaultList.id
+            displayedListID = defaultList.id
         } else {
-            selectedListID = nil
+            displayedListID = nil
         }
     }
     
     /// 初回はリマインダーの作成先のリスト（``reminderDestinationListID``）をデフォルトリスト、または先頭のリストに設定する。設定済みのリマインダー作成先が無効な場合はエラーを通知する。
     ///
-    func selectReminderDestinationListIfNeeded(from lists: [ReminderList]) {
+    func ensureReminderDestinationList(from lists: [ReminderList]) {
         guard isPlaceholder == false else { return }
         
         if hasInitializedReminderDestinationList == false {
@@ -242,20 +252,13 @@ extension ContentView {
     }
 }
 
-#Preview("Light") {
-    ContentView(configuration: .production(
-        reminderStore: FakeReminderStore(fetchDelay: .seconds(0.3)),
-        reminderStoreCache: nil,
-        onReminderAccessRevoked: {},
-    ))
-    .preferredColorScheme(.light)
-}
+#if DEBUG
+private let previewContent = ContentView(configuration: .production(
+    reminderStore: FakeReminderStore(fetchDelay: .seconds(0.3)),
+    reminderStoreCache: nil,
+    onReminderAccessRevoked: {},
+))
 
-#Preview("Dark") {
-    ContentView(configuration: .production(
-        reminderStore: FakeReminderStore(fetchDelay: .seconds(0.3)),
-        reminderStoreCache: nil,
-        onReminderAccessRevoked: {},
-    ))
-    .preferredColorScheme(.dark)
-}
+#Preview("Light") { previewContent.preferredColorScheme(.light) }
+#Preview("Dark") { previewContent.preferredColorScheme(.dark) }
+#endif
