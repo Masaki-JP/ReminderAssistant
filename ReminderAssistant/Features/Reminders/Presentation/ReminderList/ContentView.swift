@@ -188,7 +188,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
         ContentUnavailableView {
             Label("該当なし", systemImage: "line.3.horizontal.decrease.circle")
         } description: {
-            Text("フィルター条件を変更してみてください。")
+            Text("絞り込み条件を変更してみてください。")
         }
     }
 }
