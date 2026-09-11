@@ -84,21 +84,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
             .privacySensitive(isPlaceholder)
             .redacted(reason: isPlaceholder ? .privacy : [])
             .contentMargins(.top, 8, for: .scrollContent)
-            .overlay {
-                if viewModel.isLoading && viewModel.editableLists.isEmpty && viewModel.reminders.isEmpty {
-                    ProgressView()
-                } else if viewModel.editableLists.isEmpty == true {
-                    noEditableReminderListsPlaceholder
-                } else if viewModel.reminders.isEmpty == true {
-                    emptyRemindersPlaceholder
-                } else if isReminderListEmpty == true {
-                    if searchText.isEmpty == false {
-                        ContentUnavailableView.search(text: searchText)
-                    } else {
-                        noMatchingRemindersPlaceholder
-                    }
-                }
-            }
+            .overlay { reminderListOverlay }
             .sheet(isPresented: $isSettingsViewPresented) {
                 SettingsView(
                     reminderDestinationListID: $reminderDestinationListID,
@@ -111,27 +97,8 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
             }
             .navigationTitle(displayedList?.title ?? "すべて")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                Toolbar(
-                    sortOrder: $sortOrder,
-                    filter: $filter,
-                    isCreateReminderSheetPresented: $isCreateReminderSheetPresented,
-                    isSettingsViewPresented: $isSettingsViewPresented,
-                    isCreateReminderDisabled: viewModel.editableLists.isEmpty,
-                    isLoading: viewModel.isLoading,
-                )
-            }
-            .toolbarTitleMenu {
-                Picker("リスト選択", selection: $displayedListID) {
-                    Text("すべて")
-                        .tag(Optional<String>.none)
-                    
-                    ForEach(viewModel.editableLists) { list in
-                        Text(list.title)
-                            .tag(Optional(list.id))
-                    }
-                }
-            }
+            .toolbar { toolbar }
+            .toolbarTitleMenu { reminderListPicker }
         }
         .searchable(text: $searchText, prompt: "リマインダーを検索")
         .animation(.default, value: viewModel.reminders)
@@ -156,6 +123,46 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
             }
         }
         .focusedSceneValue(\.presentCreateReminderSheetAction, presentCreateReminderSheetAction)
+    }
+    
+    @ViewBuilder
+    var reminderListOverlay: some View {
+        if viewModel.isLoading && viewModel.editableLists.isEmpty && viewModel.reminders.isEmpty {
+            ProgressView()
+        } else if viewModel.editableLists.isEmpty == true {
+            noEditableReminderListsPlaceholder
+        } else if viewModel.reminders.isEmpty == true {
+            emptyRemindersPlaceholder
+        } else if isReminderListEmpty == true {
+            if searchText.isEmpty == false {
+                ContentUnavailableView.search(text: searchText)
+            } else {
+                noMatchingRemindersPlaceholder
+            }
+        }
+    }
+    
+    var toolbar: Toolbar {
+        Toolbar(
+            sortOrder: $sortOrder,
+            filter: $filter,
+            isCreateReminderSheetPresented: $isCreateReminderSheetPresented,
+            isSettingsViewPresented: $isSettingsViewPresented,
+            isCreateReminderDisabled: viewModel.editableLists.isEmpty,
+            isLoading: viewModel.isLoading,
+        )
+    }
+    
+    var reminderListPicker: some View {
+        Picker("リスト選択", selection: $displayedListID) {
+            Text("すべて")
+                .tag(Optional<String>.none)
+            
+            ForEach(viewModel.editableLists) { list in
+                Text(list.title)
+                    .tag(Optional(list.id))
+            }
+        }
     }
     
     var emptyRemindersPlaceholder: some View {
