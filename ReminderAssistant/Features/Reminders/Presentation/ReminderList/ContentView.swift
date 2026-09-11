@@ -104,8 +104,8 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
         .animation(.default, value: viewModel.reminders)
         .task(viewModel.loadReminders)
         .onChange(of: viewModel.editableLists) { _, lists in
-            selectListIfNeeded(from: lists)
-            selectReminderDestinationListIfNeeded(from: lists)
+            ensureDisplayedList(from: lists)
+            ensureReminderDestinationList(from: lists)
         }
         .alert(viewModel.error?.title ?? "エラー", isPresented: viewModel.errorBinding) {
             errorAlertActions
@@ -213,7 +213,7 @@ extension ContentView {
     
     /// 表示対象のリスト（``displayedListID``）が未設定、または現在の編集可能なリストに存在しない場合、表示対象のリストにデフォルトリスト、または「すべて（`nil`）」を設定する。
     ///
-    func selectListIfNeeded(from lists: [ReminderList]) {
+    func ensureDisplayedList(from lists: [ReminderList]) {
         guard isPlaceholder == false else { return }
         
         guard displayedListID.map({ displayedListID in
@@ -229,7 +229,7 @@ extension ContentView {
     
     /// 初回はリマインダーの作成先のリスト（``reminderDestinationListID``）をデフォルトリスト、または先頭のリストに設定する。設定済みのリマインダー作成先が無効な場合はエラーを通知する。
     ///
-    func selectReminderDestinationListIfNeeded(from lists: [ReminderList]) {
+    func ensureReminderDestinationList(from lists: [ReminderList]) {
         guard isPlaceholder == false else { return }
         
         if hasInitializedReminderDestinationList == false {
