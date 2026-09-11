@@ -108,19 +108,9 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
             selectReminderDestinationListIfNeeded(from: lists)
         }
         .alert(viewModel.error?.title ?? "エラー", isPresented: viewModel.errorBinding) {
-            switch viewModel.error?.recoveryAction {
-            case .reload:
-                Button("再読み込み") {
-                    guard isPlaceholder == false else { return }
-                    viewModel.loadReminders()
-                }
-            case .dismiss, nil:
-                Button("OK", role: .cancel) {}
-            }
+            errorAlertActions
         } message: {
-            if let error = viewModel.error {
-                Text(error.message)
-            }
+            Text(viewModel.error?.message ?? "")
         }
         .focusedSceneValue(\.presentCreateReminderSheetAction, presentCreateReminderSheetAction)
     }
@@ -162,6 +152,19 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
                 Text(list.title)
                     .tag(Optional(list.id))
             }
+        }
+    }
+    
+    @ViewBuilder
+    var errorAlertActions: some View {
+        switch viewModel.error?.recoveryAction {
+        case .reload:
+            Button("再読み込み") {
+                guard isPlaceholder == false else { return }
+                viewModel.loadReminders()
+            }
+        case .dismiss, nil:
+            Button("OK", role: .cancel) {}
         }
     }
     
