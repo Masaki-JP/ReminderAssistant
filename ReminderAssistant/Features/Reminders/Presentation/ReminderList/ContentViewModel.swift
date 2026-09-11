@@ -62,38 +62,9 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     
     // MARK: - Reminder Creation
     
-    func createReminder(
-        title: String,
-        deadline: String,
-        priority: Reminder.Priority,
-        notes: String,
-        listIdentifier: String?,
-    ) async throws(CreateReminderError) {
+    func createReminder(_ request: CreateReminderRequest) async throws(CreateReminderError) {
         let operationID = UUID()
-        let task = Task { [weak self] () -> Result<Void, CreateReminderError> in
-            defer { self?.finishReminderMutation(with: .create(operationID)) }
-            
-            do {
-                guard let list = try self?.reminderDestinationList(for: listIdentifier) else {
-                    return .failure(.cancelled)
-                }
-                
-                try await self?.reminderStore.create(
-                    title: title,
-                    deadline: deadline,
-                    priority: priority,
-                    notes: notes,
-                    list: list,
-                )
-            } catch {
-                guard let self else { return .failure(.cancelled) }
-                return .failure(self.handleCreateReminderError(error))
-            }
-            
-            guard self != nil else { return .failure(.cancelled) }
-            UINotificationFeedbackGenerator().notificationOccurred(.success)
-            return .success(())
-        }
+        let task = createReminderTask(request: request, operationID: operationID)
         
         reminderOperations.append(.create(operationID: operationID, task: task))
         cancelLoad()
@@ -109,12 +80,38 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         }
     }
     
+    private func createReminderTask(
+        request: CreateReminderRequest,
+        operationID: UUID,
+    ) -> Task<Result<Void, CreateReminderError>, Never> {
+        Task { [weak self] () -> Result<Void, CreateReminderError> in
+            defer { self?.finishReminderMutation(with: .create(operationID)) }
+            
+            do {
+                guard let list = try self?.reminderDestinationList(for: request.listIdentifier) else {
+                    return .failure(.cancelled)
+                }
+                
+                try await self?.reminderStore.create(
+                    title: request.title, deadline: request.deadline, priority: request.priority, notes: request.notes, list: list,
+                )
+            } catch {
+                guard let self else { return .failure(.cancelled) }
+                return .failure(self.handleCreateReminderError(error))
+            }
+            
+            guard self != nil else { return .failure(.cancelled) }
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            return .success(())
+        }
+    }
+    
     private func reminderDestinationList(for listIdentifier: String?) throws(ContentViewModelError) -> ReminderList {
-        guard let list = editableLists.first(where: { $0.calendarIdentifier == listIdentifier }) else {
+        if let list = editableLists.first(where: { $0.calendarIdentifier == listIdentifier }) {
+            return list
+        } else {
             throw .reminderDestinationListUnavailable
         }
-        
-        return list
     }
     
     private func handleCreateReminderError(_ error: any Error) -> CreateReminderError {
@@ -234,17 +231,17 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
             }
         }
     }
-
+    
     /// 作成・完了状態更新の終了を記録し、必要であれば再読み込みする。
     private func finishReminderMutation(with id: ReminderOperation.ID) {
         reminderOperations.removeOperation(with: id)
         reloadRemindersAfterCompletionToggleFailureIfNeeded()
     }
-
+    
     /// 進行中の作成・完了状態更新がなくなった後、最新状態を再読み込みする。
     private func reloadRemindersAfterCompletionToggleFailureIfNeeded() {
         guard shouldReloadAfterCompletionToggleFailure == true else { return }
-
+        
         let hasPendingMutation = reminderOperations.contains { operation in
             switch operation {
             case .create, .toggleCompletion: true
@@ -252,7 +249,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
             }
         }
         guard hasPendingMutation == false else { return }
-
+        
         shouldReloadAfterCompletionToggleFailure = false
         loadReminders()
     }
@@ -370,12 +367,12 @@ enum ContentViewModelError: Error {
     case loadRemindersFailed
     case toggleCompletionFailed
     case reminderDestinationListUnavailable
-
+    
     enum RecoveryAction {
         case dismiss
         case reload
     }
-
+    
     var title: String {
         switch self {
         case .createReminderFailed:
@@ -388,7 +385,7 @@ enum ContentViewModelError: Error {
             "作成先を選択してください"
         }
     }
-
+    
     var message: String {
         switch self {
         case .createReminderFailed:
@@ -401,13 +398,13 @@ enum ContentViewModelError: Error {
             "新規リマインダーの作成先を設定画面で選択してください。"
         }
     }
-
+    
     var recoveryAction: RecoveryAction {
         switch self {
         case .loadRemindersFailed:
-            .reload
+                .reload
         case .createReminderFailed, .toggleCompletionFailed, .reminderDestinationListUnavailable:
-            .dismiss
+                .dismiss
         }
     }
 }
