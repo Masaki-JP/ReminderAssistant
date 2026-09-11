@@ -2,8 +2,8 @@ import SwiftUI
 
 @Observable
 final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
-    var reminders: [Reminder] { editableLists.flatMap(\.reminders) }
     private(set) var editableLists: [ReminderList] = []
+    var reminders: [Reminder] { editableLists.flatMap(\.reminders) }
     
     private(set) var error: ContentViewModelError? = nil
     var errorBinding: Binding<Bool> {
@@ -13,21 +13,26 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         )
     }
     
-    private var reminderOperations: [ReminderOperation] = .init()
-    private var hasReadInitialCache = false
-    private var shouldReloadAfterCompletionToggleFailure = false
-    
-    private let reminderStore: ReminderStoreType
-    private let reminderStoreCache: ReminderStoreCache?
-    private var notificationToken: (any NSObjectProtocol)? = nil
-    
-    private let reminderAccessRevokedHandler: () -> Void
-    
     var isLoading: Bool {
         (reminderOperations.first).map { operation in
             if case .load = operation { true } else { false }
         } ?? false
     }
+    
+    /// 実行中のリマインダー取得・作成・完了状態更新の操作。
+    private var reminderOperations: [ReminderOperation] = .init()
+    /// 初回のリマインダー取得時にキャッシュを読み込み済みかどうか。
+    private var hasReadInitialCache = false
+    /// 完了状態更新の失敗後、進行中の更新がすべて終了した際に再読み込みするかどうか。
+    private var shouldReloadAfterCompletionToggleFailure = false
+    /// リマインダーの変更通知を解除するためのトークン。
+    private var notificationToken: (any NSObjectProtocol)? = nil
+    /// リマインダーを取得・作成・更新するストア。
+    private let reminderStore: ReminderStoreType
+    /// リマインダー一覧をローカルに保存するキャッシュ。
+    private let reminderStoreCache: ReminderStoreCache?
+    /// リマインダーへのアクセス権限が失効した際の処理。
+    private let reminderAccessRevokedHandler: () -> Void
     
     init(
         reminderStore: ReminderStoreType,
@@ -51,14 +56,8 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     }
     
     isolated deinit {
-        if let notificationToken {
-            NotificationCenter.default.removeObserver(notificationToken)
-        }
-        
-        /// 作成と更新の処理が完了しないリスクは許容する。
-        reminderOperations.removeAll { operation in
-            operation.cancel(); return true
-        }
+        notificationToken.map { NotificationCenter.default.removeObserver($0) }
+        reminderOperations.removeAll { $0.cancel(); return true } // ※1
     }
     
     // MARK: - Reminder Creation
@@ -412,3 +411,7 @@ enum ContentViewModelError: Error {
         }
     }
 }
+
+/*
+ ※1: 作成と更新の処理が完了しないリスクは許容する。
+ */
