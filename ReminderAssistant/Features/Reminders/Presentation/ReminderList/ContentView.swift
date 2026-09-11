@@ -157,7 +157,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
     
     @ViewBuilder
     var errorAlertActions: some View {
-        switch viewModel.error?.recoveryAction {
+        switch viewModel.error?.recoveryBehavior {
         case .reload:
             Button("再読み込み") {
                 guard isPlaceholder == false else { return }
