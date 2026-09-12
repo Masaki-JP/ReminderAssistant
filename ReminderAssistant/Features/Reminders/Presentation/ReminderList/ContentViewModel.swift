@@ -253,11 +253,9 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         let task = Task { [weak self] in
             defer { self?.finishReminderMutation(with: .toggleCompletion(reminder.id)) }
             
-            try? await Task.sleep(for: .seconds(0.3))
-            
             do {
+                try await Task.sleep(for: .seconds(0.3))
                 try await self?.reminderStore.set(id: reminder.id, completion: completion)
-                
                 guard let index = self?.reminderIndex(for: reminder) else { return }
                 self?.editableLists[index.list].reminders[index.reminder].setIsCompleted(completion)
             } catch {
