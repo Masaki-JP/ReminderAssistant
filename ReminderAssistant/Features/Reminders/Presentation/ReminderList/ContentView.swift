@@ -157,7 +157,7 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
     
     @ViewBuilder
     var errorAlertActions: some View {
-        switch viewModel.error?.recoveryAction {
+        switch viewModel.error?.recoveryBehavior {
         case .reload:
             Button("再読み込み") {
                 guard isPlaceholder == false else { return }
@@ -194,21 +194,12 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
 }
 
 extension ContentView {
-    func createReminder(
-        _ title: String,
-        _ deadline: String,
-        _ priority: Reminder.Priority,
-        _ notes: String
-    ) async throws(CreateReminderError) {
+    func createReminder(_ request: CreateReminderRequest) async throws(CreateReminderError) {
         guard isPlaceholder == false else { throw .cancelled }
         
-        try await viewModel.createReminder(
-            title: title,
-            deadline: deadline,
-            priority: priority,
-            notes: notes,
-            listIdentifier: reminderDestinationListID
-        )
+        var request = request
+        request.listIdentifier = reminderDestinationListID
+        try await viewModel.createReminder(request)
     }
     
     /// 表示対象のリスト（``displayedListID``）が未設定、または現在の編集可能なリストに存在しない場合、表示対象のリストにデフォルトリスト、または「すべて（`nil`）」を設定する。

@@ -1,10 +1,7 @@
 import SwiftUI
 
 struct CreateReminderSheet: View {
-    @State var title = ""
-    @State var deadline = ""
-    @State var priority: Reminder.Priority = .none
-    @State var notes = ""
+    @State var request = CreateReminderRequest(title: "", deadline: "", priority: .none, notes: "")
     @State var isDismissConfirmationDialogPresented = false
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var colorScheme: ColorScheme
@@ -23,54 +20,36 @@ struct CreateReminderSheet: View {
         set: { if $0 == false { creationError = nil } }
     ) }
     
-    let confirmAction: (
-        _ title: String,
-        _ deadline: String,
-        _ priority: Reminder.Priority,
-        _ notes: String
-    ) async throws(CreateReminderError) -> Void
+    let confirmAction: (CreateReminderRequest) async throws(CreateReminderError) -> Void
     
-    init(
-        onConfirm: @escaping (
-            _ title: String,
-            _ deadline: String,
-            _ priority: Reminder.Priority,
-            _ notes: String
-        ) async throws(CreateReminderError) -> Void
-    ) {
+    init(onConfirm: @escaping (CreateReminderRequest) async throws(CreateReminderError) -> Void) {
         self.confirmAction = onConfirm
     }
     
     var canDismissWithoutConfirmation: Bool {
-        title.isEmpty && deadline.isEmpty && notes.isEmpty
+        request.title.isEmpty && request.deadline.isEmpty && request.notes.isEmpty
     }
     
     var isConfirmButtonDisabled: Bool {
         isCreating
-        || title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        || deadline.isEmpty
+        || request.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        || request.deadline.isEmpty
     }
     
     var body: some View {
         NavigationStack {
-            CreateReminderForm(
-                title: $title,
-                deadline: $deadline,
-                priority: $priority,
-                notes: $notes,
-                focus: $focus
-            )
-            .disabled(isCreating)
-            .navigationTitle("新規作成")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { toolbarContent }
-            .safeAreaInset(edge: .bottom) {
-                if focus != nil, case .phone = InterfaceIdiom.current {
-                    customPhoneKeyboardToolbar
-                        .padding(.horizontal)
-                        .padding(.bottom, 8)
+            CreateReminderForm(request: $request, focus: $focus)
+                .disabled(isCreating)
+                .navigationTitle("新規作成")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar { toolbarContent }
+                .safeAreaInset(edge: .bottom) {
+                    if focus != nil, case .phone = InterfaceIdiom.current {
+                        customPhoneKeyboardToolbar
+                            .padding(.horizontal)
+                            .padding(.bottom, 8)
+                    }
                 }
-            }
         }
         .interactiveDismissDisabled(isCreating || !canDismissWithoutConfirmation)
         .alert("作成失敗", isPresented: creationErrorBinding) {
@@ -164,7 +143,7 @@ extension CreateReminderSheet {
             defer { creationTask = nil }
             
             do {
-                try await confirmAction(title, deadline, priority, notes)
+                try await confirmAction(request)
                 dismiss()
             } catch let error as CreateReminderError {
                 if case .cancelled = error { return }
@@ -199,12 +178,5 @@ extension CreateReminderError {
     }
 }
 
-#Preview("Light") {
-    CreateReminderSheet { (_, _, _, _) in }
-        .preferredColorScheme(.light)
-}
-
-#Preview("Dark") {
-    CreateReminderSheet { (_, _, _, _) in }
-        .preferredColorScheme(.dark)
-}
+#Preview("Light") { CreateReminderSheet { _ in }.preferredColorScheme(.light) }
+#Preview("Dark") { CreateReminderSheet { _ in }.preferredColorScheme(.dark) }
