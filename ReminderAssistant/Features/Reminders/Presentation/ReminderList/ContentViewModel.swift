@@ -83,7 +83,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         
         let operationID = UUID()
         let task = Task { [weak self, reminderStore = self.reminderStore, reminderStoreCache = self.reminderStoreCache] in
-            defer { self?.reminderOperations.remove(with: .load(operationID)) }
+            defer { self?.reminderOperations.remove(with: operationID) }
             
             do {
                 async let fetchedLists = reminderStore.fetch()
@@ -103,7 +103,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
             }
         }
         
-        reminderOperations.append(.load(operationID: operationID, task: task))
+        reminderOperations.append(.load(id: operationID, task: task))
     }
     
     /// 古い取得結果が後から表示やキャッシュを上書きしないよう、実行中のリマインダー取得をすべてキャンセルする。
@@ -135,7 +135,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         let operationID = UUID()
         let task = createReminderTask(request: request, operationID: operationID)
         
-        reminderOperations.append(.create(operationID: operationID, task: task))
+        reminderOperations.append(.create(id: operationID, task: task))
         cancelLoad()
         
         let result = await withTaskCancellationHandler {
@@ -155,7 +155,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         operationID: UUID,
     ) -> Task<Result<Void, CreateReminderError>, Never> {
         Task { [weak self] () -> Result<Void, CreateReminderError> in
-            defer { self?.finishReminderMutation(with: .create(operationID)) }
+            defer { self?.finishReminderMutation(with: operationID) }
             
             do {
                 guard let list = try self?.reminderDestinationList(for: request.listIdentifier) else {
@@ -243,15 +243,19 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     /// 指定リマインダーの完了状態更新が予約または実行中かどうかを返す。
     private func hasPendingCompletionToggle(for reminder: Reminder) -> Bool {
         reminderOperations.contains { operation in
-            if case .toggleCompletion(let id, _) = operation, id == reminder.id { true } else { false }
+            switch operation {
+            case .toggleCompletion(_, let reminderID, _) where reminderID == reminder.id: true
+            default: false
+            }
         }
     }
     
     /// 完了状態の更新を予約し、変更前・変更途中の取得結果による上書きを防ぐため、進行中の取得をキャンセルする。
     private func requestCompletionToggle(for reminder: Reminder) {
+        let operationID = UUID()
         let completion = !reminder.isCompleted
         let task = Task { [weak self] in
-            defer { self?.finishReminderMutation(with: .toggleCompletion(reminder.id)) }
+            defer { self?.finishReminderMutation(with: operationID) }
             
             do {
                 try await Task.sleep(for: .seconds(0.3))
@@ -265,14 +269,16 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
             }
         }
         
-        reminderOperations.append(.toggleCompletion(reminderID: reminder.id, task: task))
+        reminderOperations.append(
+            .toggleCompletion(id: operationID, reminderID: reminder.id, task: task)
+        )
         cancelLoad()
     }
     
     /// 短時間の反対操作を相殺して不要なストア更新を避けるため、予約されている完了状態更新をキャンセルする。
     private func cancelCompletionToggle(for reminder: Reminder) {
         reminderOperations.removeAll { operation in
-            if case let .toggleCompletion(id, task) = operation, id == reminder.id {
+            if case let .toggleCompletion(_, reminderID, task) = operation, reminderID == reminder.id {
                 task.cancel(); return true
             } else {
                 return false
@@ -302,8 +308,8 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     /// すべての変更を反映した状態を一度だけ取得する。
     
     /// 作成・完了状態更新の終了を記録し、必要であれば再読み込みする。
-    private func finishReminderMutation(with id: ReminderOperation.ID) {
-        reminderOperations.remove(with: id)
+    private func finishReminderMutation(with operationID: UUID) {
+        reminderOperations.remove(with: operationID)
         reloadRemindersAfterCompletionToggleFailureIfNeeded()
     }
     
@@ -386,38 +392,33 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
 }
 
 /// ViewModelが管理する操作と、その操作を実行するタスク。
-/// 作成・取得は実行単位のUUIDで識別し、完了状態更新は同じリマインダーへの重複操作を検出するためリマインダーIDで識別する。
+/// 各操作は実行単位のUUIDで識別し、完了状態更新は対象のリマインダーIDも保持する。
 private enum ReminderOperation {
-    /// 完了した操作を操作一覧から取り除く際に用いる識別子。
-    enum ID {
-        case create(UUID)
-        case toggleCompletion(Reminder.ID)
-        case load(UUID)
-    }
+    case create(id: UUID, task: Task<Result<Void, CreateReminderError>, Never>)
+    case toggleCompletion(id: UUID, reminderID: Reminder.ID, task: Task<Void, Never>)
+    case load(id: UUID, task: Task<Void, Never>)
     
-    case create(operationID: UUID, task: Task<Result<Void, CreateReminderError>, Never>)
-    case toggleCompletion(reminderID: Reminder.ID, task: Task<Void, Never>)
-    case load(operationID: UUID, task: Task<Void, Never>)
+    /// この操作を一意に識別するID。
+    var id: UUID {
+        switch self {
+        case .create(let id, _): id
+        case .toggleCompletion(let id, _, _): id
+        case .load(let id, _): id
+        }
+    }
     
     /// この操作に紐づくTaskをキャンセルする。
     func cancel() {
         switch self {
         case .create(_, let task): task.cancel()
-        case .toggleCompletion(_, let task), .load(_, let task): task.cancel()
+        case .toggleCompletion(_, _, let task), .load(_, let task): task.cancel()
         }
     }
 }
 
 private extension Array<ReminderOperation> {
     /// 指定されたIDを用いて、完了した操作を管理対象から削除する。
-    mutating func remove(with id: ReminderOperation.ID) {
-        removeAll { operation in
-            switch (operation, id) {
-            case let (.create(operationID, _), .create(id)): operationID == id
-            case let (.toggleCompletion(reminderID, _), .toggleCompletion(id)): reminderID == id
-            case let (.load(operationID, _), .load(id)): operationID == id
-            default: false
-            }
-        }
+    mutating func remove(with operationID: UUID) {
+        removeAll { $0.id == operationID }
     }
 }
