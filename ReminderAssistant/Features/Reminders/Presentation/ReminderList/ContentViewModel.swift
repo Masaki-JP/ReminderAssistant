@@ -135,7 +135,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         
         let operationID = UUID()
         let task = Task { [weak self, reminderStore = self.reminderStore, reminderStoreCache = self.reminderStoreCache] in
-            defer { self?.reminderOperations.removeOperation(with: .load(operationID)) }
+            defer { self?.reminderOperations.remove(with: .load(operationID)) }
             
             do {
                 async let fetchedLists = reminderStore.fetch()
@@ -234,7 +234,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     
     /// 作成・完了状態更新の終了を記録し、必要であれば再読み込みする。
     private func finishReminderMutation(with id: ReminderOperation.ID) {
-        reminderOperations.removeOperation(with: id)
+        reminderOperations.remove(with: id)
         reloadRemindersAfterCompletionToggleFailureIfNeeded()
     }
     
@@ -310,9 +310,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     /// 再読み込み予約を解除し、すべての操作をキャンセルして権限失効を通知する。
     private func handleReminderAccessRevoked() {
         shouldReloadAfterCompletionToggleFailure = false
-        reminderOperations.removeAll { operation in
-            operation.cancel(); return true
-        }
+        reminderOperations.removeAll { $0.cancel(); return true }
         reminderAccessRevokedHandler()
     }
     
@@ -336,26 +334,21 @@ private enum ReminderOperation {
     
     func cancel() {
         switch self {
-        case .create(_, let task):
-            task.cancel()
-        case .toggleCompletion(_, let task), .load(_, let task):
-            task.cancel()
+        case .create(_, let task): task.cancel()
+        case .toggleCompletion(_, let task), .load(_, let task): task.cancel()
         }
     }
 }
 
 private extension Array<ReminderOperation> {
-    mutating func removeOperation(with id: ReminderOperation.ID) {
+    /// 完了した操作を管理対象から削除する。完了処理中のタスク自身を中断しないよう、ここではキャンセルしない。
+    mutating func remove(with id: ReminderOperation.ID) {
         removeAll { operation in
             switch (operation, id) {
-            case let (.create(operationID, _), .create(id)):
-                operationID == id
-            case let (.toggleCompletion(reminderID, _), .toggleCompletion(id)):
-                reminderID == id
-            case let (.load(operationID, _), .load(id)):
-                operationID == id
-            default:
-                false
+            case let (.create(operationID, _), .create(id)): operationID == id
+            case let (.toggleCompletion(reminderID, _), .toggleCompletion(id)): reminderID == id
+            case let (.load(operationID, _), .load(id)): operationID == id
+            default: false
             }
         }
     }
