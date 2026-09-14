@@ -1,7 +1,7 @@
 import Foundation
 import JapaneseDateConverter
 
-actor FakeReminderStore: ReminderStoreProtocol {
+actor FakeReminderRepository: ReminderRepository {
     struct ScheduledAdditions {
         /// リマインダーを追加する間隔。（fetchDelayより長い時間を指定するのが好ましい）
         fileprivate let interval: Duration
@@ -46,9 +46,9 @@ actor FakeReminderStore: ReminderStoreProtocol {
         "remindersMayHaveChanged.\(UUID().uuidString)"
     )
     
-    /// 指定された初期状態と振る舞いでFakeReminderStoreを生成する。
+    /// 指定された初期状態と振る舞いでFakeReminderRepositoryを生成する。
     /// - Parameters:
-    ///   - editableLists: 最初からストアが保持するリマインダーを格納した編集可能なリスト。
+    ///   - editableLists: 最初からリポジトリが保持するリマインダーを格納した編集可能なリスト。
     ///   - fetchDelay: fetchが結果を返すまでの待機時間。
     ///   - oneTimeFailureOperation: 一度だけ失敗させる操作。nilの場合は意図的なエラーを発生させない。
     ///   - scheduledAdditions: 定期的なリマインダー追加の設定。nilの場合は定期追加を行わない。
@@ -85,14 +85,14 @@ actor FakeReminderStore: ReminderStoreProtocol {
         priority: Reminder.Priority,
         notes: String,
         list: ReminderList,
-    ) async throws(ReminderStoreError) {
-        try await operation(priority: .medium) { () async throws(ReminderStoreError) -> Void in
+    ) async throws(ReminderRepositoryError) {
+        try await operation(priority: .medium) { () async throws(ReminderRepositoryError) -> Void in
             try throwOneTimeErrorIfNeeded(for: .create)
             
             guard let listIndex = editableLists.firstIndex(where: { editableList in
                 editableList.calendarIdentifier == list.calendarIdentifier
             }) else {
-                throw ReminderStoreError.listNotFound(
+                throw ReminderRepositoryError.listNotFound(
                     calendarIdentifier: list.calendarIdentifier
                 )
             }
@@ -103,7 +103,7 @@ actor FakeReminderStore: ReminderStoreProtocol {
             }
             
             try checkCancel()
-            guard let dueDate else { throw ReminderStoreError.deadlineConversionFailed }
+            guard let dueDate else { throw ReminderRepositoryError.deadlineConversionFailed }
             
             let now = Date.now
             let reminder = Reminder(
@@ -121,13 +121,13 @@ actor FakeReminderStore: ReminderStoreProtocol {
         }
     }
     
-    func set(id: String, completion: Bool) async throws(ReminderStoreError) {
-        try await operation(priority: .medium) { () async throws(ReminderStoreError) -> Void in
+    func set(id: String, completion: Bool) async throws(ReminderRepositoryError) {
+        try await operation(priority: .medium) { () async throws(ReminderRepositoryError) -> Void in
             try throwOneTimeErrorIfNeeded(for: .setCompletion)
             
             guard let listIndex = editableLists.firstIndex(where: { $0.reminders.contains(where: { $0.id == id }) }),
                   let index = editableLists[listIndex].reminders.firstIndex(where: { $0.id == id }) else {
-                throw ReminderStoreError.reminderNotFound(
+                throw ReminderRepositoryError.reminderNotFound(
                     calendarItemIdentifier: id
                 )
             }
@@ -150,8 +150,8 @@ actor FakeReminderStore: ReminderStoreProtocol {
         }
     }
     
-    func fetch() async throws(ReminderStoreError) -> [ReminderList] {
-        try await operation(priority: .low) { () async throws(ReminderStoreError) -> [ReminderList] in
+    func fetch() async throws(ReminderRepositoryError) -> [ReminderList] {
+        try await operation(priority: .low) { () async throws(ReminderRepositoryError) -> [ReminderList] in
             do {
                 try await Task.sleep(for: fetchDelay)
             } catch {
@@ -186,8 +186,8 @@ actor FakeReminderStore: ReminderStoreProtocol {
         }
     }
     
-    private func addNextScheduledReminder() async throws(ReminderStoreError) -> Bool {
-        try await operation(priority: .medium) { () async throws(ReminderStoreError) -> Bool in
+    private func addNextScheduledReminder() async throws(ReminderRepositoryError) -> Bool {
+        try await operation(priority: .medium) { () async throws(ReminderRepositoryError) -> Bool in
             guard let addition = scheduledAdditions?.pendingReminders.first,
                   let listIndex = editableLists.firstIndex(where: { $0.id == addition.listID }) else {
                 return false
@@ -207,7 +207,7 @@ actor FakeReminderStore: ReminderStoreProtocol {
         )
     }
     
-    private func throwOneTimeErrorIfNeeded(for operation: FailureOperation) throws(ReminderStoreError) {
+    private func throwOneTimeErrorIfNeeded(for operation: FailureOperation) throws(ReminderRepositoryError) {
         guard oneTimeFailureOperation == operation else { return }
         
         oneTimeFailureOperation = nil
@@ -219,7 +219,7 @@ actor FakeReminderStore: ReminderStoreProtocol {
         }
     }
     
-    private func checkCancel() throws(ReminderStoreError) {
+    private func checkCancel() throws(ReminderRepositoryError) {
         do {
             try Task.checkCancellation()
         } catch {
@@ -234,8 +234,8 @@ actor FakeReminderStore: ReminderStoreProtocol {
     @discardableResult
     private func operation<T>(
         priority: OperationPriority,
-        action: () async throws(ReminderStoreError) -> T
-    ) async throws(ReminderStoreError) -> T {
+        action: () async throws(ReminderRepositoryError) -> T
+    ) async throws(ReminderRepositoryError) -> T {
         await acquireOperation(priority: priority)
         defer { releaseOperation() }
         try checkCancel()

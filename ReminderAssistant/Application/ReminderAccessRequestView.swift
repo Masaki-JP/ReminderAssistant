@@ -12,7 +12,7 @@ struct ReminderAccessRequestView: View {
         self.reminderAccessGrantedHandler = onReminderAccessGranted
     }
     
-    static let fakeReminderStore: FakeReminderStore = {
+    static let fakeReminderRepository: FakeReminderRepository = {
         let list = ReminderList(
             calendarIdentifier: "xxx",
             title: "xxx",
@@ -28,7 +28,7 @@ struct ReminderAccessRequestView: View {
     
     var body: some View {
         ContentView(configuration: .placeholder(
-            reminderStore: Self.fakeReminderStore,
+            reminderRepository: Self.fakeReminderRepository,
         ))
         .overlay {
             contentCover.ignoresSafeArea()
