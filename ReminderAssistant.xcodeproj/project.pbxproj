@@ -42,6 +42,7 @@
 		4C57A4563044F89000DA18DF /* RAWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RAWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C57A4583044F89000DA18DF /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		4C57A45A3044F89000DA18DF /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		4C5B71CB3058431A006A238F /* ReminderEventKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = ReminderEventKit; sourceTree = "<group>"; };
 		4CADDAF030447DFE003808B3 /* ReminderAssistant.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReminderAssistant.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4CB25A4030582DEE00043A76 /* ReminderCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = ReminderCore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -116,6 +117,7 @@
 		4CADDAE730447DFE003808B3 = {
 			isa = PBXGroup;
 			children = (
+				4C5B71CB3058431A006A238F /* ReminderEventKit */,
 				4CB25A4030582DEE00043A76 /* ReminderCore */,
 				4CADDAF230447DFE003808B3 /* ReminderAssistant */,
 				4C57A45C3044F89000DA18DF /* RAWidget */,
