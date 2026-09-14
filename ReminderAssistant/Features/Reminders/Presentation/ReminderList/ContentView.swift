@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
-    @State var viewModel: ContentViewModel<ReminderStoreType>
+struct ContentView<ReminderRepositoryType: ReminderRepository>: View {
+    @State var viewModel: ContentViewModel<ReminderRepositoryType>
     @State var sortOrder = ReminderSortOrder()
     @State var filter = ReminderFilter()
     @State var searchText = ""
@@ -19,19 +19,19 @@ struct ContentView<ReminderStoreType: ReminderStoreProtocol>: View {
     
     init(configuration: Configuration) {
         switch configuration {
-        case .production(let reminderStore, let reminderStoreCache, let onReminderAccessRevoked):
+        case .production(let reminderRepository, let reminderStoreCache, let onReminderAccessRevoked):
             _viewModel = .init(
                 wrappedValue: .init(
-                    reminderStore: reminderStore,
+                    reminderRepository: reminderRepository,
                     reminderStoreCache: reminderStoreCache,
                     onReminderAccessRevoked: onReminderAccessRevoked,
                 )
             )
             self.isPlaceholder = false
-        case .placeholder(let reminderStore):
+        case .placeholder(let reminderRepository):
             _viewModel = .init(
                 wrappedValue: .init(
-                    reminderStore: reminderStore,
+                    reminderRepository: reminderRepository,
                     reminderStoreCache: nil,
                     onReminderAccessRevoked: {},
                 )
@@ -245,7 +245,7 @@ extension ContentView {
 
 #if DEBUG
 private let previewContent = ContentView(configuration: .production(
-    reminderStore: FakeReminderStore(fetchDelay: .seconds(0.3)),
+    reminderRepository: FakeReminderRepository(fetchDelay: .seconds(0.3)),
     reminderStoreCache: nil,
     onReminderAccessRevoked: {},
 ))

@@ -1,11 +1,11 @@
 extension ContentView {
     enum Configuration {
         case production(
-            reminderStore: ReminderStoreType = ReminderStore.shared,
+            reminderRepository: ReminderRepositoryType = EventKitReminderRepository.shared,
             reminderStoreCache: ReminderStoreCache? = .init(),
             onReminderAccessRevoked: () -> Void,
         )
 
-        case placeholder(reminderStore: ReminderStoreType)
+        case placeholder(reminderRepository: ReminderRepositoryType)
     }
 }

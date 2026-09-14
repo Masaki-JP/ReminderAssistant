@@ -1,7 +1,7 @@
 import SwiftUI
 
 @Observable
-final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
+final class ContentViewModel<ReminderRepositoryType: ReminderRepository> {
     private(set) var editableLists: [ReminderList] = []
     var reminders: [Reminder] { editableLists.flatMap(\.reminders) }
     
@@ -27,25 +27,25 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     private var shouldReloadAfterCompletionToggleFailure = false
     /// リマインダーの変更通知を解除するためのトークン。
     private var notificationToken: (any NSObjectProtocol)? = nil
-    /// リマインダーを取得・作成・更新するストア。
-    private let reminderStore: ReminderStoreType
+    /// リマインダーを取得・作成・更新するリポジトリ。
+    private let reminderRepository: ReminderRepositoryType
     /// リマインダー一覧をローカルに保存するキャッシュ。
     private let reminderStoreCache: ReminderStoreCache?
     /// リマインダーへのアクセス権限が失効した際の処理。
     private let reminderAccessRevokedHandler: () -> Void
     
-    /// リマインダーストアとキャッシュを設定し、リマインダー変更通知の監視を開始する。
+    /// リマインダーリポジトリとキャッシュを設定し、リマインダー変更通知の監視を開始する。
     init(
-        reminderStore: ReminderStoreType,
+        reminderRepository: ReminderRepositoryType,
         reminderStoreCache: ReminderStoreCache?,
         onReminderAccessRevoked: @escaping () -> Void,
     ) {
-        self.reminderStore = reminderStore
+        self.reminderRepository = reminderRepository
         self.reminderStoreCache = reminderStoreCache
         self.reminderAccessRevokedHandler = onReminderAccessRevoked
         
         notificationToken = NotificationCenter.default.addObserver(
-            forName: reminderStore.remindersMayHaveChanged,
+            forName: reminderRepository.remindersMayHaveChanged,
             object: nil,
             queue: nil
         ) { [weak self] _ in
@@ -69,8 +69,8 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     /// リマインダー一覧を取得し、表示とキャッシュを最新の状態へ更新する。
     ///
     /// `loadReminders()` は最初に `cancelLoad()` を呼び、それ以前の取得結果が後から表示を上書きすることを防ぐ。
-    /// 続いて `reminderStore.fetch()` を開始し、初回のみ `reminderStoreCache.fetch()` の結果を先に `editableLists` へ反映する。
-    /// ストアから最新の一覧を取得した後は、`editableLists` を更新して `reminderStoreCache.save(_:)` でキャッシュへ保存する。
+    /// 続いて `reminderRepository.fetch()` を開始し、初回のみ `reminderStoreCache.fetch()` の結果を先に `editableLists` へ反映する。
+    /// リポジトリから最新の一覧を取得した後は、`editableLists` を更新して `reminderStoreCache.save(_:)` でキャッシュへ保存する。
     /// 取得タスクは終了時に `reminderOperations.remove(with:)` で管理対象から外れ、エラーは `handleError(_:as:)` で処理される。
     /// `cancelLoad()` によってキャンセルされた場合は、`handleError(_:as:)` がキャンセルを判定するため画面にエラーを表示しない。
     
@@ -82,11 +82,11 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         hasReadInitialCache = true
         
         let operationID = UUID()
-        let task = Task { [weak self, reminderStore = self.reminderStore, reminderStoreCache = self.reminderStoreCache] in
+        let task = Task { [weak self, reminderRepository = self.reminderRepository, reminderStoreCache = self.reminderStoreCache] in
             defer { self?.reminderOperations.remove(with: operationID) }
             
             do {
-                async let fetchedLists = reminderStore.fetch()
+                async let fetchedLists = reminderRepository.fetch()
                 
                 if shouldReadInitialCache,
                    let cachedLists = await reminderStoreCache?.fetch() {
@@ -119,12 +119,12 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     
     // MARK: - Reminder Creation
     
-    /// 作成先を確認し、新しいリマインダーをストアに作成する。
+    /// 作成先を確認し、新しいリマインダーをリポジトリに作成する。
     ///
     /// `createReminder(_:)` は `createReminderTask(request:operationID:)` で作成タスクを生成して `reminderOperations` へ登録し、
     /// `cancelLoad()` で進行中の取得を止めてから、キャンセルハンドラーを使用して作成結果を待つ。
     /// 取得を止めることで、作成前の取得結果が作成後に返り、表示やキャッシュを古い状態へ戻すことを防ぐ。
-    /// 作成タスクは `reminderDestinationList(for:)` で作成先を取得し、`reminderStore.create(...)` でストアへ保存する。
+    /// 作成タスクは `reminderDestinationList(for:)` で作成先を取得し、`reminderRepository.create(...)` でリポジトリへ保存する。
     /// 保存に成功すると成功の触覚フィードバックを発生させ、失敗すると `handleCreateReminderError(_:)` を呼び出す。
     /// `handleCreateReminderError(_:)` と `resolveCreateReminderError(_:)` は、キャンセル・期限変換失敗・作成先なし・保存失敗を
     /// `CreateReminderError` へ変換し、キャンセル以外の場合にエラーの触覚フィードバックを発生させる。
@@ -162,7 +162,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
                     return .failure(.cancelled)
                 }
                 
-                try await self?.reminderStore.create(
+                try await self?.reminderRepository.create(
                     title: request.title, deadline: request.deadline, priority: request.priority, notes: request.notes, list: list,
                 )
             } catch {
@@ -203,7 +203,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
             return .cancelled
         }
         
-        return if (error as? ReminderStoreError) == .deadlineConversionFailed {
+        return if (error as? ReminderRepositoryError) == .deadlineConversionFailed {
             .invalidDeadline
         } else if case .reminderDestinationListUnavailable = resolvedError {
             .destinationListUnavailable
@@ -214,13 +214,13 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
     
     // MARK: - Reminder Completion
     
-    /// 操作を画面へ即時に反映し、リマインダーの完了状態をストアへ保存する。
+    /// 操作を画面へ即時に反映し、リマインダーの完了状態をリポジトリへ保存する。
     ///
     /// `onToggleCompletion(_:)` は `hasPendingCompletionToggle(for:)` で同じリマインダーの更新が進行中か確認する。
     /// 更新がなければ `requestCompletionToggle(for:)` で保存を予約し、更新中であれば `cancelCompletionToggle(for:)` で取り消す。
-    /// 取り消しによって短時間の反対操作を相殺し、ストアへの往復更新を避ける。
+    /// 取り消しによって短時間の反対操作を相殺し、リポジトリへの往復更新を避ける。
     /// その後、`reminderIndex(for:)` で対象の位置を取得し、保存の完了を待たずに画面上の完了状態を切り替える。
-    /// `requestCompletionToggle(for:)` は反対操作で相殺できるよう0.3秒待機した後、`reminderStore.set(id:completion:)` で保存する。
+    /// `requestCompletionToggle(for:)` は反対操作で相殺できるよう0.3秒待機した後、`reminderRepository.set(id:completion:)` で保存する。
     /// また、`cancelLoad()` で進行中の取得を止め、変更前・変更途中の取得結果が後から表示やキャッシュを上書きすることを防ぐ。
     /// 保存に成功すると `setIsCompleted(_:)` で実値を確定し、失敗すると `handleError(_:as:)` でエラーを表示して
     /// `shouldReloadAfterCompletionToggleFailure` を有効にし、すべての変更操作が終わった後の再取得を予約する。
@@ -259,7 +259,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
             
             do {
                 try await Task.sleep(for: .seconds(0.3))
-                try await self?.reminderStore.set(id: reminder.id, completion: completion)
+                try await self?.reminderRepository.set(id: reminder.id, completion: completion)
                 guard let index = self?.reminderIndex(for: reminder) else { return }
                 self?.editableLists[index.list].reminders[index.reminder].setIsCompleted(completion)
             } catch {
@@ -275,7 +275,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         cancelLoad()
     }
     
-    /// 短時間の反対操作を相殺して不要なストア更新を避けるため、予約されている完了状態更新をキャンセルする。
+    /// 短時間の反対操作を相殺して不要なリポジトリ更新を避けるため、予約されている完了状態更新をキャンセルする。
     private func cancelCompletionToggle(for reminder: Reminder) {
         reminderOperations.removeAll { operation in
             if case let .toggleCompletion(_, reminderID, task) = operation, reminderID == reminder.id {
@@ -359,18 +359,19 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         _ error: any Error,
         as fallbackError: ContentViewModelError
     ) -> ContentViewModelError? {
-        if (error as? ReminderStoreError) == .accessNotAuthorized {
+        if (error as? ReminderRepositoryError) == .accessNotAuthorized {
             handleReminderAccessRevoked()
             return nil
         }
         
-        if error is CancellationError || (error as? ReminderStoreError) == .cancelled {
+        if error is CancellationError || (error as? ReminderRepositoryError) == .cancelled {
             return nil
         }
         
         return if let contentViewModelError = error as? ContentViewModelError {
             contentViewModelError
-        } else if let reminderStoreError = error as? ReminderStoreError, case .listNotFound = reminderStoreError {
+        } else if let reminderRepositoryError = error as? ReminderRepositoryError,
+                  case .listNotFound = reminderRepositoryError {
             .reminderDestinationListUnavailable
         } else {
             fallbackError
