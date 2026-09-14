@@ -18,22 +18,21 @@ import JapaneseDateConverter
 /// - 取得：約0.8秒（初回は約2.0秒）
 ///
 final actor ReminderStore: ReminderStoreProtocol {
+    static let shared = ReminderStore()
+    nonisolated let remindersMayHaveChanged: Notification.Name
+    
     private let eventStore: EKEventStore
     private var token: NotificationCenter.ObservationToken
     
-    static let shared = ReminderStore()
-    private static let remindersMayHaveChanged = Notification.Name("remindersMayHaveChanged")
-    
-    nonisolated var remindersMayHaveChangedNotification: Notification.Name {
-        Self.remindersMayHaveChanged
-    }
-    
     private init() {
+        let remindersMayHaveChanged = Notification.Name("remindersMayHaveChanged")
+        self.remindersMayHaveChanged = remindersMayHaveChanged
+        
         let eventStore = EKEventStore()
         self.eventStore = eventStore
         
         token = NotificationCenter.default.addObserver(of: eventStore, for: .changed) { _ in
-            NotificationCenter.default.post(name: Self.remindersMayHaveChanged, object: nil)
+            NotificationCenter.default.post(name: remindersMayHaveChanged, object: nil)
         }
     }
     
@@ -46,23 +45,18 @@ final actor ReminderStore: ReminderStoreProtocol {
         notes: String,
         list: ReminderList,
     ) async throws(ReminderStoreError) {
-        try await operation(priority: .normal) { () async throws(ReminderStoreError) -> Void in
-            try checkAuthorization()
-            
+        try await operation(priority: .medium) { () async throws(ReminderStoreError) -> Void in
             guard let calendar = eventStore.calendar(withIdentifier: list.calendarIdentifier) else {
-                try checkAuthorization()
-                throw ReminderStoreError.listNotFound(
-                    calendarIdentifier: list.calendarIdentifier
-                )
+                throw .listNotFound(calendarIdentifier: list.calendarIdentifier)
             }
             
             let dueDateCalendar = Calendar.gregorianCalendar()
             let dueDate = JapaneseDateConverter().convert(from: deadline).map {
                 dueDateCalendar.dateComponents([.year, .month, .day, .hour, .minute], from: $0)
             }
-            
+            try checkAuthorization()
             try checkCancel()
-            guard let dueDate else { throw ReminderStoreError.deadlineConversionFailed }
+            guard let dueDate else { throw .deadlineConversionFailed }
             
             let reminder = EKReminder(eventStore: eventStore)
             reminder.title = title
@@ -73,70 +67,67 @@ final actor ReminderStore: ReminderStoreProtocol {
             reminder.notes = notes
             reminder.calendar = calendar
             
-            try checkCancel()
             try save(reminder)
         }
     }
     
     func set(id: String, completion: Bool) async throws(ReminderStoreError) {
-        try await operation(priority: .normal) { () async throws(ReminderStoreError) -> Void in
-            try checkAuthorization()
-            
+        try await operation(priority: .medium) { () async throws(ReminderStoreError) -> Void in
             guard let reminder = eventStore.calendarItem(withIdentifier: id) as? EKReminder else {
-                try checkAuthorization()
-                throw ReminderStoreError.reminderNotFound(
-                    calendarItemIdentifier: id
-                )
+                throw .reminderNotFound(calendarItemIdentifier: id)
             }
             
-            try checkCancel()
             reminder.isCompleted = completion
             try save(reminder)
         }
     }
     
+    private typealias RemindersByCalendarIdentifier = [String: [Reminder]]
+    
     func fetch() async throws(ReminderStoreError) -> [ReminderList] {
         try await operation(priority: .low) { () async throws(ReminderStoreError) -> [ReminderList] in
-            try checkAuthorization()
-            
             let editableCalendars: [EKCalendar] = eventStore.calendars(for: .reminder)
                 .filter(\.allowsContentModifications)
             
-            let result = await withCheckedContinuation { continuation in
-                let predicate = eventStore.predicateForReminders(in: editableCalendars)
-                
-                eventStore.fetchReminders(matching: predicate) { reminders in
-                    let result: Result<[String: [Reminder]], ReminderStoreError> = if let reminders {
-                        .success(reminders.reduce(into: [String: [Reminder]]()) { lists, ekReminder in
-                            guard let reminder = ekReminder.reminder,
-                                  let calendarIdentifier = ekReminder.calendar?.calendarIdentifier else { return }
-                            lists[calendarIdentifier, default: []].append(reminder)
-                        })
-                    } else {
-                        .failure(.fetchFailed)
-                    }
-                    
-                    continuation.resume(returning: result)
-                }
-            }
-            
-            try checkCancel()
+            let result = await fetchReminders(in: editableCalendars)
             try checkAuthorization()
+            try checkCancel()
             
             switch result {
-            case .success(let reminders):
+            case .success(let remindersByCalendarIdentifier):
                 let defaultListIdentifier = eventStore.defaultCalendarForNewReminders()?.calendarIdentifier
                 
                 return editableCalendars.map { calendar in
-                    .init(
-                        calendarIdentifier: calendar.calendarIdentifier,
-                        title: calendar.title,
-                        isDefault: calendar.calendarIdentifier == defaultListIdentifier,
-                        reminders: reminders[calendar.calendarIdentifier] ?? []
-                    )
+                        .init(
+                            calendarIdentifier: calendar.calendarIdentifier,
+                            title: calendar.title,
+                            isDefault: calendar.calendarIdentifier == defaultListIdentifier,
+                            reminders: remindersByCalendarIdentifier[calendar.calendarIdentifier] ?? []
+                        )
                 }
-            case .failure(let error):
-                throw error
+            case .failure(let error): throw error
+            }
+        }
+    }
+    
+    private func fetchReminders(
+        in calendars: [EKCalendar]
+    ) async -> Result<RemindersByCalendarIdentifier, ReminderStoreError> {
+        await withCheckedContinuation { continuation in
+            let predicate = eventStore.predicateForReminders(in: calendars)
+            
+            eventStore.fetchReminders(matching: predicate) { reminders in
+                let result: Result<RemindersByCalendarIdentifier, ReminderStoreError> = if let reminders {
+                    .success(reminders.reduce(into: RemindersByCalendarIdentifier()) { lists, ekReminder in
+                        guard let reminder = ekReminder.reminder,
+                              let calendarIdentifier = ekReminder.calendar?.calendarIdentifier else { return }
+                        lists[calendarIdentifier, default: []].append(reminder)
+                    })
+                } else {
+                    .failure(.fetchFailed)
+                }
+                
+                continuation.resume(returning: result)
             }
         }
     }
@@ -176,29 +167,30 @@ final actor ReminderStore: ReminderStoreProtocol {
     ) async throws(ReminderStoreError) -> T {
         await acquireOperation(priority: priority)
         defer { releaseOperation() }
+        try checkAuthorization()
         try checkCancel()
         return try await action()
     }
     
     private enum OperationPriority {
-        case high, normal, low
+        case high, medium, low
     }
     
     private var isOperating = false
     private var highPriorityWaiters: [CheckedContinuation<Void, Never>] = []
-    private var normalPriorityWaiters: [CheckedContinuation<Void, Never>] = []
+    private var mediumPriorityWaiters: [CheckedContinuation<Void, Never>] = []
     private var lowPriorityWaiters: [CheckedContinuation<Void, Never>] = []
     
     private func acquireOperation(priority: OperationPriority) async {
         if isOperating == false {
-            isOperating = true; return
+            isOperating = true
         } else {
             await withCheckedContinuation { continuation in
                 switch priority {
                 case .high:
                     highPriorityWaiters.append(continuation)
-                case .normal:
-                    normalPriorityWaiters.append(continuation)
+                case .medium:
+                    mediumPriorityWaiters.append(continuation)
                 case .low:
                     lowPriorityWaiters.append(continuation)
                 }
@@ -209,8 +201,8 @@ final actor ReminderStore: ReminderStoreProtocol {
     private func releaseOperation() {
         if highPriorityWaiters.isEmpty == false {
             highPriorityWaiters.removeFirst().resume()
-        } else if normalPriorityWaiters.isEmpty == false {
-            normalPriorityWaiters.removeFirst().resume()
+        } else if mediumPriorityWaiters.isEmpty == false {
+            mediumPriorityWaiters.removeFirst().resume()
         } else if lowPriorityWaiters.isEmpty == false {
             lowPriorityWaiters.removeFirst().resume()
         } else {

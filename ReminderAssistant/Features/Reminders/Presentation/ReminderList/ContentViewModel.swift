@@ -45,7 +45,7 @@ final class ContentViewModel<ReminderStoreType: ReminderStoreProtocol> {
         self.reminderAccessRevokedHandler = onReminderAccessRevoked
         
         notificationToken = NotificationCenter.default.addObserver(
-            forName: reminderStore.remindersMayHaveChangedNotification,
+            forName: reminderStore.remindersMayHaveChanged,
             object: nil,
             queue: nil
         ) { [weak self] _ in
