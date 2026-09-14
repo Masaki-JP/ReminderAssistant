@@ -1,6 +1,7 @@
+public import Foundation
 import EventKit
 import JapaneseDateConverter
-import ReminderCore
+public import ReminderCore
 
 /// `EventKit`を使用して、リマインダーの作成・完了状態の更新・取得を行うリポジトリ。
 ///
@@ -38,10 +39,10 @@ import ReminderCore
 ///
 /// - Note: 2026年8月31日にiPhone 17で測定。
 ///
-final actor EventKitReminderRepository: ReminderRepository {
-    static let shared = EventKitReminderRepository()
+public final actor EventKitReminderRepository: ReminderRepository {
+    public static let shared = EventKitReminderRepository()
     /// リマインダー（リスト）の変更を外部に伝えるための通知名。
-    nonisolated let remindersMayHaveChanged: Notification.Name
+    public nonisolated let remindersMayHaveChanged: Notification.Name
     
     private let eventStore: EKEventStore
     /// `EventKit`の変更を監視するためのトークン。
@@ -64,7 +65,7 @@ final actor EventKitReminderRepository: ReminderRepository {
     // MARK: - Reminder Creation
     
     /// 指定したリストにリマインダーを作成する。
-    func create(
+    public func create(
         title: String,
         deadline: String,
         priority: Reminder.Priority,
@@ -100,7 +101,7 @@ final actor EventKitReminderRepository: ReminderRepository {
     // MARK: - Reminder Completion
     
     /// 指定したリマインダーの完了状態を更新する。
-    func set(id: String, completion: Bool) async throws(ReminderRepositoryError) {
+    public func set(id: String, completion: Bool) async throws(ReminderRepositoryError) {
         try await operation(priority: .medium) { () async throws(ReminderRepositoryError) -> Void in
             guard let reminder = eventStore.calendarItem(withIdentifier: id) as? EKReminder else {
                 throw .reminderNotFound(calendarItemIdentifier: id)
@@ -117,7 +118,7 @@ final actor EventKitReminderRepository: ReminderRepository {
     private typealias RemindersByCalendarIdentifier = [String: [Reminder]]
     
     /// 編集可能なリスト（リマインダー）を取得する。
-    func fetch() async throws(ReminderRepositoryError) -> [ReminderList] {
+    public func fetch() async throws(ReminderRepositoryError) -> [ReminderList] {
         try await operation(priority: .low) { () async throws(ReminderRepositoryError) -> [ReminderList] in
             let editableCalendars: [EKCalendar] = eventStore.calendars(for: .reminder)
                 .filter(\.allowsContentModifications)
