@@ -1,7 +1,7 @@
 import Foundation
 
 protocol ReminderStoreProtocol: Actor {
-    nonisolated var remindersMayHaveChangedNotification: Notification.Name { get }
+    nonisolated var remindersMayHaveChanged: Notification.Name { get }
     
     func create(
         title: String,

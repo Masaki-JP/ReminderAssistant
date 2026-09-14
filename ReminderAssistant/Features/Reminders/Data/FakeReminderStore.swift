@@ -42,7 +42,7 @@ actor FakeReminderStore: ReminderStoreProtocol {
     private var scheduledAdditions: ScheduledAdditions?
     
     /// リマインダーの変更を通知するインスタンス固有の通知名。
-    nonisolated let remindersMayHaveChangedNotification = Notification.Name(
+    nonisolated let remindersMayHaveChanged = Notification.Name(
         "remindersMayHaveChanged.\(UUID().uuidString)"
     )
     
@@ -86,7 +86,7 @@ actor FakeReminderStore: ReminderStoreProtocol {
         notes: String,
         list: ReminderList,
     ) async throws(ReminderStoreError) {
-        try await operation(priority: .normal) { () async throws(ReminderStoreError) -> Void in
+        try await operation(priority: .medium) { () async throws(ReminderStoreError) -> Void in
             try throwOneTimeErrorIfNeeded(for: .create)
             
             guard let listIndex = editableLists.firstIndex(where: { editableList in
@@ -122,7 +122,7 @@ actor FakeReminderStore: ReminderStoreProtocol {
     }
     
     func set(id: String, completion: Bool) async throws(ReminderStoreError) {
-        try await operation(priority: .normal) { () async throws(ReminderStoreError) -> Void in
+        try await operation(priority: .medium) { () async throws(ReminderStoreError) -> Void in
             try throwOneTimeErrorIfNeeded(for: .setCompletion)
             
             guard let listIndex = editableLists.firstIndex(where: { $0.reminders.contains(where: { $0.id == id }) }),
@@ -187,7 +187,7 @@ actor FakeReminderStore: ReminderStoreProtocol {
     }
     
     private func addNextScheduledReminder() async throws(ReminderStoreError) -> Bool {
-        try await operation(priority: .normal) { () async throws(ReminderStoreError) -> Bool in
+        try await operation(priority: .medium) { () async throws(ReminderStoreError) -> Bool in
             guard let addition = scheduledAdditions?.pendingReminders.first,
                   let listIndex = editableLists.firstIndex(where: { $0.id == addition.listID }) else {
                 return false
@@ -202,7 +202,7 @@ actor FakeReminderStore: ReminderStoreProtocol {
     
     private func notifyRemindersMayHaveChanged() {
         NotificationCenter.default.post(
-            name: remindersMayHaveChangedNotification,
+            name: remindersMayHaveChanged,
             object: nil
         )
     }
@@ -243,12 +243,12 @@ actor FakeReminderStore: ReminderStoreProtocol {
     }
     
     private enum OperationPriority {
-        case high, normal, low
+        case high, medium, low
     }
     
     private var isOperating = false
     private var highPriorityWaiters: [CheckedContinuation<Void, Never>] = []
-    private var normalPriorityWaiters: [CheckedContinuation<Void, Never>] = []
+    private var mediumPriorityWaiters: [CheckedContinuation<Void, Never>] = []
     private var lowPriorityWaiters: [CheckedContinuation<Void, Never>] = []
     
     private func acquireOperation(priority: OperationPriority) async {
@@ -259,8 +259,8 @@ actor FakeReminderStore: ReminderStoreProtocol {
                 switch priority {
                 case .high:
                     highPriorityWaiters.append(continuation)
-                case .normal:
-                    normalPriorityWaiters.append(continuation)
+                case .medium:
+                    mediumPriorityWaiters.append(continuation)
                 case .low:
                     lowPriorityWaiters.append(continuation)
                 }
@@ -271,8 +271,8 @@ actor FakeReminderStore: ReminderStoreProtocol {
     private func releaseOperation() {
         if highPriorityWaiters.isEmpty == false {
             highPriorityWaiters.removeFirst().resume()
-        } else if normalPriorityWaiters.isEmpty == false {
-            normalPriorityWaiters.removeFirst().resume()
+        } else if mediumPriorityWaiters.isEmpty == false {
+            mediumPriorityWaiters.removeFirst().resume()
         } else if lowPriorityWaiters.isEmpty == false {
             lowPriorityWaiters.removeFirst().resume()
         } else {
