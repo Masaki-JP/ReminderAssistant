@@ -1,3 +1,5 @@
+import ReminderCore
+
 struct CreateReminderRequest {
     var title: String
     var deadline: String

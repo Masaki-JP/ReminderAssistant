@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import ReminderCore
 
 struct ReminderRowView: View {
     let reminder: Reminder

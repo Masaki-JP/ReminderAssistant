@@ -1,3 +1,5 @@
+import ReminderCore
+
 nonisolated extension ReminderList {
     static let samples: [ReminderList] = [
         Sample.household, Sample.personalTasks, Sample.work, Sample.hobby, Sample.other

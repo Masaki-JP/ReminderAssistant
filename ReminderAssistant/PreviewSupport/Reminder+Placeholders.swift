@@ -1,3 +1,5 @@
+import ReminderCore
+
 nonisolated extension Reminder {
     static func placeholders() -> [Reminder] {
         let dueDate1 = DateInput(date: "50日前", time: "9:00")

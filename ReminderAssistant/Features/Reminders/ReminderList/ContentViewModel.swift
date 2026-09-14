@@ -1,4 +1,5 @@
 import SwiftUI
+import ReminderCore
 
 @Observable
 final class ContentViewModel<ReminderRepositoryType: ReminderRepository> {

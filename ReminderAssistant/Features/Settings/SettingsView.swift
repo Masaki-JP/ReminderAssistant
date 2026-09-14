@@ -1,4 +1,5 @@
 import SwiftUI
+import ReminderCore
 
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss: DismissAction

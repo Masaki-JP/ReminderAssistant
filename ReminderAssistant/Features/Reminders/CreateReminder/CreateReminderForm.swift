@@ -1,4 +1,5 @@
 import SwiftUI
+import ReminderCore
 
 struct CreateReminderForm: View {
     @Environment(\.colorScheme) var colorScheme: ColorScheme

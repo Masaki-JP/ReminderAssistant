@@ -1,5 +1,6 @@
 import EventKit
 import JapaneseDateConverter
+import ReminderCore
 
 /// `EventKit`を使用して、リマインダーの作成・完了状態の更新・取得を行うリポジトリ。
 ///

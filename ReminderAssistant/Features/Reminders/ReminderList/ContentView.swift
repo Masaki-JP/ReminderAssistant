@@ -1,4 +1,5 @@
 import SwiftUI
+import ReminderCore
 
 struct ContentView<ReminderRepositoryType: ReminderRepository>: View {
     @State var viewModel: ContentViewModel<ReminderRepositoryType>

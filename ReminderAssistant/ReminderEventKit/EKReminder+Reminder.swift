@@ -1,4 +1,5 @@
 import EventKit
+import ReminderCore
 
 nonisolated
 extension EKReminder {
@@ -69,5 +70,27 @@ extension EKReminder {
             lastModifiedDate: lastModifiedDate,
             completionDate: completionDate
         )
+    }
+}
+
+nonisolated
+extension Reminder.Priority {
+    init?(ekReminderPriority: Int) {
+        switch ekReminderPriority {
+        case 0: self = .none
+        case 1...4: self = .high
+        case 5: self = .medium
+        case 6...9: self = .low
+        default: return nil
+        }
+    }
+
+    var ekReminderPriority: Int {
+        switch self {
+        case .none: 0
+        case .low: 9
+        case .medium: 5
+        case .high: 1
+        }
     }
 }

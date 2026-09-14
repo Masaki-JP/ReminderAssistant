@@ -1,4 +1,5 @@
 import Foundation
+import ReminderCore
 
 actor ReminderStoreCache {
     private struct StoredValue: Codable {

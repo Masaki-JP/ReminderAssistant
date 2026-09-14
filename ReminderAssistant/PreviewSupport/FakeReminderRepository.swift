@@ -1,5 +1,6 @@
 import Foundation
 import JapaneseDateConverter
+import ReminderCore
 
 actor FakeReminderRepository: ReminderRepository {
     struct ScheduledAdditions {

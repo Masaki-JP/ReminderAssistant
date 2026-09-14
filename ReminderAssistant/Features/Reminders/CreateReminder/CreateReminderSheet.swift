@@ -1,4 +1,5 @@
 import SwiftUI
+import ReminderCore
 
 struct CreateReminderSheet: View {
     @State var request = CreateReminderRequest(title: "", deadline: "", priority: .none, notes: "")

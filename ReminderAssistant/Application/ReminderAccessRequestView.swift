@@ -1,5 +1,6 @@
 import SwiftUI
 import EventKit
+import ReminderCore
 
 struct ReminderAccessRequestView: View {
     private let eventStore = EKEventStore()

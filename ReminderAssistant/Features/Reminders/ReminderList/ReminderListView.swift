@@ -1,4 +1,5 @@
 import SwiftUI
+import ReminderCore
 
 struct ReminderListView: View {
     let sections: [ReminderListSection]
