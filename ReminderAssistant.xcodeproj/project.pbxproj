@@ -10,6 +10,7 @@
 		4C57A4593044F89000DA18DF /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C57A4583044F89000DA18DF /* WidgetKit.framework */; };
 		4C57A45B3044F89000DA18DF /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C57A45A3044F89000DA18DF /* SwiftUI.framework */; };
 		4C57A4663044F89000DA18DF /* RAWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4C57A4563044F89000DA18DF /* RAWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4C5B71CA30584007006A238F /* ReminderCore in Frameworks */ = {isa = PBXBuildFile; productRef = 4C5B71C930584007006A238F /* ReminderCore */; };
 		4C65D9BB3045645800EA9247 /* JapaneseDateConverter in Frameworks */ = {isa = PBXBuildFile; productRef = 4C65D9BA3045645800EA9247 /* JapaneseDateConverter */; };
 /* End PBXBuildFile section */
 
@@ -42,6 +43,7 @@
 		4C57A4583044F89000DA18DF /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		4C57A45A3044F89000DA18DF /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		4CADDAF030447DFE003808B3 /* ReminderAssistant.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReminderAssistant.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4CB25A4030582DEE00043A76 /* ReminderCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = ReminderCore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -95,6 +97,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4C65D9BB3045645800EA9247 /* JapaneseDateConverter in Frameworks */,
+				4C5B71CA30584007006A238F /* ReminderCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -113,6 +116,7 @@
 		4CADDAE730447DFE003808B3 = {
 			isa = PBXGroup;
 			children = (
+				4CB25A4030582DEE00043A76 /* ReminderCore */,
 				4CADDAF230447DFE003808B3 /* ReminderAssistant */,
 				4C57A45C3044F89000DA18DF /* RAWidget */,
 				4C57A4573044F89000DA18DF /* Frameworks */,
@@ -174,6 +178,7 @@
 			name = ReminderAssistant;
 			packageProductDependencies = (
 				4C65D9BA3045645800EA9247 /* JapaneseDateConverter */,
+				4C5B71C930584007006A238F /* ReminderCore */,
 			);
 			productName = ReminderAssistant;
 			productReference = 4CADDAF030447DFE003808B3 /* ReminderAssistant.app */;
@@ -568,6 +573,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		4C5B71C930584007006A238F /* ReminderCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ReminderCore;
+		};
 		4C65D9BA3045645800EA9247 /* JapaneseDateConverter */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4C65D9B93045645800EA9247 /* XCRemoteSwiftPackageReference "JapaneseDateConverter" */;
