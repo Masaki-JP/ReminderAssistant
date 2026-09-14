@@ -1,21 +1,23 @@
-import Foundation
+public import Foundation
 
-struct ReminderFilter: Equatable {
-    var completionStatus: CompletionStatus = .incomplete
-    var dueDateCondition: DueDateCondition = .all
-    var notesAvailability: NotesAvailability = .all
-    var priorities: Set<Reminder.Priority> = []
-    var creationDateCondition: DateCondition = .all
-    var lastModifiedDateCondition: DateCondition = .all
-    var completionDateCondition: DateCondition = .all
+public struct ReminderFilter: Equatable, Sendable {
+    public var completionStatus: CompletionStatus = .incomplete
+    public var dueDateCondition: DueDateCondition = .all
+    public var notesAvailability: NotesAvailability = .all
+    public var priorities: Set<Reminder.Priority> = []
+    public var creationDateCondition: DateCondition = .all
+    public var lastModifiedDateCondition: DateCondition = .all
+    public var completionDateCondition: DateCondition = .all
     
-    static let defaultValue = Self()
+    public static let defaultValue = Self()
     
-    var isDefault: Bool {
+    public var isDefault: Bool {
         self == Self.defaultValue
     }
+
+    public init() {}
     
-    func matches(
+    public func matches(
         _ reminder: Reminder,
         calendar: Calendar = .current,
         now: Date = .now
@@ -49,15 +51,15 @@ struct ReminderFilter: Equatable {
     }
 }
 
-extension ReminderFilter {    
-    enum CompletionStatus: CaseIterable, Identifiable {
+public extension ReminderFilter {
+    enum CompletionStatus: CaseIterable, Identifiable, Sendable {
         case all
         case incomplete
         case completed
         
-        var id: Self { self }
+        public var id: Self { self }
         
-        var displayName: String {
+        public var displayName: String {
             switch self {
             case .all: "すべて"
             case .incomplete: "未完了"
@@ -66,14 +68,14 @@ extension ReminderFilter {
         }
     }
     
-    enum NotesAvailability: CaseIterable, Identifiable {
+    enum NotesAvailability: CaseIterable, Identifiable, Sendable {
         case all
         case hasNotes
         case noNotes
         
-        var id: Self { self }
+        public var id: Self { self }
         
-        var displayName: String {
+        public var displayName: String {
             switch self {
             case .all: "すべて"
             case .hasNotes: "あり"
@@ -83,7 +85,7 @@ extension ReminderFilter {
     }
     
     /// 期限日による絞り込みに使用される条件
-    enum DueDateCondition: CaseIterable, Identifiable {
+    enum DueDateCondition: CaseIterable, Identifiable, Sendable {
         case all
         case noDueDate
         case hasDueDate
@@ -92,9 +94,9 @@ extension ReminderFilter {
         case tomorrow
         case nextSevenDays
         
-        var id: Self { self }
+        public var id: Self { self }
         
-        var displayName: String {
+        public var displayName: String {
             switch self {
             case .all: "すべて"
             case .noDueDate: "期限なし"
@@ -108,15 +110,15 @@ extension ReminderFilter {
     }
     
     /// 作成日、更新日、完了日による絞り込みに使用される条件
-    enum DateCondition: CaseIterable, Identifiable {
+    enum DateCondition: CaseIterable, Identifiable, Sendable {
         case all
         case today
         case pastThreeDays
         case pastSevenDays
         
-        var id: Self { self }
+        public var id: Self { self }
         
-        var displayName: String {
+        public var displayName: String {
             switch self {
             case .all: "すべて"
             case .today: "今日"

@@ -1,6 +1,6 @@
-import Foundation
+public import Foundation
 
-protocol ReminderRepository: Actor {
+public protocol ReminderRepository: Actor {
     nonisolated var remindersMayHaveChanged: Notification.Name { get }
     
     func create(
@@ -16,7 +16,7 @@ protocol ReminderRepository: Actor {
     func fetch() async throws(ReminderRepositoryError) -> [ReminderList]
 }
 
-enum ReminderRepositoryError: Error, Equatable {
+public enum ReminderRepositoryError: Error, Equatable {
     case accessNotAuthorized
     case listNotFound(calendarIdentifier: String)
     case reminderNotFound(calendarItemIdentifier: String)

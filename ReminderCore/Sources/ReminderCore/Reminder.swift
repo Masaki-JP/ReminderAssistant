@@ -1,23 +1,23 @@
-import Foundation
+public import Foundation
 
 nonisolated
-struct Reminder: Codable, Identifiable, Hashable {
+public struct Reminder: Codable, Identifiable, Hashable, Sendable {
     /// ``id``と同じ値。
-    let calendarItemIdentifier: String
-    let title: String
-    let dueDateComponents: DateComponents?
-    let priority: Self.Priority
-    let notes: String?
-    private(set) var isCompleted: Bool
-    private(set) var displayedIsCompleted: Bool
-    let creationDate: Date?
-    let lastModifiedDate: Date?
-    let completionDate: Date?
+    public let calendarItemIdentifier: String
+    public let title: String
+    public let dueDateComponents: DateComponents?
+    public let priority: Self.Priority
+    public let notes: String?
+    public private(set) var isCompleted: Bool
+    public private(set) var displayedIsCompleted: Bool
+    public let creationDate: Date?
+    public let lastModifiedDate: Date?
+    public let completionDate: Date?
     
     /// ``calendarItemIdentifier``と同じ値。
-    var id: String { calendarItemIdentifier }
+    public var id: String { calendarItemIdentifier }
 
-    init(
+    public init(
         calendarItemIdentifier: String,
         title: String,
         dueDateComponents: DateComponents? = nil,
@@ -40,35 +40,35 @@ struct Reminder: Codable, Identifiable, Hashable {
         self.completionDate = completionDate
     }
     
-    func dueDate(calendar: Calendar = .current) -> Date? {
+    public func dueDate(calendar: Calendar = .current) -> Date? {
         guard let dueDateComponents else { return nil }
         return Self.dueDate(from: dueDateComponents, calendar: calendar)
     }
     
-    mutating func setIsCompleted(_ isCompleted: Bool) {
+    public mutating func setIsCompleted(_ isCompleted: Bool) {
         self.isCompleted = isCompleted
     }
     
-    mutating func setDisplayedIsCompleted(_ displayedIsCompleted: Bool) {
+    public mutating func setDisplayedIsCompleted(_ displayedIsCompleted: Bool) {
         self.displayedIsCompleted = displayedIsCompleted
     }
 
-    func dueDateCalendar(fallback calendar: Calendar = .current) -> Calendar {
+    public func dueDateCalendar(fallback calendar: Calendar = .current) -> Calendar {
         guard let dueDateComponents else { return calendar }
         return dueDateComponents.resolvedCalendar(fallback: calendar)
     }
 
-    static func dueDate(from components: DateComponents, calendar: Calendar = .current) -> Date? {
+    public static func dueDate(from components: DateComponents, calendar: Calendar = .current) -> Date? {
         components.resolvedCalendar(fallback: calendar).date(from: components)
     }
     
-    var hasDueTime: Bool {
+    public var hasDueTime: Bool {
         dueDateComponents?.hour != nil
         || dueDateComponents?.minute != nil
         || dueDateComponents?.second != nil
     }
     
-    func dueDateStatus(
+    public func dueDateStatus(
         relativeTo now: Date = .now,
         calendar: Calendar = .current
     ) -> DueDateStatus {
@@ -88,22 +88,22 @@ extension DateComponents {
 }
 
 nonisolated
-extension Reminder {
-    enum DueDateStatus {
+public extension Reminder {
+    enum DueDateStatus: Sendable {
         case noDueDate
         case overdue
         case upcoming
     }
     
-    enum Priority: CaseIterable, Codable, Comparable, Identifiable {
+    enum Priority: CaseIterable, Codable, Comparable, Identifiable, Sendable {
         case none
         case low
         case medium
         case high
         
-        var id: Self { self }
+        public var id: Self { self }
         
-        var displayName: String {
+        public var displayName: String {
             switch self {
             case .none: "未指定"
             case .low: "低"
@@ -112,23 +112,5 @@ extension Reminder {
             }
         }
         
-        init?(ekReminderPriority: Int) {
-            switch ekReminderPriority {
-            case 0: self = .none
-            case 1...4: self = .high
-            case 5: self = .medium
-            case 6...9: self = .low
-            default: return nil
-            }
-        }
-
-        var ekReminderPriority: Int {
-            switch self {
-            case .none: 0
-            case .low: 9
-            case .medium: 5
-            case .high: 1
-            }
-        }
     }
 }

@@ -1,17 +1,19 @@
 import Foundation
 
-struct ReminderSortOrder: Equatable {
-    var field: Field = .dueDate
-    var direction: Direction = .ascending
+public struct ReminderSortOrder: Equatable, Sendable {
+    public var field: Field = .dueDate
+    public var direction: Direction = .ascending
     
-    static let defaultValue = Self()
+    public static let defaultValue = Self()
     
-    var isDefault: Bool {
+    public var isDefault: Bool {
         self == Self.defaultValue
     }
+
+    public init() {}
     
     /// 現在の並び順設定に従ってリマインダーをソートする。
-    func sorted(_ reminders: [Reminder]) -> [Reminder] {
+    public func sorted(_ reminders: [Reminder]) -> [Reminder] {
         reminders.sorted { lhs, rhs in
             let lhsHasSortValue = hasSortValue(lhs)
             let rhsHasSortValue = hasSortValue(rhs)
@@ -118,8 +120,8 @@ struct ReminderSortOrder: Equatable {
     }
 }
 
-extension ReminderSortOrder {
-    enum Field: CaseIterable, Identifiable {
+public extension ReminderSortOrder {
+    enum Field: CaseIterable, Identifiable, Sendable {
         case title
         case dueDate
         case priority
@@ -127,9 +129,9 @@ extension ReminderSortOrder {
         case lastModifiedDate
         case completionDate
         
-        var id: Self { self }
+        public var id: Self { self }
         
-        var displayName: String {
+        public var displayName: String {
             switch self {
             case .dueDate: "期限"
             case .priority: "優先度"
@@ -141,13 +143,13 @@ extension ReminderSortOrder {
         }
     }
     
-    enum Direction: CaseIterable, Identifiable {
+    enum Direction: CaseIterable, Identifiable, Sendable {
         case ascending
         case descending
         
-        var id: Self { self }
+        public var id: Self { self }
         
-        var displayName: String {
+        public var displayName: String {
             switch self {
             case .ascending: "昇順"
             case .descending: "降順"
