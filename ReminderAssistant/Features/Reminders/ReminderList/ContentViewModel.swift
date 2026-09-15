@@ -14,10 +14,9 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepository> {
         )
     }
     
+    /// リマインダー一覧の取得の実行状態を表す。（`ReminderStore`の仕様上、実際に取得を行なっている最中だけでなく、待機中も実行中と評価されることに注意。）
     var isLoading: Bool {
-        (reminderOperations.first).map { operation in
-            if case .load = operation { true } else { false }
-        } ?? false
+        reminderOperations.contains { if case .load = $0 { true } else { false } }
     }
     
     /// 予約・実行中のリマインダー取得・作成・完了状態更新を追加順に保持する操作一覧。
