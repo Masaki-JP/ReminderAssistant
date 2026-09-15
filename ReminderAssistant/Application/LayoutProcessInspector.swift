@@ -1,5 +1,8 @@
 import SwiftUI
 
+/// SwiftUIのレイアウト処理で提案・報告されるサイズと、サブビューの配置位置をコンソールに出力するレイアウト。
+///
+/// 参考: https://zenn.dev/holoholo/articles/374c2b09bb7e5e
 private struct LayoutProcessInspector: Layout {
     var tag: String
     var printPosition: Bool

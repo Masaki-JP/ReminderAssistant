@@ -56,9 +56,7 @@ struct CreateReminderSheet: View {
         .alert("作成失敗", isPresented: creationErrorBinding) {
             Button("OK", role: .cancel) {}
         } message: {
-            if let creationError {
-                Text(creationError.message)
-            }
+            if let creationError { Text(creationError.message) }
         }
         .task {
             try? await Task.sleep(for: .seconds(0.03))
@@ -144,8 +142,7 @@ extension CreateReminderSheet {
             defer { creationTask = nil }
             
             do {
-                try await confirmAction(request)
-                dismiss()
+                try await confirmAction(request); dismiss()
             } catch let error as CreateReminderError {
                 if case .cancelled = error { return }
                 creationError = error

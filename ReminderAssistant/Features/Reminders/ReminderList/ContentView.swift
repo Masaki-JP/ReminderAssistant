@@ -133,8 +133,8 @@ struct ContentView<ReminderRepositoryType: ReminderRepository>: View {
         }
     }
     
-    var toolbar: Toolbar {
-        Toolbar(
+    var toolbar: Self.Toolbar {
+        .init(
             sortOrder: $sortOrder,
             filter: $filter,
             isCreateReminderSheetPresented: $isCreateReminderSheetPresented,
@@ -146,12 +146,10 @@ struct ContentView<ReminderRepositoryType: ReminderRepository>: View {
     
     var reminderListPicker: some View {
         Picker("リスト選択", selection: $displayedListID) {
-            Text("すべて")
-                .tag(Optional<String>.none)
+            Text("すべて").tag(Optional<String>.none)
             
             ForEach(viewModel.editableLists) { list in
-                Text(list.title)
-                    .tag(Optional(list.id))
+                Text(list.title).tag(Optional(list.id))
             }
         }
     }
@@ -208,14 +206,16 @@ extension ContentView {
     func ensureDisplayedList(from lists: [ReminderList]) {
         guard isPlaceholder == false else { return }
         
+        // 選択中のリストが指定されたリスト群（[ReminderList]）に含まれている場合は終了する。
         guard displayedListID.map({ displayedListID in
             lists.contains(where: { $0.id == displayedListID })
         }) == false else { return }
         
-        if let defaultList = lists.first(where: \.isDefault) {
-            displayedListID = defaultList.id
+        // 選択中のリストがない、または利用できなくなった場合は、デフォルトリストを選択する。デフォルトリストがない場合は「すべて」を選択する。
+        displayedListID = if let defaultList = lists.first(where: \.isDefault) {
+            defaultList.id
         } else {
-            displayedListID = nil
+            nil
         }
     }
     
@@ -224,21 +224,22 @@ extension ContentView {
     func ensureReminderDestinationList(from lists: [ReminderList]) {
         guard isPlaceholder == false else { return }
         
+        // 初回のみ実行する。作成先が未設定であればデフォルトリスト、または先頭のリストを作成先に設定する。
         if hasInitializedReminderDestinationList == false {
             if reminderDestinationListID == nil {
-                guard let list = lists.first(where: \.isDefault)
-                        ?? lists.first else { return }
-                
+                guard let list = lists.first(where: \.isDefault) ?? lists.first else { return }
                 reminderDestinationListID = list.id
             }
             
             hasInitializedReminderDestinationList = true
         }
         
+        // 作成先が未設定、または指定されたリスト群（[ReminderList]）に存在しない場合は、エラーを通知する。
         guard reminderDestinationListID.map({ reminderDestinationListID in
             lists.contains(where: { $0.id == reminderDestinationListID })
         }) == false else { return }
         
+        // 無効な作成先をクリアし、作成先の再選択を促す。
         reminderDestinationListID = nil
         viewModel.reportReminderDestinationListUnavailable()
     }

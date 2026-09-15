@@ -10,39 +10,33 @@ public struct ReminderFilter: Equatable, Sendable {
     public var completionDateCondition: DateCondition = .all
     
     public static let defaultValue = Self()
+    public var isDefault: Bool { self == Self.defaultValue }
     
-    public var isDefault: Bool {
-        self == Self.defaultValue
-    }
-
     public init() {}
     
-    public func matches(
-        _ reminder: Reminder,
-        calendar: Calendar = .current,
-        now: Date = .now
-    ) -> Bool {
+    /// 指定した条件にリマインダーが一致するかを判定する。
+    public func matches(_ reminder: Reminder, calendar: Calendar = .current, now: Date = .now) -> Bool {
         let hasNotes = reminder.notes?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
         let isCompleted = reminder.isCompleted
         
         guard /// 完了状態
-              completionStatus == .all
+            completionStatus == .all
                 || (completionStatus == .completed && isCompleted)
                 || (completionStatus == .incomplete && !isCompleted),
-              /// 期限日
-              dueDateCondition.matches(reminder, calendar: calendar, now: now),
-              /// メモの有無
-              notesAvailability == .all
+            /// 期限日
+            dueDateCondition.matches(reminder, calendar: calendar, now: now),
+            /// メモの有無
+            notesAvailability == .all
                 || (notesAvailability == .hasNotes && hasNotes)
                 || (notesAvailability == .noNotes && !hasNotes),
-              /// 優先度
-              priorities.isEmpty || priorities.contains(reminder.priority),
-              /// 作成日
-              creationDateCondition.matches(reminder.creationDate, calendar: calendar, now: now),
-              /// 更新日
-              lastModifiedDateCondition.matches(reminder.lastModifiedDate, calendar: calendar, now: now),
-              /// 完了日
-              completionDateCondition.matches(reminder.completionDate, calendar: calendar, now: now)
+            /// 優先度
+            priorities.isEmpty || priorities.contains(reminder.priority),
+            /// 作成日
+            creationDateCondition.matches(reminder.creationDate, calendar: calendar, now: now),
+            /// 更新日
+            lastModifiedDateCondition.matches(reminder.lastModifiedDate, calendar: calendar, now: now),
+            /// 完了日
+            completionDateCondition.matches(reminder.completionDate, calendar: calendar, now: now)
         else {
             return false
         }
@@ -53,9 +47,7 @@ public struct ReminderFilter: Equatable, Sendable {
 
 public extension ReminderFilter {
     enum CompletionStatus: CaseIterable, Identifiable, Sendable {
-        case all
-        case incomplete
-        case completed
+        case all, incomplete, completed
         
         public var id: Self { self }
         
@@ -69,9 +61,7 @@ public extension ReminderFilter {
     }
     
     enum NotesAvailability: CaseIterable, Identifiable, Sendable {
-        case all
-        case hasNotes
-        case noNotes
+        case all, hasNotes, noNotes
         
         public var id: Self { self }
         
@@ -84,15 +74,9 @@ public extension ReminderFilter {
         }
     }
     
-    /// 期限日による絞り込みに使用される条件
+    /// 期限日による絞り込みに使用される条件。
     enum DueDateCondition: CaseIterable, Identifiable, Sendable {
-        case all
-        case noDueDate
-        case hasDueDate
-        case overdue
-        case today
-        case tomorrow
-        case nextSevenDays
+        case all, noDueDate, hasDueDate, overdue, today, tomorrow, nextSevenDays
         
         public var id: Self { self }
         
@@ -109,12 +93,9 @@ public extension ReminderFilter {
         }
     }
     
-    /// 作成日、更新日、完了日による絞り込みに使用される条件
+    /// 作成日、更新日、完了日による絞り込みに使用される条件。
     enum DateCondition: CaseIterable, Identifiable, Sendable {
-        case all
-        case today
-        case pastThreeDays
-        case pastSevenDays
+        case all, today, pastThreeDays, pastSevenDays
         
         public var id: Self { self }
         
@@ -130,7 +111,7 @@ public extension ReminderFilter {
 }
 
 private extension ReminderFilter.DueDateCondition {
-    /// リマインダーの期限日が、この期限日条件に一致するかを判定する。
+    /// リマインダーの期限日がこの期限日条件に一致するかを判定する。
     func matches(_ reminder: Reminder, calendar: Calendar, now: Date) -> Bool {
         let dueDateCalendar = reminder.dueDateCalendar(fallback: calendar)
         let dueDate = reminder.dueDate(calendar: dueDateCalendar)
@@ -138,12 +119,9 @@ private extension ReminderFilter.DueDateCondition {
         let tomorrow = dueDateCalendar.date(byAdding: .day, value: 1, to: today)
         
         return switch self {
-        case .all:
-            true
-        case .noDueDate:
-            dueDate == nil
-        case .hasDueDate:
-            dueDate != nil
+        case .all: true
+        case .noDueDate: dueDate == nil
+        case .hasDueDate: dueDate != nil
         case .overdue:
             reminder.dueDateStatus(relativeTo: now, calendar: calendar) == .overdue
         case .today:
@@ -162,23 +140,19 @@ private extension ReminderFilter.DueDateCondition {
 }
 
 private extension ReminderFilter.DateCondition {
-    /// 指定した日付が、この日付条件に一致するかを判定する。
+    /// 指定した日付がこの日付条件に一致するかを判定する。
     func matches(_ date: Date?, calendar: Calendar, now: Date) -> Bool {
         guard self != .all, let date else { return self == .all }
         
         return switch self {
-        case .all:
-            true
-        case .today:
-            calendar.isDate(date, inSameDayAs: now)
-        case .pastThreeDays:
-            matches(date, fromDaysAgo: 2, calendar: calendar, now: now)
-        case .pastSevenDays:
-            matches(date, fromDaysAgo: 6, calendar: calendar, now: now)
+        case .all: true
+        case .today: calendar.isDate(date, inSameDayAs: now)
+        case .pastThreeDays: matches(date, fromDaysAgo: 2, calendar: calendar, now: now)
+        case .pastSevenDays: matches(date, fromDaysAgo: 6, calendar: calendar, now: now)
         }
     }
     
-    /// 指定日数前の午前0時から今日の終わりまでに、日付が含まれるかを判定する。
+    /// 指定された日数の前の午前0時から今日の終わりまでに日付が含まれるかを判定する。
     private func matches(_ date: Date, fromDaysAgo days: Int, calendar: Calendar, now: Date) -> Bool {
         let today = calendar.startOfDay(for: now)
         guard let startDate = calendar.date(byAdding: .day, value: -days, to: today),

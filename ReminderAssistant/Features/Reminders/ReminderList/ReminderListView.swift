@@ -4,19 +4,13 @@ import ReminderCore
 struct ReminderListView: View {
     let sections: [ReminderListSection]
     let onToggleCompletion: (Reminder) -> Void
-    
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     
-    var isScrollIndicatorsVisible: Bool {
-        sections.flatMap(\.reminders).count >= 100
-    }
+    var isScrollIndicatorsVisible: Bool { sections.flatMap(\.reminders).count >= 100 }
     
     var body: some View {
         List {
-            ForEach(sections) { section in
-                self.section(section)
-                    .listSectionSeparator(.hidden)
-            }
+            ForEach(sections) { self.section($0).listSectionSeparator(.hidden) }
         }
         .listStyle(.plain)
         .listRowSpacing(12)
@@ -81,9 +75,7 @@ struct ReminderListView: View {
         return .init(red: grayLevel, green: grayLevel, blue: grayLevel)
     }
     
-    var listBackgroundColor: Color {
-        .init(uiColor: .systemGroupedBackground)
-    }
+    var listBackgroundColor: Color { .init(uiColor: .systemGroupedBackground) }
 }
 
 struct ReminderListSection: Identifiable {

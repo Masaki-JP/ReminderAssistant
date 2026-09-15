@@ -1,6 +1,9 @@
 import ReminderCore
 
 nonisolated extension Reminder {
+    /// リマインダーへのアクセス許可を求める画面で、背景に表示するプレースホルダーを生成する。
+    ///
+    /// 期限日と優先度の異なる項目を用意し、リマインダー一覧の表示例として使用する。
     static func placeholders() -> [Reminder] {
         let dueDate1 = DateInput(date: "50日前", time: "9:00")
         let dueDate2 = DateInput(date: "50日後", time: "9:00")

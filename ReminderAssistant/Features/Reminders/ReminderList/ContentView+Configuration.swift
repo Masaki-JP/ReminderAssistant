@@ -7,7 +7,8 @@ extension ContentView {
             reminderStoreCache: ReminderStoreCache? = .init(),
             onReminderAccessRevoked: () -> Void,
         )
-
+        
+        // ReminderAccessRequestViewで、実データにアクセスせずに表示するための構成。
         case placeholder(reminderRepository: ReminderRepositoryType)
     }
 }

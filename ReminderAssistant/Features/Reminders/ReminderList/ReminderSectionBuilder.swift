@@ -7,12 +7,7 @@ struct ReminderSectionBuilder {
     private let calendar: Calendar
     private let now: Date
     
-    init(
-        reminders: [Reminder],
-        sortOrder: ReminderSortOrder,
-        calendar: Calendar = .current,
-        now: Date = .now
-    ) {
+    init(reminders: [Reminder], sortOrder: ReminderSortOrder, calendar: Calendar = .current, now: Date = .now) {
         self.reminders = reminders
         self.sortOrder = sortOrder
         self.calendar = calendar
@@ -98,11 +93,11 @@ struct ReminderSectionBuilder {
         }
         let noDateReminders = reminders.filter { $0[keyPath: keyPath] == nil }
         
-        let datedSections = [
-            ReminderListSection(title: "未来の日時（要確認）", tint: .red, reminders: futureReminders),
-            ReminderListSection(title: "今日", tint: .blue, reminders: todayReminders),
-            ReminderListSection(title: "昨日", tint: .orange, reminders: yesterdayReminders),
-            ReminderListSection(title: "2日以上前", tint: .secondary, reminders: olderReminders)
+        let datedSections: [ReminderListSection] = [
+            .init(title: "未来の日時（要確認）", tint: .red, reminders: futureReminders),
+            .init(title: "今日", tint: .blue, reminders: todayReminders),
+            .init(title: "昨日", tint: .orange, reminders: yesterdayReminders),
+            .init(title: "2日以上前", tint: .secondary, reminders: olderReminders),
         ]
         let orderedDatedSections = sortOrder.direction == .ascending
         ? Array(datedSections.reversed())

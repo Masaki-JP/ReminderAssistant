@@ -5,11 +5,8 @@ public struct ReminderSortOrder: Equatable, Sendable {
     public var direction: Direction = .ascending
     
     public static let defaultValue = Self()
+    public var isDefault: Bool { self == Self.defaultValue }
     
-    public var isDefault: Bool {
-        self == Self.defaultValue
-    }
-
     public init() {}
     
     /// 現在の並び順設定に従ってリマインダーをソートする。
@@ -17,70 +14,44 @@ public struct ReminderSortOrder: Equatable, Sendable {
         reminders.sorted { lhs, rhs in
             let lhsHasSortValue = hasSortValue(lhs)
             let rhsHasSortValue = hasSortValue(rhs)
-            
-            if lhsHasSortValue != rhsHasSortValue {
-                return lhsHasSortValue
-            }
-            
+            if lhsHasSortValue != rhsHasSortValue { return lhsHasSortValue }
             let result = comparisonResult(lhs, rhs)
-            
-            if result == .orderedSame {
-                return fallbackComparisonResult(lhs, rhs) == .orderedAscending
-            }
-            
-            return direction == .ascending
-            ? result == .orderedAscending
-            : result == .orderedDescending
+            if result == .orderedSame { return fallbackComparisonResult(lhs, rhs) == .orderedAscending }
+            return direction == .ascending ? result == .orderedAscending : result == .orderedDescending
         }
     }
     
     /// 未設定の日時・タイトルは、方向にかかわらず常に末尾に配置する。
     private func hasSortValue(_ reminder: Reminder) -> Bool {
         switch field {
-        case .dueDate:
-            reminder.dueDate() != nil
-        case .priority:
-            reminder.priority != .none
-        case .title:
-            normalizedTitle(reminder) != nil
-        case .creationDate:
-            reminder.creationDate != nil
-        case .lastModifiedDate:
-            reminder.lastModifiedDate != nil
-        case .completionDate:
-            reminder.completionDate != nil
+        case .dueDate: reminder.dueDate() != nil
+        case .priority: reminder.priority != .none
+        case .title: normalizedTitle(reminder) != nil
+        case .creationDate: reminder.creationDate != nil
+        case .lastModifiedDate: reminder.lastModifiedDate != nil
+        case .completionDate: reminder.completionDate != nil
         }
     }
     
     /// 指定したソート項目の値で2件のリマインダーを比較する。
     private func comparisonResult(_ lhs: Reminder, _ rhs: Reminder) -> ComparisonResult {
         switch field {
-        case .dueDate:
-            optionalComparison(lhs.dueDate(), rhs.dueDate())
-        case .priority:
-            comparison(lhs.priority, rhs.priority)
-        case .title:
-            titleComparison(lhs, rhs)
-        case .creationDate:
-            optionalComparison(lhs.creationDate, rhs.creationDate)
-        case .lastModifiedDate:
-            optionalComparison(lhs.lastModifiedDate, rhs.lastModifiedDate)
-        case .completionDate:
-            optionalComparison(lhs.completionDate, rhs.completionDate)
+        case .dueDate: optionalComparison(lhs.dueDate(), rhs.dueDate())
+        case .priority: comparison(lhs.priority, rhs.priority)
+        case .title: titleComparison(lhs, rhs)
+        case .creationDate: optionalComparison(lhs.creationDate, rhs.creationDate)
+        case .lastModifiedDate: optionalComparison(lhs.lastModifiedDate, rhs.lastModifiedDate)
+        case .completionDate: optionalComparison(lhs.completionDate, rhs.completionDate)
         }
     }
     
     /// 比較可能なオプション値を比較し、未設定の値は末尾として扱う。
     private func optionalComparison<T: Comparable>(_ lhs: T?, _ rhs: T?) -> ComparisonResult {
         switch (lhs, rhs) {
-        case let (lhs?, rhs?):
-            comparison(lhs, rhs)
-        case (nil, nil):
-                .orderedSame
-        case (nil, _):
-                .orderedDescending
-        case (_, nil):
-                .orderedAscending
+        case let (lhs?, rhs?): comparison(lhs, rhs)
+        case (nil, nil): .orderedSame
+        case (nil, _): .orderedDescending
+        case (_, nil): .orderedAscending
         }
     }
     
@@ -122,12 +93,7 @@ public struct ReminderSortOrder: Equatable, Sendable {
 
 public extension ReminderSortOrder {
     enum Field: CaseIterable, Identifiable, Sendable {
-        case title
-        case dueDate
-        case priority
-        case creationDate
-        case lastModifiedDate
-        case completionDate
+        case title, dueDate, priority, creationDate, lastModifiedDate, completionDate
         
         public var id: Self { self }
         
@@ -144,8 +110,7 @@ public extension ReminderSortOrder {
     }
     
     enum Direction: CaseIterable, Identifiable, Sendable {
-        case ascending
-        case descending
+        case ascending, descending
         
         public var id: Self { self }
         

@@ -1,12 +1,14 @@
 nonisolated
 public struct ReminderList: Codable, Identifiable, Hashable, Sendable {
+    /// リストID。``id``と同じ値。
     public let calendarIdentifier: String
     public let title: String
     public let isDefault: Bool
     public var reminders: [Reminder]
     
+    /// リストID。``calendarIdentifier``と同じ値。
     public var id: String { calendarIdentifier }
-
+    
     public init(calendarIdentifier: String, title: String, isDefault: Bool, reminders: [Reminder]) {
         self.calendarIdentifier = calendarIdentifier
         self.title = title

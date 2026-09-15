@@ -16,14 +16,10 @@ enum ContentViewModelError: Error {
     
     var message: String {
         switch self {
-        case .createReminderFailed:
-            "新規リマインダーを作成できませんでした。もう一度お試しください。"
-        case .loadRemindersFailed:
-            "リマインダーを読み込めませんでした。もう一度お試しください。"
-        case .toggleCompletionFailed:
-            "完了状態を更新できませんでした。最新の状態を再読み込みします。"
-        case .reminderDestinationListUnavailable:
-            "新規リマインダーの作成先を設定画面で選択してください。"
+        case .createReminderFailed: "新規リマインダーを作成できませんでした。もう一度お試しください。"
+        case .loadRemindersFailed: "リマインダーを読み込めませんでした。もう一度お試しください。"
+        case .toggleCompletionFailed: "完了状態を更新できませんでした。最新の状態を再読み込みします。"
+        case .reminderDestinationListUnavailable: "新規リマインダーの作成先を設定画面で選択してください。"
         }
     }
     

@@ -146,13 +146,9 @@ nonisolated enum CreateReminderField: CaseIterable, Identifiable {
 }
 
 #Preview("Light・Empty") {
-    @Previewable @State var request = CreateReminderRequest(
-        title: "", deadline: "", priority: .none, notes: "",
-    )
+    @Previewable @State var request = CreateReminderRequest(title: "", deadline: "", priority: .none, notes: "")
     @Previewable @FocusState var focus: CreateReminderField?
-    
-    CreateReminderForm(request: $request, focus: $focus)
-        .preferredColorScheme(.light)
+    CreateReminderForm(request: $request, focus: $focus).preferredColorScheme(.light)
 }
 
 #Preview("Dark・Input") {
@@ -163,7 +159,5 @@ nonisolated enum CreateReminderField: CaseIterable, Identifiable {
         notes: "ポトスには薄めた液体肥料を使用する",
     )
     @Previewable @FocusState var focus: CreateReminderField?
-    
-    CreateReminderForm(request: $request, focus: $focus)
-        .preferredColorScheme(.dark)
+    CreateReminderForm(request: $request, focus: $focus).preferredColorScheme(.dark)
 }
