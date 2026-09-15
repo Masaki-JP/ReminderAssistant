@@ -21,10 +21,7 @@ struct ReminderAccessRequestView: View {
             reminders: Reminder.placeholders()
         )
         
-        return .init(
-            editableLists: [list],
-            fetchDelay: .zero,
-        )
+        return .init(editableLists: [list], fetchDelay: .zero)
     }()
     
     var body: some View {
@@ -33,9 +30,7 @@ struct ReminderAccessRequestView: View {
         ))
         .overlay {
             contentCover.ignoresSafeArea()
-            if task == nil {
-                accessRequestPrompt
-            }
+            if task == nil { accessRequestPrompt }
         }
     }
     
@@ -93,12 +88,5 @@ struct ReminderAccessRequestView: View {
     }
 }
 
-#Preview("Light") {
-    ReminderAccessRequestView(onReminderAccessGranted: {})
-        .preferredColorScheme(.light)
-}
-
-#Preview("Dark") {
-    ReminderAccessRequestView(onReminderAccessGranted: {})
-        .preferredColorScheme(.dark)
-}
+#Preview("Light") { ReminderAccessRequestView(onReminderAccessGranted: {}).preferredColorScheme(.light) }
+#Preview("Dark") { ReminderAccessRequestView(onReminderAccessGranted: {}).preferredColorScheme(.dark) }

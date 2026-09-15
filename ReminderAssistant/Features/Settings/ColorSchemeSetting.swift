@@ -1,10 +1,8 @@
 import SwiftUI
 
-/// rawValueはAppStorageによってUserDefaultsへの保存・復元に使用される。
+/// `rawValue`は`@AppStorage`によって`UserDefaults`への保存・復元に使用される。
 enum ColorSchemeSetting: String, CaseIterable, Identifiable {
-    case system
-    case light
-    case dark
+    case system, light, dark
     
     static let defaultValue = ColorSchemeSetting.system
     

@@ -5,7 +5,6 @@ import ReminderCore
 struct ReminderRowView: View {
     let reminder: Reminder
     let toggleCompletionAction: () -> Void
-    
     @Environment(\.scenePhase) var scenePhase: ScenePhase
     
     init(reminder: Reminder, onToggleCompletion: @escaping () -> Void) {
@@ -62,9 +61,7 @@ struct ReminderRowView: View {
         }
     }
     
-    var dueDateTextColor: Color {
-        reminder.dueDateStatus() == .overdue ? .red : .secondary
-    }
+    var dueDateTextColor: Color { reminder.dueDateStatus() == .overdue ? .red : .secondary }
 }
 
 extension ReminderRowView {

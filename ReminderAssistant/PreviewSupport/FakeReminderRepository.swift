@@ -4,7 +4,7 @@ import ReminderCore
 
 actor FakeReminderRepository: ReminderRepository {
     struct ScheduledAdditions {
-        /// リマインダーを追加する間隔。（fetchDelayより長い時間を指定するのが好ましい）
+        /// リマインダーを追加する間隔。（``FakeReminderRepository/fetchDelay``より長い時間を指定するのが好ましい）
         fileprivate let interval: Duration
         /// 定期的に追加するリマインダー。配列の先頭から順に追加する。
         fileprivate var pendingReminders: [(listID: String, reminder: Reminder)]
@@ -12,12 +12,9 @@ actor FakeReminderRepository: ReminderRepository {
         
         /// 定期的なリマインダー追加の設定を生成する。
         /// - Parameters:
-        ///   - interval: リマインダーを追加する間隔。（fetchDelayより長い時間を指定するのが好ましい）
+        ///   - interval: リマインダーを追加する間隔。（`FakeReminderRepository/fetchDelay`より長い時間を指定するのが好ましい）
         ///   - lists: 定期的に追加するリマインダーを格納したリスト。リスト順・配列順に追加する。
-        init(
-            interval: Duration = .seconds(1.5),
-            lists: [ReminderList],
-        ) {
+        init(interval: Duration = .seconds(1.5), lists: [ReminderList]) {
             self.interval = interval
             self.lists = lists.map {
                 ReminderList(calendarIdentifier: $0.id, title: $0.title, isDefault: $0.isDefault, reminders: [])
@@ -28,18 +25,15 @@ actor FakeReminderRepository: ReminderRepository {
         }
     }
     
-    enum FailureOperation {
-        case create, fetch, setCompletion
-    }
+    enum FailureOperation { case create, fetch, setCompletion }
     
     /// リマインダーを作成できる編集可能なリスト。
     private var editableLists: [ReminderList]
-    
     /// fetchが結果を返すまでの待機時間。
     private let fetchDelay: Duration
-    /// 一度だけ失敗させる操作。nilの場合は意図的なエラーを発生させない。
+    /// 一度だけ失敗させる操作。`nil`の場合は意図的なエラーを発生させない。
     private var oneTimeFailureOperation: FailureOperation?
-    /// 定期的な追加の設定と実行状態。nilの場合は定期追加を行わない。
+    /// 定期的な追加の設定と実行状態。`nil`の場合は定期追加を行わない。
     private var scheduledAdditions: ScheduledAdditions?
     
     /// リマインダーの変更を通知するインスタンス固有の通知名。
@@ -47,12 +41,12 @@ actor FakeReminderRepository: ReminderRepository {
         "remindersMayHaveChanged.\(UUID().uuidString)"
     )
     
-    /// 指定された初期状態と振る舞いでFakeReminderRepositoryを生成する。
+    /// 指定された初期状態と振る舞いで``FakeReminderRepository``を生成する。
     /// - Parameters:
     ///   - editableLists: 最初からリポジトリが保持するリマインダーを格納した編集可能なリスト。
-    ///   - fetchDelay: fetchが結果を返すまでの待機時間。
-    ///   - oneTimeFailureOperation: 一度だけ失敗させる操作。nilの場合は意図的なエラーを発生させない。
-    ///   - scheduledAdditions: 定期的なリマインダー追加の設定。nilの場合は定期追加を行わない。
+    ///   - fetchDelay: ``FakeReminderRepository/fetch()``が結果を返すまでの待機時間。
+    ///   - oneTimeFailureOperation: 一度だけ失敗させる操作。`nil`の場合は意図的なエラーを発生させない。
+    ///   - scheduledAdditions: 定期的なリマインダー追加の設定。`nil`の場合は定期追加を行わない。
     init(
         editableLists: [ReminderList] = {
             let reminderIDs = Set(Reminder.samples.prefix(30).map(\.id))
@@ -75,17 +69,11 @@ actor FakeReminderRepository: ReminderRepository {
         self.oneTimeFailureOperation = oneTimeFailureOperation
         self.scheduledAdditions = scheduledAdditions
         
-        if scheduledAdditions != nil {
-            Task { await startScheduledAdditions() }
-        }
+        if scheduledAdditions != nil { Task { await startScheduledAdditions() } }
     }
     
     func create(
-        title: String,
-        deadline: String,
-        priority: Reminder.Priority,
-        notes: String,
-        list: ReminderList,
+        title: String, deadline: String, priority: Reminder.Priority, notes: String, list: ReminderList,
     ) async throws(ReminderRepositoryError) {
         try await operation(priority: .medium) { () async throws(ReminderRepositoryError) -> Void in
             try throwOneTimeErrorIfNeeded(for: .create)
@@ -202,10 +190,7 @@ actor FakeReminderRepository: ReminderRepository {
     }
     
     private func notifyRemindersMayHaveChanged() {
-        NotificationCenter.default.post(
-            name: remindersMayHaveChanged,
-            object: nil
-        )
+        NotificationCenter.default.post(name: remindersMayHaveChanged, object: nil)
     }
     
     private func throwOneTimeErrorIfNeeded(for operation: FailureOperation) throws(ReminderRepositoryError) {
@@ -213,10 +198,8 @@ actor FakeReminderRepository: ReminderRepository {
         
         oneTimeFailureOperation = nil
         switch operation {
-        case .create, .setCompletion:
-            throw .saveFailed
-        case .fetch:
-            throw .fetchFailed
+        case .create, .setCompletion: throw .saveFailed
+        case .fetch: throw .fetchFailed
         }
     }
     
@@ -230,8 +213,8 @@ actor FakeReminderRepository: ReminderRepository {
     
     // MARK: - Operation
     
-    /// operation の action 内から、operation を使用する別メソッドを呼ばない。
-    /// 内側の operation は外側が保持しているロックの解放を待つが、外側の operation は内側の処理の完了を待つため、互いに待機してデッドロックする。
+    /// `operation`の`action`内から、`operation`を使用する別メソッドを呼ばない。
+    /// 内側の`operation`は外側が保持しているロックの解放を待つが、外側の`operation`は内側の処理の完了を待つため、互いに待機してデッドロックする。
     @discardableResult
     private func operation<T>(
         priority: OperationPriority,
@@ -254,7 +237,7 @@ actor FakeReminderRepository: ReminderRepository {
     
     private func acquireOperation(priority: OperationPriority) async {
         if isOperating == false {
-            isOperating = true; return
+            isOperating = true
         } else {
             await withCheckedContinuation { continuation in
                 switch priority {

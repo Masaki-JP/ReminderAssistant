@@ -24,7 +24,6 @@ extension ContentView {
             
             ToolbarItemGroup(placement: .topBarLeading) {
                 SortMenu(sortOrder: $sortOrder)
-                
                 FilterMenu(filter: $filter)
             }
             .sharedBackgroundVisibility(.hidden)
@@ -212,8 +211,4 @@ private struct FilterMenu: View {
     }
 }
 
-#Preview {
-    ContentView(configuration: .production(
-        onReminderAccessRevoked: {},
-    ))
-}
+#Preview { ContentView(configuration: .production(onReminderAccessRevoked: {})) }
