@@ -15,7 +15,7 @@ nonisolated extension Reminder {
     ///
     /// 相対日時の文字列をアプリ内で扱う日時へ変換する。不正な入力値や日時の前後関係は、実行時エラーとして検出する。
     static func sample(
-        calendarItemIdentifier: String,
+        id: String,
         title: String,
         dueDate: DateInput = .init(date: nil, time: nil),
         priority: Priority = .none,
@@ -25,7 +25,7 @@ nonisolated extension Reminder {
         lastModifiedDate: DateInput = .init(date: nil, time: nil),
         completionDate: DateInput? = nil
     ) -> Self {
-        guard calendarItemIdentifier.isEmpty == false else {
+        guard id.isEmpty == false else {
             fatalError("リマインダーIDを入力してください。")
         }
         
@@ -71,7 +71,7 @@ nonisolated extension Reminder {
         }
         
         return Self(
-            calendarItemIdentifier: calendarItemIdentifier,
+            id: id,
             title: title,
             dueDateComponents: dueDateComponents,
             priority: priority,

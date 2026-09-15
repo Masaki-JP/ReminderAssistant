@@ -2,8 +2,8 @@ public import Foundation
 
 nonisolated
 public struct Reminder: Codable, Identifiable, Hashable, Sendable {
-    /// リマインダーID。``id``と同じ値。
-    public let calendarItemIdentifier: String
+    /// リマインダーID。`EKCalendarItem`の`calendarItemIdentifier`が入る。
+    public let id: String
     public let title: String
     public let dueDateComponents: DateComponents?
     public let priority: Self.Priority
@@ -14,11 +14,8 @@ public struct Reminder: Codable, Identifiable, Hashable, Sendable {
     public let lastModifiedDate: Date?
     public let completionDate: Date?
     
-    /// リマインダーID。``calendarItemIdentifier``と同じ値。
-    public var id: String { calendarItemIdentifier }
-    
     public init(
-        calendarItemIdentifier: String,
+        id: String,
         title: String,
         dueDateComponents: DateComponents? = nil,
         priority: Self.Priority = .none,
@@ -28,7 +25,7 @@ public struct Reminder: Codable, Identifiable, Hashable, Sendable {
         lastModifiedDate: Date? = nil,
         completionDate: Date? = nil
     ) {
-        self.calendarItemIdentifier = calendarItemIdentifier
+        self.id = id
         self.title = title
         self.dueDateComponents = dueDateComponents
         self.priority = priority

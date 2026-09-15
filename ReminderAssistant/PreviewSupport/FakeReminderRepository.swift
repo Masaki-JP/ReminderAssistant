@@ -17,7 +17,7 @@ actor FakeReminderRepository: ReminderRepository {
         init(interval: Duration = .seconds(1.5), lists: [ReminderList]) {
             self.interval = interval
             self.lists = lists.map {
-                ReminderList(calendarIdentifier: $0.id, title: $0.title, isDefault: $0.isDefault, reminders: [])
+                ReminderList(id: $0.id, title: $0.title, isDefault: $0.isDefault, reminders: [])
             }
             pendingReminders = lists.flatMap { list in
                 list.reminders.map { (list.id, $0) }
@@ -79,10 +79,10 @@ actor FakeReminderRepository: ReminderRepository {
             try throwOneTimeErrorIfNeeded(for: .create)
             
             guard let listIndex = editableLists.firstIndex(where: { editableList in
-                editableList.calendarIdentifier == list.calendarIdentifier
+                editableList.id == list.id
             }) else {
                 throw ReminderRepositoryError.listNotFound(
-                    calendarIdentifier: list.calendarIdentifier
+                    id: list.id
                 )
             }
             
@@ -96,7 +96,7 @@ actor FakeReminderRepository: ReminderRepository {
             
             let now = Date.now
             let reminder = Reminder(
-                calendarItemIdentifier: UUID().uuidString,
+                id: UUID().uuidString,
                 title: title,
                 dueDateComponents: dueDate,
                 priority: priority,
@@ -117,7 +117,7 @@ actor FakeReminderRepository: ReminderRepository {
             guard let listIndex = editableLists.firstIndex(where: { $0.reminders.contains(where: { $0.id == id }) }),
                   let index = editableLists[listIndex].reminders.firstIndex(where: { $0.id == id }) else {
                 throw ReminderRepositoryError.reminderNotFound(
-                    calendarItemIdentifier: id
+                    id: id
                 )
             }
             
@@ -125,7 +125,7 @@ actor FakeReminderRepository: ReminderRepository {
             let reminder = editableLists[listIndex].reminders[index]
             let now = Date.now
             editableLists[listIndex].reminders[index] = Reminder(
-                calendarItemIdentifier: reminder.calendarItemIdentifier,
+                id: reminder.id,
                 title: reminder.title,
                 dueDateComponents: reminder.dueDateComponents,
                 priority: reminder.priority,

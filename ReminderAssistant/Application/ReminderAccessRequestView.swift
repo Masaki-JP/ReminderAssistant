@@ -15,7 +15,7 @@ struct ReminderAccessRequestView: View {
     
     static let fakeReminderRepository: FakeReminderRepository = {
         let list = ReminderList(
-            calendarIdentifier: "xxx",
+            id: "xxx",
             title: "xxx",
             isDefault: true,
             reminders: Reminder.placeholders()

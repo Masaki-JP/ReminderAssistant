@@ -73,8 +73,8 @@ public final actor EventKitReminderRepository: ReminderRepository {
         list: ReminderList,
     ) async throws(ReminderRepositoryError) {
         try await operation(priority: .medium) { () async throws(ReminderRepositoryError) -> Void in
-            guard let calendar = eventStore.calendar(withIdentifier: list.calendarIdentifier) else {
-                throw .listNotFound(calendarIdentifier: list.calendarIdentifier)
+            guard let calendar = eventStore.calendar(withIdentifier: list.id) else {
+                throw .listNotFound(id: list.id)
             }
             
             let dueDateCalendar = Calendar.gregorianCalendar()
@@ -104,7 +104,7 @@ public final actor EventKitReminderRepository: ReminderRepository {
     public func set(id: String, completion: Bool) async throws(ReminderRepositoryError) {
         try await operation(priority: .medium) { () async throws(ReminderRepositoryError) -> Void in
             guard let reminder = eventStore.calendarItem(withIdentifier: id) as? EKReminder else {
-                throw .reminderNotFound(calendarItemIdentifier: id)
+                throw .reminderNotFound(id: id)
             }
             
             reminder.isCompleted = completion
@@ -114,8 +114,8 @@ public final actor EventKitReminderRepository: ReminderRepository {
     
     // MARK: - Reminder Fetching
     
-    /// カレンダーID（リストID）ごとに、そのリストに含まれるリマインダーを保持する辞書型のタイプエイリアス。
-    private typealias RemindersByCalendarIdentifier = [String: [Reminder]]
+    /// リストIDごとに、そのリストに含まれるリマインダーを保持する辞書型のタイプエイリアス。
+    private typealias RemindersByListID = [String: [Reminder]]
     
     /// 編集可能なリスト（リマインダー）を取得する。
     public func fetch() async throws(ReminderRepositoryError) -> [ReminderList] {
@@ -128,15 +128,15 @@ public final actor EventKitReminderRepository: ReminderRepository {
             try checkCancel()
             
             switch result {
-            case .success(let remindersByCalendarIdentifier):
-                let defaultListIdentifier = eventStore.defaultCalendarForNewReminders()?.calendarIdentifier
+            case .success(let remindersByListID):
+                let defaultListID = eventStore.defaultCalendarForNewReminders()?.calendarIdentifier
                 
                 return editableCalendars.map { calendar in
                         .init(
-                            calendarIdentifier: calendar.calendarIdentifier,
+                            id: calendar.calendarIdentifier,
                             title: calendar.title,
-                            isDefault: calendar.calendarIdentifier == defaultListIdentifier,
-                            reminders: remindersByCalendarIdentifier[calendar.calendarIdentifier] ?? []
+                            isDefault: calendar.calendarIdentifier == defaultListID,
+                            reminders: remindersByListID[calendar.calendarIdentifier] ?? []
                         )
                 }
             case .failure(let error): throw error
@@ -147,16 +147,16 @@ public final actor EventKitReminderRepository: ReminderRepository {
     /// 指定したリストに含まれるリマインダーを取得し、リストIDごとに分類する。
     private func fetchReminders(
         in calendars: [EKCalendar]
-    ) async -> Result<RemindersByCalendarIdentifier, ReminderRepositoryError> {
+    ) async -> Result<RemindersByListID, ReminderRepositoryError> {
         await withCheckedContinuation { continuation in
             let predicate = eventStore.predicateForReminders(in: calendars)
             
             eventStore.fetchReminders(matching: predicate) { reminders in
-                let result: Result<RemindersByCalendarIdentifier, ReminderRepositoryError> = if let reminders {
-                    .success(reminders.reduce(into: RemindersByCalendarIdentifier()) { lists, ekReminder in
+                let result: Result<RemindersByListID, ReminderRepositoryError> = if let reminders {
+                    .success(reminders.reduce(into: RemindersByListID()) { lists, ekReminder in
                         guard let reminder = ekReminder.reminder,
-                              let calendarIdentifier = ekReminder.calendar?.calendarIdentifier else { return }
-                        lists[calendarIdentifier, default: []].append(reminder)
+                              let listID = ekReminder.calendar?.calendarIdentifier else { return }
+                        lists[listID, default: []].append(reminder)
                     })
                 } else {
                     .failure(.fetchFailed)
