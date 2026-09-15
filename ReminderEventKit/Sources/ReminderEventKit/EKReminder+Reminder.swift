@@ -3,7 +3,7 @@ import ReminderCore
 
 nonisolated extension EKReminder {
     var reminder: Reminder? {
-        let calendarItemIdentifier = self.calendarItemIdentifier
+        let id = self.calendarItemIdentifier
         let calendar = self.calendar
         let title = self.title
         let creationDate = self.creationDate
@@ -11,7 +11,7 @@ nonisolated extension EKReminder {
         let completionDate = self.completionDate
         
         /// リマインダーID・タイトル、および所属カレンダーのID・タイトルが有効であることを確認する。
-        guard calendarItemIdentifier.isEmpty == false,
+        guard id.isEmpty == false,
               let title,
               title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false,
               let calendar,
@@ -58,7 +58,7 @@ nonisolated extension EKReminder {
         }
         
         return .init(
-            calendarItemIdentifier: calendarItemIdentifier,
+            id: id,
             title: title,
             dueDateComponents: dueDateComponents,
             priority: priority,

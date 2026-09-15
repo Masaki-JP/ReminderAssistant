@@ -178,7 +178,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepository> {
     
     /// 指定された識別子に対応する、作成先の編集可能なリストを返す。
     private func reminderDestinationList(for listIdentifier: String?) throws(ContentViewModelError) -> ReminderList {
-        if let list = editableLists.first(where: { $0.calendarIdentifier == listIdentifier }) {
+        if let list = editableLists.first(where: { $0.id == listIdentifier }) {
             return list
         } else {
             throw .reminderDestinationListUnavailable

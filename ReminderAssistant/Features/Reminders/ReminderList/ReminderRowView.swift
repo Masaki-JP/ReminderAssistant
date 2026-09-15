@@ -163,48 +163,48 @@ private func previewDateComponents(
 
 private var sampleReminders: [Reminder] = [
     .init(
-        calendarItemIdentifier: "preview-reminder-1",
+        id: "preview-reminder-1",
         title: "会議資料を確認する",
         dueDateComponents: previewDateComponents(additionalDays: -3, additionalTime: (hour: 3, minute: 5)),
         priority: .high,
         notes: "発表用スライドの最終確認をする"),
     .init(
-        calendarItemIdentifier: "preview-reminder-2",
+        id: "preview-reminder-2",
         title: "メールを返信する",
         dueDateComponents: previewDateComponents(additionalDays: -2, additionalTime: (hour: 3, minute: 5)),
         priority: .medium,
         isCompleted: true),
     .init(
-        calendarItemIdentifier: "preview-reminder-3",
+        id: "preview-reminder-3",
         title: "牛乳を買う",
         dueDateComponents: previewDateComponents(additionalDays: -1, additionalTime: (hour: 3, minute: 5)),
         priority: .low),
     .init(
-        calendarItemIdentifier: "preview-reminder-4",
+        id: "preview-reminder-4",
         title: "図書館の本を返す",
         dueDateComponents: previewDateComponents(additionalDays: 0, additionalTime: (hour: 3, minute: 5))),
     .init(
-        calendarItemIdentifier: "preview-reminder-5",
+        id: "preview-reminder-5",
         title: "経費を精算する",
         dueDateComponents: previewDateComponents(additionalDays: 1, additionalTime: (hour: 3, minute: 5)),
         priority: .high,
         isCompleted: true),
     .init(
-        calendarItemIdentifier: "preview-reminder-6",
+        id: "preview-reminder-6",
         title: "週末の予定を確認する",
         dueDateComponents: previewDateComponents(additionalDays: 2, additionalTime: (hour: 3, minute: 5)),
         priority: .medium),
     .init(
-        calendarItemIdentifier: "preview-reminder-7",
+        id: "preview-reminder-7",
         title: "資料を印刷する",
         dueDateComponents: previewDateComponents(additionalDays: 3, additionalTime: (hour: 3, minute: 5)),
         priority: .low),
     .init(
-        calendarItemIdentifier: "preview-reminder-8",
+        id: "preview-reminder-8",
         title: "洗濯物を取り込む",
         dueDateComponents: previewDateComponents(additionalDays: -1)),
     .init(
-        calendarItemIdentifier: "preview-reminder-9",
+        id: "preview-reminder-9",
         title: "来週の会議を準備する",
         dueDateComponents: previewDateComponents(additionalDays: 0),
         priority: .high),

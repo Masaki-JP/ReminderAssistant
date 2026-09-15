@@ -11,7 +11,7 @@ nonisolated extension Reminder {
         
         return [
             Reminder.sample(
-                calendarItemIdentifier: "00000000-0000-0000-0000-000000000001",
+                id: "00000000-0000-0000-0000-000000000001",
                 title: "xxxxxxxxxxx",
                 dueDate: dueDate1,
                 priority: .medium,
@@ -19,7 +19,7 @@ nonisolated extension Reminder {
                 lastModifiedDate: creationDate,
             ),
             Reminder.sample(
-                calendarItemIdentifier: "00000000-0000-0000-0000-000000000002",
+                id: "00000000-0000-0000-0000-000000000002",
                 title: "xxxxxxxxxxxxxx",
                 dueDate: dueDate1,
                 priority: .none,
@@ -27,7 +27,7 @@ nonisolated extension Reminder {
                 lastModifiedDate: creationDate,
             ),
             Reminder.sample(
-                calendarItemIdentifier: "00000000-0000-0000-0000-000000000003",
+                id: "00000000-0000-0000-0000-000000000003",
                 title: "xxxxxxxxxxxxxxxxxxx",
                 dueDate: dueDate1,
                 priority: .high,
@@ -35,7 +35,7 @@ nonisolated extension Reminder {
                 lastModifiedDate: creationDate,
             ),
             Reminder.sample(
-                calendarItemIdentifier: "00000000-0000-0000-0000-000000000004",
+                id: "00000000-0000-0000-0000-000000000004",
                 title: "xxxxxxxxxxxxxxx",
                 dueDate: dueDate1,
                 priority: .medium,
@@ -43,7 +43,7 @@ nonisolated extension Reminder {
                 lastModifiedDate: creationDate,
             ),
             Reminder.sample(
-                calendarItemIdentifier: "00000000-0000-0000-0000-000000000005",
+                id: "00000000-0000-0000-0000-000000000005",
                 title: "xxxxxxxxxxxxxxxxxx",
                 dueDate: dueDate1,
                 priority: .high,
@@ -51,7 +51,7 @@ nonisolated extension Reminder {
                 lastModifiedDate: creationDate,
             ),
             Reminder.sample(
-                calendarItemIdentifier: "00000000-0000-0000-0000-000000000006",
+                id: "00000000-0000-0000-0000-000000000006",
                 title: "xxxxxxxxxxxxxxxxxx",
                 dueDate: dueDate2,
                 priority: .high,
@@ -59,7 +59,7 @@ nonisolated extension Reminder {
                 lastModifiedDate: creationDate,
             ),
             Reminder.sample(
-                calendarItemIdentifier: "00000000-0000-0000-0000-000000000007",
+                id: "00000000-0000-0000-0000-000000000007",
                 title: "xxxxxxxxxxxxxxxxxx",
                 dueDate: dueDate2,
                 priority: .none,
@@ -67,7 +67,7 @@ nonisolated extension Reminder {
                 lastModifiedDate: creationDate,
             ),
             Reminder.sample(
-                calendarItemIdentifier: "00000000-0000-0000-0000-000000000008",
+                id: "00000000-0000-0000-0000-000000000008",
                 title: "xxxxxxxxxxxxxxxx",
                 dueDate: .init(date: "昨日", time: "11:02"),
                 priority: .low,
@@ -75,7 +75,7 @@ nonisolated extension Reminder {
                 lastModifiedDate: creationDate,
             ),
             Reminder.sample(
-                calendarItemIdentifier: "00000000-0000-0000-0000-000000000009",
+                id: "00000000-0000-0000-0000-000000000009",
                 title: "xxxxxxxxxx",
                 dueDate: dueDate2,
                 priority: .medium,
@@ -83,7 +83,7 @@ nonisolated extension Reminder {
                 lastModifiedDate: creationDate,
             ),
             Reminder.sample(
-                calendarItemIdentifier: "00000000-0000-0000-0000-000000000010",
+                id: "00000000-0000-0000-0000-000000000010",
                 title: "xxxxxxxxxxxxxx",
                 dueDate: dueDate2,
                 priority: .none,
