@@ -2,7 +2,7 @@ public import Foundation
 
 nonisolated
 public struct Reminder: Codable, Identifiable, Hashable, Sendable {
-    /// ``id``と同じ値。
+    /// リマインダーID。``id``と同じ値。
     public let calendarItemIdentifier: String
     public let title: String
     public let dueDateComponents: DateComponents?
@@ -14,9 +14,9 @@ public struct Reminder: Codable, Identifiable, Hashable, Sendable {
     public let lastModifiedDate: Date?
     public let completionDate: Date?
     
-    /// ``calendarItemIdentifier``と同じ値。
+    /// リマインダーID。``calendarItemIdentifier``と同じ値。
     public var id: String { calendarItemIdentifier }
-
+    
     public init(
         calendarItemIdentifier: String,
         title: String,
@@ -40,34 +40,39 @@ public struct Reminder: Codable, Identifiable, Hashable, Sendable {
         self.completionDate = completionDate
     }
     
+    /// 期限日のコンポーネントから期限日時を生成する。
     public func dueDate(calendar: Calendar = .current) -> Date? {
         guard let dueDateComponents else { return nil }
         return Self.dueDate(from: dueDateComponents, calendar: calendar)
     }
     
+    /// リマインダーの完了状態を更新する。
     public mutating func setIsCompleted(_ isCompleted: Bool) {
         self.isCompleted = isCompleted
     }
     
+    /// 画面に表示する完了状態を更新する。
     public mutating func setDisplayedIsCompleted(_ displayedIsCompleted: Bool) {
         self.displayedIsCompleted = displayedIsCompleted
     }
-
+    
+    /// 期限日を解釈するカレンダーを返す。期限日のコンポーネントにタイムゾーンが指定されている場合はそのタイムゾーンを使用し、指定されていない場合はフォールバックのカレンダーのタイムゾーンを使用する。
     public func dueDateCalendar(fallback calendar: Calendar = .current) -> Calendar {
         guard let dueDateComponents else { return calendar }
         return dueDateComponents.resolvedCalendar(fallback: calendar)
     }
-
+    
+    /// 指定した期限日のコンポーネントから期限日時を生成する。
     public static func dueDate(from components: DateComponents, calendar: Calendar = .current) -> Date? {
         components.resolvedCalendar(fallback: calendar).date(from: components)
     }
     
+    /// 期限日に時刻が指定されているかを示す。
     public var hasDueTime: Bool {
-        dueDateComponents?.hour != nil
-        || dueDateComponents?.minute != nil
-        || dueDateComponents?.second != nil
+        dueDateComponents?.hour != nil || dueDateComponents?.minute != nil || dueDateComponents?.second != nil
     }
     
+    /// 指定した日時を基準に期限日の状態を判定する。時刻が指定されていない期限日は、その日が終わるまで期限切れと判定しない。
     public func dueDateStatus(
         relativeTo now: Date = .now,
         calendar: Calendar = .current
@@ -90,16 +95,11 @@ extension DateComponents {
 nonisolated
 public extension Reminder {
     enum DueDateStatus: Sendable {
-        case noDueDate
-        case overdue
-        case upcoming
+        case noDueDate, overdue, upcoming
     }
     
     enum Priority: CaseIterable, Codable, Comparable, Identifiable, Sendable {
-        case none
-        case low
-        case medium
-        case high
+        case none, low, medium, high
         
         public var id: Self { self }
         
