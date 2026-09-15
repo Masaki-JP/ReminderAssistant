@@ -5,7 +5,7 @@ public import ReminderCore
 
 /// `EventKit`を使用して、リマインダーの作成・完了状態の更新・取得を行うリポジトリ。
 ///
-/// ``EventKitReminderRepository``は、`EKEventStore`とアプリ内の``Reminder``および``ReminderList``の間を取り持つデータアクセス層。アプリ全体では``shared``から共有インスタンスを使用する。各操作でリマインダーへのフルアクセス権限を確認し、`EventKit`やキャンセルによる失敗を``ReminderRepositoryError``に変換する。アクセス権の要求はこのリポジトリの責務に含めず、``ReminderAccessRequestView``が別インスタンスの`EKEventStore`を使用する。
+/// ``EventKitReminderRepository``は、`EKEventStore`とアプリ内の`Reminder`および`ReminderList`の間を取り持つデータアクセス層。アプリ全体では``shared``から共有インスタンスを使用する。各操作でリマインダーへのフルアクセス権限を確認し、`EventKit`やキャンセルによる失敗を`ReminderRepositoryError`に変換する。アクセス権の要求はこのリポジトリの責務に含めず、`ReminderAccessRequestView`が別インスタンスの`EKEventStore`を使用する。
 ///
 /// ## アクターとしての責務
 ///
