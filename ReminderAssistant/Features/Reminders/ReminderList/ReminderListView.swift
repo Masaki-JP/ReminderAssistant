@@ -30,7 +30,6 @@ struct ReminderListView: View {
                 )
                 .padding(.trailing, 14)
                 .padding([.top, .leading, .bottom], 12)
-                .frame(maxWidth: .infinity, alignment: .leading)
                 .background(rowBackgroundColor, in: .rect(cornerRadius: 16))
                 .listRowBackground(Color.clear)
                 .listRowInsets(.init())
