@@ -81,6 +81,10 @@ struct ContentView<ReminderRepositoryType: ReminderRepository>: View {
                     guard isPlaceholder == false else { return }
                     viewModel.onToggleCompletion(reminder)
                 },
+                onDelete: { id in
+                    guard isPlaceholder == false else { return }
+                    viewModel.deleteReminder(id: id)
+                },
             )
             .privacySensitive(isPlaceholder)
             .redacted(reason: isPlaceholder ? .privacy : [])

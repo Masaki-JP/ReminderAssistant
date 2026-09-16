@@ -25,7 +25,7 @@ actor FakeReminderRepository: ReminderRepository {
         }
     }
     
-    enum FailureOperation { case create, fetch, setCompletion }
+    enum FailureOperation { case create, delete, fetch, setCompletion }
     
     /// リマインダーを作成できる編集可能なリスト。
     private var editableLists: [ReminderList]
@@ -138,6 +138,20 @@ actor FakeReminderRepository: ReminderRepository {
             notifyRemindersMayHaveChanged()
         }
     }
+
+    func delete(id: String) async throws(ReminderRepositoryError) {
+        try await operation(priority: .medium) { () async throws(ReminderRepositoryError) -> Void in
+            try throwOneTimeErrorIfNeeded(for: .delete)
+            
+            guard let listIndex = editableLists.firstIndex(where: { $0.reminders.contains(where: { $0.id == id }) }),
+                  let reminderIndex = editableLists[listIndex].reminders.firstIndex(where: { $0.id == id }) else {
+                throw ReminderRepositoryError.reminderNotFound(id: id)
+            }
+            
+            editableLists[listIndex].reminders.remove(at: reminderIndex)
+            notifyRemindersMayHaveChanged()
+        }
+    }
     
     func fetch() async throws(ReminderRepositoryError) -> [ReminderList] {
         try await operation(priority: .low) { () async throws(ReminderRepositoryError) -> [ReminderList] in
@@ -199,6 +213,7 @@ actor FakeReminderRepository: ReminderRepository {
         oneTimeFailureOperation = nil
         switch operation {
         case .create, .setCompletion: throw .saveFailed
+        case .delete: throw .deleteFailed
         case .fetch: throw .fetchFailed
         }
     }

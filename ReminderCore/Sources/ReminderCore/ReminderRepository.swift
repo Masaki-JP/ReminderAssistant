@@ -12,7 +12,7 @@ public protocol ReminderRepository: Actor {
     ) async throws(ReminderRepositoryError)
     
     func set(id: String, completion: Bool) async throws(ReminderRepositoryError)
-    
+    func delete(id: String) async throws(ReminderRepositoryError)
     func fetch() async throws(ReminderRepositoryError) -> [ReminderList]
 }
 
@@ -24,4 +24,5 @@ public enum ReminderRepositoryError: Error, Equatable {
     case saveFailed
     case cancelled
     case deadlineConversionFailed
+    case deleteFailed
 }

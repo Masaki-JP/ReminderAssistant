@@ -17,6 +17,7 @@ struct ReminderRowView: View {
             HStack(alignment: .center, spacing: nil) {
                 toggleCompletionButton
                 reminderTitle
+                    .foregroundStyle(reminder.isMarkedForDeletion ? .red : .primary)
                 Spacer(minLength: nil)
                 if reminder.priority != .none {
                     Image(systemName: "flag.fill")
