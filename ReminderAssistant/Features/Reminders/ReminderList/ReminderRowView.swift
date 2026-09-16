@@ -13,7 +13,7 @@ struct ReminderRowView: View {
     }
     
     var body: some View {
-        VStack(alignment: .listRowSeparatorLeading, spacing: 2) {
+        VStack(alignment: .listRowSeparatorLeading, spacing: 4) {
             HStack(alignment: .center, spacing: nil) {
                 toggleCompletionButton
                 reminderTitle
@@ -21,6 +21,17 @@ struct ReminderRowView: View {
                 if reminder.priority != .none {
                     Image(systemName: "flag.fill")
                         .foregroundStyle(flagColor)
+                }
+            }
+            
+            if let notes = reminder.notes, notes.isEmpty == false {
+                HStack {
+                    Image(systemName: "swift").hidden() // Workaround
+                    
+                    Text(notes)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(5)
+                        .font(.caption)
                 }
             }
             
@@ -49,7 +60,7 @@ struct ReminderRowView: View {
         Text(reminder.title)
             .strikethrough(reminder.displayedIsCompleted)
             .foregroundStyle(reminder.displayedIsCompleted ? .secondary : .primary)
-            .lineLimit(1)
+            .lineLimit(2)
     }
     
     var flagColor: Color {
@@ -173,6 +184,7 @@ private var sampleReminders: [Reminder] = [
         title: "メールを返信する",
         dueDateComponents: previewDateComponents(additionalDays: -2, additionalTime: (hour: 3, minute: 5)),
         priority: .medium,
+        notes: "abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789",
         isCompleted: true),
     .init(
         id: "preview-reminder-3",
