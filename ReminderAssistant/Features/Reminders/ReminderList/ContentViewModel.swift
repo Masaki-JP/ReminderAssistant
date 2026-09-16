@@ -19,12 +19,12 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepository> {
         reminderOperations.contains { if case .load = $0 { true } else { false } }
     }
     
-    /// 予約・実行中のリマインダー取得・作成・完了状態更新を追加順に保持する操作一覧。
+    /// 予約・実行中のリマインダー取得・作成・完了状態更新・削除を追加順に保持する操作一覧。
     private var reminderOperations: [ReminderOperation] = .init()
     /// 初回キャッシュの読み込みを試行済みかどうか。
     private var hasReadInitialCache = false
-    /// 完了状態更新の失敗後、進行中の作成・完了状態更新がすべて終了した際に再読み込みするかどうか。
-    private var shouldReloadAfterCompletionToggleFailure = false
+    /// 完了状態更新・削除の失敗後、進行中の変更操作がすべて終了した際に再読み込みするかどうか。
+    private var shouldReloadAfterMutationFailure = false
     /// リマインダーの変更通知を解除するためのトークン。
     private var notificationToken: (any NSObjectProtocol)? = nil
     /// リマインダーを取得・作成・更新するリポジトリ。
@@ -223,10 +223,13 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepository> {
     /// `requestCompletionToggle(for:)` は反対操作で相殺できるよう0.3秒待機した後、`reminderRepository.set(id:completion:)` で保存する。
     /// また、`cancelLoad()` で進行中の取得を止め、変更前・変更途中の取得結果が後から表示やキャッシュを上書きすることを防ぐ。
     /// 保存に成功すると `setIsCompleted(_:)` で実値を確定し、失敗すると `handleError(_:as:)` でエラーを表示して
-    /// `shouldReloadAfterCompletionToggleFailure` を有効にし、すべての変更操作が終わった後の再取得を予約する。
+    /// `shouldReloadAfterMutationFailure` を有効にし、すべての変更操作が終わった後の再取得を予約する。
     
     /// リマインダーの完了状態の更新を予約または取り消し、画面表示を即時に切り替える。
     func onToggleCompletion(_ reminder: Reminder) {
+        guard let index = reminderIndex(for: reminder),
+              editableLists[index.list].reminders[index.reminder].isMarkedForDeletion == false else { return }
+        
         let isPending = hasPendingCompletionToggle(for: reminder)
         
         if isPending == false {
@@ -235,7 +238,6 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepository> {
             cancelCompletionToggle(for: reminder)
         }
         
-        guard let index = reminderIndex(for: reminder) else { return }
         let newValue = isPending ? reminder.isCompleted : !reminder.isCompleted
         editableLists[index.list].reminders[index.reminder].setDisplayedIsCompleted(newValue)
     }
@@ -265,7 +267,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepository> {
             } catch {
                 guard let self else { return }
                 guard handleError(error, as: .toggleCompletionFailed) == true else { return }
-                shouldReloadAfterCompletionToggleFailure = true
+                shouldReloadAfterMutationFailure = true
             }
         }
         
@@ -296,36 +298,73 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepository> {
         return nil
     }
     
+    // MARK: - Reminder Deletion
+    
+    /// 削除状態を画面へ即時に反映し、リマインダーをリポジトリから削除する。
+    ///
+    /// 削除予定としてマーク済みの場合は重複した削除を行わない。
+    /// 対象の完了状態更新と進行中の取得をキャンセルし、削除前の取得結果による表示の上書きを防ぐ。
+    /// 削除に成功した対象は表示中の一覧から取り除き、リポジトリの変更通知を受けて一覧を再取得する。
+    /// 失敗した場合はエラーを表示し、すべての変更操作が終了してから最新状態を再取得する。
+    
+    /// 指定リマインダーを削除予定としてマークし、削除タスクを登録する。
+    func deleteReminder(id: String) {
+        guard let reminder = reminders.first(where: { $0.id == id }),
+              let index = reminderIndex(for: reminder),
+              reminder.isMarkedForDeletion == false else { return }
+        
+        editableLists[index.list].reminders[index.reminder].markForDeletion()
+        cancelCompletionToggle(for: reminder)
+        cancelLoad()
+        
+        let operationID = UUID()
+        let task = Task { [weak self] in
+            defer { self?.finishReminderMutation(with: operationID) }
+            
+            do {
+                try await self?.reminderRepository.delete(id: id)
+                guard let index = self?.reminderIndex(for: reminder) else { return }
+                self?.editableLists[index.list].reminders.remove(at: index.reminder)
+            } catch {
+                guard let self else { return }
+                guard handleError(error, as: .deleteReminderFailed) == true else { return }
+                shouldReloadAfterMutationFailure = true
+            }
+        }
+        
+        reminderOperations.append(.delete(id: operationID, reminderID: id, task: task))
+    }
+    
     // MARK: - Reminder Mutation Coordination
     
     /// 複数の変更操作の終了と、失敗後に実行する再取得を調整する。
     ///
-    /// `finishReminderMutation(with:)` は終了した作成または完了状態更新を `reminderOperations.remove(with:)` で取り除き、
-    /// 続けて `reloadRemindersAfterCompletionToggleFailureIfNeeded()` を呼び出す。
-    /// `reloadRemindersAfterCompletionToggleFailureIfNeeded()` は再取得が予約され、かつ `.create` と `.toggleCompletion` が
+    /// `finishReminderMutation(with:)` は終了した作成・完了状態更新・削除を `reminderOperations.remove(with:)` で取り除き、
+    /// 続けて `reloadRemindersAfterMutationFailureIfNeeded()` を呼び出す。
+    /// `reloadRemindersAfterMutationFailureIfNeeded()` は再取得が予約され、かつ `.create`・`.toggleCompletion`・`.delete` が
     /// 一つも残っていない場合だけ予約を解除して `loadReminders()` を呼ぶ。
     /// これにより、変更途中に取得した一覧が楽観的に更新した表示を上書きしたり、その一覧がキャッシュへ保存されたりすることを防ぎ、
     /// すべての変更を反映した状態を一度だけ取得する。
     
-    /// 作成・完了状態更新の終了を記録し、必要であれば再読み込みする。
+    /// 作成・完了状態更新・削除の終了を記録し、必要であれば再読み込みする。
     private func finishReminderMutation(with operationID: UUID) {
         reminderOperations.remove(with: operationID)
-        reloadRemindersAfterCompletionToggleFailureIfNeeded()
+        reloadRemindersAfterMutationFailureIfNeeded()
     }
     
-    /// 完了状態更新の失敗後、進行中の作成・完了状態更新がすべて終了した時点で最新状態を再読み込みする。
-    private func reloadRemindersAfterCompletionToggleFailureIfNeeded() {
-        guard shouldReloadAfterCompletionToggleFailure == true else { return }
+    /// 完了状態更新・削除の失敗後、進行中の変更操作がすべて終了した時点で最新状態を再読み込みする。
+    private func reloadRemindersAfterMutationFailureIfNeeded() {
+        guard shouldReloadAfterMutationFailure == true else { return }
         
         let hasPendingMutation = reminderOperations.contains { operation in
             switch operation {
-            case .create, .toggleCompletion: true
+            case .create, .toggleCompletion, .delete: true
             case .load: false
             }
         }
         guard hasPendingMutation == false else { return }
         
-        shouldReloadAfterCompletionToggleFailure = false
+        shouldReloadAfterMutationFailure = false
         loadReminders()
     }
     
@@ -380,7 +419,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepository> {
     
     /// 再読み込み予約を解除し、すべての操作をキャンセルして権限失効を通知する。
     private func handleReminderAccessRevoked() {
-        shouldReloadAfterCompletionToggleFailure = false
+        shouldReloadAfterMutationFailure = false
         reminderOperations.removeAll { $0.cancel(); return true }
         reminderAccessRevokedHandler()
     }
@@ -393,18 +432,17 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepository> {
 }
 
 /// ViewModelが管理する操作と、その操作を実行するタスク。
-/// 各操作は実行単位のUUIDで識別し、完了状態更新は対象のリマインダーIDも保持する。
+/// 各操作は実行単位のUUIDで識別し、完了状態更新と削除は対象のリマインダーIDも保持する。
 private enum ReminderOperation {
     case create(id: UUID, task: Task<Result<Void, CreateReminderError>, Never>)
     case toggleCompletion(id: UUID, reminderID: Reminder.ID, task: Task<Void, Never>)
+    case delete(id: UUID, reminderID: Reminder.ID, task: Task<Void, Never>)
     case load(id: UUID, task: Task<Void, Never>)
     
     /// この操作を一意に識別するID。
     var id: UUID {
         switch self {
-        case .create(let id, _): id
-        case .toggleCompletion(let id, _, _): id
-        case .load(let id, _): id
+        case .create(let id, _), .toggleCompletion(let id, _, _), .delete(let id, _, _), .load(let id, _): id
         }
     }
     
@@ -412,7 +450,7 @@ private enum ReminderOperation {
     func cancel() {
         switch self {
         case .create(_, let task): task.cancel()
-        case .toggleCompletion(_, _, let task), .load(_, let task): task.cancel()
+        case .toggleCompletion(_, _, let task), .delete(_, _, let task), .load(_, let task): task.cancel()
         }
     }
 }

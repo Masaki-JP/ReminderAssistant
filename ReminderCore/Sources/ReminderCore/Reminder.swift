@@ -9,10 +9,12 @@ public struct Reminder: Codable, Identifiable, Hashable, Sendable {
     public let priority: Self.Priority
     public let notes: String?
     public private(set) var isCompleted: Bool
-    public private(set) var displayedIsCompleted: Bool
     public let creationDate: Date?
     public let lastModifiedDate: Date?
     public let completionDate: Date?
+    
+    public private(set) var displayedIsCompleted: Bool
+    public private(set) var isMarkedForDeletion = false
     
     public init(
         id: String,
@@ -51,6 +53,11 @@ public struct Reminder: Codable, Identifiable, Hashable, Sendable {
     /// 画面に表示する完了状態を更新する。
     public mutating func setDisplayedIsCompleted(_ displayedIsCompleted: Bool) {
         self.displayedIsCompleted = displayedIsCompleted
+    }
+    
+    /// 削除予定としてマークする。
+    public mutating func markForDeletion() {
+        isMarkedForDeletion = true
     }
     
     /// 期限日を解釈するカレンダーを返す。期限日のコンポーネントにタイムゾーンが指定されている場合はそのタイムゾーンを使用し、指定されていない場合はフォールバックのカレンダーのタイムゾーンを使用する。

@@ -112,6 +112,23 @@ public final actor EventKitReminderRepository: ReminderRepository {
         }
     }
     
+    // MARK: - Reminder Deletion
+    
+    /// 指定したリマインダーを削除する。
+    public func delete(id: String) async throws(ReminderRepositoryError) {
+        try await operation(priority: .medium) { () async throws(ReminderRepositoryError) -> Void in
+            guard let reminder = eventStore.calendarItem(withIdentifier: id) as? EKReminder else {
+                throw .reminderNotFound(id: id)
+            }
+            
+            do {
+                try eventStore.remove(reminder, commit: true)
+            } catch {
+                throw .deleteFailed
+            }
+        }
+    }
+    
     // MARK: - Reminder Fetching
     
     /// リストIDごとに、そのリストに含まれるリマインダーを保持する辞書型のタイプエイリアス。
