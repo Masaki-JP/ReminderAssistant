@@ -3,7 +3,7 @@ import ReminderEventKit
 extension ContentView {
     enum Configuration {
         case production(
-            reminderRepository: ReminderRepositoryType = EventKitReminderRepository.shared,
+            reminderRepository: ReminderRepositoryType = ReminderRepository.shared,
             reminderStoreCache: ReminderStoreCache? = .init(),
             onReminderAccessRevoked: () -> Void,
         )

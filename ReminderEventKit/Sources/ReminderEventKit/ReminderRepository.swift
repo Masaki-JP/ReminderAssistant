@@ -5,7 +5,7 @@ public import ReminderCore
 
 /// `EventKit`を使用して、リマインダーの作成・完了状態の更新・取得を行うリポジトリ。
 ///
-/// ``EventKitReminderRepository``は、`EKEventStore`とアプリ内の`Reminder`および`ReminderList`の間を取り持つデータアクセス層。アプリ全体では``shared``から共有インスタンスを使用する。各操作でリマインダーへのフルアクセス権限を確認し、`EventKit`やキャンセルによる失敗を`ReminderRepositoryError`に変換する。アクセス権の要求はこのリポジトリの責務に含めず、`ReminderAccessRequestView`が別インスタンスの`EKEventStore`を使用する。
+/// ``ReminderRepository``は、`EKEventStore`とアプリ内の`Reminder`および`ReminderList`の間を取り持つデータアクセス層。アプリ全体では``shared``から共有インスタンスを使用する。各操作でリマインダーへのフルアクセス権限を確認し、`EventKit`やキャンセルによる失敗を`ReminderRepositoryError`に変換する。アクセス権の要求はこのリポジトリの責務に含めず、`ReminderAccessRequestView`が別インスタンスの`EKEventStore`を使用する。
 ///
 /// ## アクターとしての責務
 ///
@@ -15,13 +15,13 @@ public import ReminderCore
 ///
 /// Swiftのアクターは、`await`によるサスペンド中に他の呼び出しが再入することを許可する。そのため、アクターによる状態の保護だけでは、``fetch()``がリマインダーの取得完了を待っている間に、``create(title:deadline:priority:notes:list:)``や``set(id:completion:)``などの別の操作が開始され、同じ`EKEventStore`が同時に使用される可能性がある。
 ///
-/// `EventKitReminderRepository`は、同じ`EKEventStore`を同時に使用しないように、作成・完了状態の更新・取得を1つずつ実行するための待機列を内部に持つ。
+/// `ReminderRepository`は、同じ`EKEventStore`を同時に使用しないように、作成・完了状態の更新・取得を1つずつ実行するための待機列を内部に持つ。
 ///
 /// ## 操作の優先度
 ///
 /// 待機中の操作は高・中・低の3つの優先度に分け、実行中の操作が終了すると高い優先度の待機列から次の操作へ実行権を渡す。同じ優先度の操作は、待機列に追加された順に実行する。
 ///
-/// 作成と完了状態の更新の優先度は中とし、取得の優先度は低とする。これにより、取得より後に作成や更新が待機した場合でも、ユーザー操作に直接応答する作成と更新を先に実行する。高優先度の待機列も持つが、現在の`EventKitReminderRepository`で高優先度を指定する操作はない。
+/// 作成と完了状態の更新の優先度は中とし、取得の優先度は低とする。これにより、取得より後に作成や更新が待機した場合でも、ユーザー操作に直接応答する作成と更新を先に実行する。高優先度の待機列も持つが、現在の`ReminderRepository`で高優先度を指定する操作はない。
 ///
 /// - Important: 優先度は待機中の操作から次に実行する操作を選ぶためのもので、実行中の操作は中断しない。新しい操作は、実行中の操作が終了するまで待機する。
 ///
@@ -39,8 +39,8 @@ public import ReminderCore
 ///
 /// - Note: 2026年8月31日にiPhone 17で測定。
 ///
-public final actor EventKitReminderRepository: ReminderRepository {
-    public static let shared = EventKitReminderRepository()
+public final actor ReminderRepository: ReminderRepositoryProtocol {
+    public static let shared = ReminderRepository()
     /// リマインダー（リスト）の変更を外部に伝えるための通知名。
     public nonisolated let remindersMayHaveChanged: Notification.Name
     

@@ -1,7 +1,7 @@
 import SwiftUI
 import ReminderCore
 
-struct ContentView<ReminderRepositoryType: ReminderRepository>: View {
+struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
     @State var viewModel: ContentViewModel<ReminderRepositoryType>
     @State var sortOrder = ReminderSortOrder()
     @State var filter = ReminderFilter()

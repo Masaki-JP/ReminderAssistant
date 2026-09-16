@@ -2,7 +2,7 @@ import SwiftUI
 import ReminderCore
 
 @Observable
-final class ContentViewModel<ReminderRepositoryType: ReminderRepository> {
+final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol> {
     private(set) var editableLists: [ReminderList] = []
     var reminders: [Reminder] { editableLists.flatMap(\.reminders) }
     
