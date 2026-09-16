@@ -2,7 +2,7 @@ import Foundation
 import JapaneseDateConverter
 import ReminderCore
 
-actor FakeReminderRepository: ReminderRepository {
+actor FakeReminderRepository: ReminderRepositoryProtocol {
     struct ScheduledAdditions {
         /// リマインダーを追加する間隔。（``FakeReminderRepository/fetchDelay``より長い時間を指定するのが好ましい）
         fileprivate let interval: Duration
