@@ -26,12 +26,13 @@ enum ContentViewModelError: Error {
         }
     }
     
-    enum RecoveryBehavior { case dismiss, reload }
+    enum RecoveryBehavior { case acknowledge, retryLoading, openSettings }
     
     var recoveryBehavior: RecoveryBehavior {
         switch self {
-        case .loadRemindersFailed: .reload
-        case .saveReminderFailed, .toggleCompletionFailed, .deleteReminderFailed, .reminderDestinationListUnavailable: .dismiss
+        case .loadRemindersFailed: .retryLoading
+        case .reminderDestinationListUnavailable: .openSettings
+        case .saveReminderFailed, .toggleCompletionFailed, .deleteReminderFailed: .acknowledge
         }
     }
 }

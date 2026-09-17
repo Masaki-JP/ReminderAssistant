@@ -167,12 +167,17 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
     @ViewBuilder
     var errorAlertActions: some View {
         switch viewModel.error?.recoveryBehavior {
-        case .reload:
+        case .retryLoading:
             Button("再読み込み") {
                 guard isPlaceholder == false else { return }
                 viewModel.loadReminders()
             }
-        case .dismiss, nil:
+        case .openSettings:
+            Button("設定を開く") {
+                guard isPlaceholder == false else { return }
+                isSettingsViewPresented = true
+            }
+        case .acknowledge, nil:
             Button("OK", role: .cancel) {}
         }
     }
