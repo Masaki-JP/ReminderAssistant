@@ -98,6 +98,48 @@ public final actor ReminderRepository: ReminderRepositoryProtocol {
         }
     }
     
+    // MARK: - Reminder Editing
+    
+    /// 既存のリマインダーの入力項目を更新する。
+    public func update(
+        id: String,
+        title: String? = nil,
+        deadline: String? = nil,
+        priority: Reminder.Priority? = nil,
+        notes: String?? = nil,
+    ) async throws(ReminderRepositoryError) {
+        try await operation(priority: .medium) { () async throws(ReminderRepositoryError) -> Void in
+            guard let reminder = eventStore.calendarItem(withIdentifier: id) as? EKReminder else {
+                throw .reminderNotFound(id: id)
+            }
+            
+            guard title != nil || deadline != nil || priority != nil || notes != nil else { return }
+            
+            if let title, title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                throw .invalidTitle
+            }
+            
+            let dueDate = try deadline.map { deadline throws(ReminderRepositoryError) -> DateComponents in
+                guard deadline.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false,
+                      let date = JapaneseDateConverter().convert(from: deadline) else {
+                    throw .deadlineConversionFailed
+                }
+                
+                return Calendar.gregorianCalendar().dateComponents(
+                    [.year, .month, .day, .hour, .minute],
+                    from: date
+                )
+            }
+            
+            if let title { reminder.title = title }
+            if let priority { reminder.priority = priority.ekReminderPriority }
+            if let notes { reminder.notes = notes }
+            if let dueDate { reminder.dueDateComponents = dueDate }
+            
+            try save(reminder)
+        }
+    }
+    
     // MARK: - Reminder Completion
     
     /// 指定したリマインダーの完了状態を更新する。

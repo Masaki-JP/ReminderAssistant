@@ -5,7 +5,7 @@ extension ContentView {
     struct Toolbar: ToolbarContent {
         @Binding var sortOrder: ReminderSortOrder
         @Binding var filter: ReminderFilter
-        @Binding var isCreateReminderSheetPresented: Bool
+        @Binding var reminderEditorMode: ReminderEditorMode?
         @Binding var isSettingsViewPresented: Bool
         let isCreateReminderDisabled: Bool
         let isLoading: Bool
@@ -87,7 +87,7 @@ extension ContentView {
         
         var createReminderButton: some View {
             Button("作成", systemImage: "plus") {
-                isCreateReminderSheetPresented = true
+                reminderEditorMode = .create
             }
             .buttonStyle(.glassProminent)
             .disabled(isCreateReminderDisabled)

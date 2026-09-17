@@ -1,47 +1,55 @@
 import SwiftUI
 import ReminderCore
 
-struct CreateReminderSheet: View {
-    @State var request = CreateReminderRequest(title: "", deadline: "", priority: .none, notes: "")
+struct ReminderEditorSheet: View {
+    @State var draft: ReminderDraft
     @State var isDismissConfirmationDialogPresented = false
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     
-    @State var creationTask: Task<Void, Never>? = nil
-    var isCreating: Bool { creationTask != nil }
+    @State var saveTask: Task<Void, Never>? = nil
+    var isSaving: Bool { saveTask != nil }
     
-    @FocusState var focus: CreateReminderField?
-    var focusBinding: Binding<CreateReminderField?> {
+    @FocusState var focus: ReminderEditorField?
+    var focusBinding: Binding<ReminderEditorField?> {
         .init(get: { focus }, set: { focus = $0 })
     }
+
+    var focusFields: [ReminderEditorField] {
+        ReminderEditorField.allCases.filter { mode.showsDeadline || $0 != .deadline }
+    }
     
-    @State var creationError: CreateReminderError?
-    var creationErrorBinding: Binding<Bool> { .init(
-        get: { creationError != nil },
-        set: { if $0 == false { creationError = nil } }
+    @State var saveError: ReminderEditorError?
+    var saveErrorBinding: Binding<Bool> { .init(
+        get: { saveError != nil },
+        set: { if $0 == false { saveError = nil } }
     ) }
     
-    let confirmAction: (CreateReminderRequest) async throws(CreateReminderError) -> Void
+    let mode: ReminderEditorMode
+    let initialDraft: ReminderDraft
+    let confirmAction: (ReminderDraft) async throws(ReminderEditorError) -> Void
     
-    init(onConfirm: @escaping (CreateReminderRequest) async throws(CreateReminderError) -> Void) {
+    init(mode: ReminderEditorMode, onConfirm: @escaping (ReminderDraft) async throws(ReminderEditorError) -> Void) {
+        self.mode = mode
+        let initialDraft = mode.initialDraft
+        self.initialDraft = initialDraft
+        _draft = .init(initialValue: initialDraft)
         self.confirmAction = onConfirm
     }
     
     var canDismissWithoutConfirmation: Bool {
-        request.title.isEmpty && request.deadline.isEmpty && request.notes.isEmpty
+        draft == initialDraft
     }
     
     var isConfirmButtonDisabled: Bool {
-        isCreating
-        || request.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        || request.deadline.isEmpty
+        isSaving || !mode.canSave(draft, initialDraft: initialDraft)
     }
     
     var body: some View {
         NavigationStack {
-            CreateReminderForm(request: $request, focus: $focus)
-                .disabled(isCreating)
-                .navigationTitle("新規作成")
+            ReminderEditorForm(draft: $draft, focus: $focus, showsDeadline: mode.showsDeadline)
+                .disabled(isSaving)
+                .navigationTitle(mode.navigationTitle)
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar { toolbarContent }
                 .safeAreaInset(edge: .bottom) {
@@ -52,24 +60,25 @@ struct CreateReminderSheet: View {
                     }
                 }
         }
-        .interactiveDismissDisabled(isCreating || !canDismissWithoutConfirmation)
-        .alert("作成失敗", isPresented: creationErrorBinding) {
+        .interactiveDismissDisabled(isSaving || !canDismissWithoutConfirmation)
+        .alert(mode.errorTitle, isPresented: saveErrorBinding) {
             Button("OK", role: .cancel) {}
         } message: {
-            if let creationError { Text(creationError.message) }
+            if let saveError { Text(saveError.message) }
         }
         .task {
             try? await Task.sleep(for: .seconds(0.03))
+            guard !Task.isCancelled else { return }
             focus = .title
         }
-        .onDisappear { creationTask?.cancel() }
+        .onDisappear { saveTask?.cancel() }
     }
     
     @ToolbarContentBuilder
     var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
             Button(role: .cancel, action: dismissSheet)
-                .disabled(isCreating)
+                .disabled(isSaving)
                 .confirmationDialog(
                     "現在の入力を破棄して中断しますか？",
                     isPresented: $isDismissConfirmationDialogPresented,
@@ -80,7 +89,8 @@ struct CreateReminderSheet: View {
         }
         
         ToolbarItem(placement: .confirmationAction) {
-            Button(role: .confirm, action: createReminder)
+            Button(role: .confirm, action: saveReminder)
+                .accessibilityLabel(mode.confirmButtonTitle)
                 .keyboardShortcut(.return, modifiers: .command)
                 .disabled(isConfirmButtonDisabled)
         }
@@ -96,13 +106,13 @@ struct CreateReminderSheet: View {
         HStack(spacing: nil) {
             focusPicker
             dismissKeyboardButton
-            createReminderButton
+            saveReminderButton
         }
     }
     
     var focusPicker: some View {
         Picker("フォーカス", selection: focusBinding) {
-            ForEach(CreateReminderField.allCases) { field in
+            ForEach(focusFields) { field in
                 Text(field.displayName).tag(field)
             }
         }
@@ -118,15 +128,15 @@ struct CreateReminderSheet: View {
         .labelStyle(.iconOnly)
     }
     
-    var createReminderButton: some View {
-        Button("作成", systemImage: "checkmark", action: createReminder)
+    var saveReminderButton: some View {
+        Button(mode.confirmButtonTitle, systemImage: "checkmark", action: saveReminder)
             .buttonStyle(.glassProminent)
             .labelStyle(.iconOnly)
             .disabled(isConfirmButtonDisabled)
     }
 }
 
-extension CreateReminderSheet {
+extension ReminderEditorSheet {
     func dismissSheet() {
         if canDismissWithoutConfirmation == true {
             dismiss()
@@ -135,46 +145,30 @@ extension CreateReminderSheet {
         }
     }
     
-    func createReminder() {
-        guard creationTask == nil else { return }
+    func saveReminder() {
+        guard isConfirmButtonDisabled == false else { return }
         
-        creationTask = .init {
-            defer { creationTask = nil }
+        saveTask = .init {
+            defer { saveTask = nil }
             
             do {
-                try await confirmAction(request); dismiss()
-            } catch let error as CreateReminderError {
+                try await confirmAction(draft); dismiss()
+            } catch let error as ReminderEditorError {
                 if case .cancelled = error { return }
-                creationError = error
+                saveError = error
             } catch {
-                creationError = .saveFailed
+                saveError = .saveFailed
             }
         }
     }
 }
 
-/// リマインダー作成画面で扱うエラー。
-enum CreateReminderError: Error {
-    case invalidDeadline
-    case destinationListUnavailable
-    case saveFailed
-    case cancelled
+#Preview("Light・Create") { ReminderEditorSheet(mode: .create) { _ in }.preferredColorScheme(.light) }
+#Preview("Dark・Create") { ReminderEditorSheet(mode: .create) { _ in }.preferredColorScheme(.dark) }
+#Preview("Light・Edit") {
+    ReminderEditorSheet(mode: .edit(Reminder.samples[0])) { _ in }.preferredColorScheme(.light)
 }
-
-extension CreateReminderError {
-    var message: String {
-        switch self {
-        case .invalidDeadline:
-            "期限を認識できませんでした。入力内容を確認し、もう一度お試しください。"
-        case .destinationListUnavailable:
-            "作成先のリストを利用できません。設定画面で作成先を選択してください。"
-        case .saveFailed:
-            "新規リマインダーの保存に失敗しました。もう一度お試しください。"
-        case .cancelled:
-            ""
-        }
-    }
+#Preview("Dark・Edit without deadline") {
+    ReminderEditorSheet(mode: .edit(.init(id: "preview", title: "観葉植物に肥料を追加する"))) { _ in }
+        .preferredColorScheme(.dark)
 }
-
-#Preview("Light") { CreateReminderSheet { _ in }.preferredColorScheme(.light) }
-#Preview("Dark") { CreateReminderSheet { _ in }.preferredColorScheme(.dark) }
