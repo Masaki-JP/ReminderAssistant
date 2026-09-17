@@ -32,7 +32,7 @@ struct ReminderListView: View {
         .environment(\.defaultMinListHeaderHeight, 0)
         .environment(\.defaultMinListRowHeight, 0)
         .scrollIndicators(isScrollIndicatorsVisible == true ? .visible : .hidden)
-        .background(listBackgroundColor)
+        .background(Color(uiColor: .systemGroupedBackground))
     }
     
     func section(_ section: ReminderListSection) -> some View {
@@ -43,10 +43,6 @@ struct ReminderListView: View {
                     onToggleCompletion: { toggleCompletionAction(reminder) },
                 )
                 .disabled(reminder.isMarkedForDeletion)
-                .padding(.leading, 18)
-                .padding(.trailing, 12)
-                .padding(.vertical, 14)
-                .background(rowBackgroundColor, in: .rect(cornerRadius: 16))
                 .listRowBackground(Color.clear)
                 .listRowInsets(.init())
                 .listRowSeparator(.hidden)
@@ -92,13 +88,6 @@ struct ReminderListView: View {
                 .background(tintColor.opacity(0.12), in: .capsule)
         }
     }
-    
-    var rowBackgroundColor: Color {
-        let grayLevel = colorScheme == .light ? 1.0 : 0.075
-        return .init(red: grayLevel, green: grayLevel, blue: grayLevel)
-    }
-    
-    var listBackgroundColor: Color { .init(uiColor: .systemGroupedBackground) }
 }
 
 struct ReminderListSection: Identifiable {
