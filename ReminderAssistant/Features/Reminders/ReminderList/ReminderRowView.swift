@@ -48,7 +48,7 @@ struct ReminderRowView: View {
         .padding(.leading, 18)
         .padding(.trailing, 12)
         .padding(.vertical, 12) // ※1
-        .background(rowBackgroundColor, in: .rect(cornerRadius: 16))
+        .background(rowBackgroundColor, in: .rect(cornerRadius: 12))
         .sensoryFeedback(.selection, trigger: reminder.displayedIsCompleted)
     }
     
