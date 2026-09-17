@@ -6,7 +6,7 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
     @State var sortOrder = ReminderSortOrder()
     @State var filter = ReminderFilter()
     @State var searchText = ""
-    @State var isCreateReminderSheetPresented = false
+    @State var reminderEditorMode: ReminderEditorMode?
     @State var isSettingsViewPresented = false
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     let isPlaceholder: Bool
@@ -68,9 +68,9 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
         guard isPlaceholder == false,
               viewModel.editableLists.isEmpty == false,
               isSettingsViewPresented == false,
-              isCreateReminderSheetPresented == false else { return nil }
+              reminderEditorMode == nil else { return nil }
         
-        return { isCreateReminderSheetPresented = true }
+        return { reminderEditorMode = .create }
     }
     
     var body: some View {
@@ -80,6 +80,10 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
                 onToggleCompletion: { reminder in
                     guard isPlaceholder == false else { return }
                     viewModel.onToggleCompletion(reminder)
+                },
+                onEdit: { reminder in
+                    guard isPlaceholder == false else { return }
+                    reminderEditorMode = .edit(reminder)
                 },
                 onDelete: { id in
                     guard isPlaceholder == false else { return }
@@ -97,8 +101,10 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
                 )
                 .preferredColorScheme(colorScheme)
             }
-            .sheet(isPresented: $isCreateReminderSheetPresented) {
-                CreateReminderSheet(onConfirm: createReminder)
+            .sheet(item: $reminderEditorMode) { mode in
+                ReminderEditorSheet(mode: mode) { draft async throws(ReminderEditorError) in
+                    try await saveReminder(draft, mode: mode)
+                }
             }
             .navigationTitle(displayedList?.title ?? "すべて")
             .navigationBarTitleDisplayMode(.inline)
@@ -141,7 +147,7 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
         .init(
             sortOrder: $sortOrder,
             filter: $filter,
-            isCreateReminderSheetPresented: $isCreateReminderSheetPresented,
+            reminderEditorMode: $reminderEditorMode,
             isSettingsViewPresented: $isSettingsViewPresented,
             isCreateReminderDisabled: viewModel.editableLists.isEmpty,
             isLoading: viewModel.isLoading,
@@ -197,12 +203,9 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
 }
 
 extension ContentView {
-    func createReminder(_ request: CreateReminderRequest) async throws(CreateReminderError) {
+    func saveReminder(_ draft: ReminderDraft, mode: ReminderEditorMode) async throws(ReminderEditorError) {
         guard isPlaceholder == false else { throw .cancelled }
-        
-        var request = request
-        request.listIdentifier = reminderDestinationListID
-        try await viewModel.createReminder(request)
+        try await viewModel.saveReminder(draft, mode: mode, listIdentifier: reminderDestinationListID)
     }
     
     /// 表示対象のリスト（``displayedListID``）が未設定、または現在の編集可能なリストに存在しない場合、表示対象のリストにデフォルトリスト、または「すべて（`nil`）」を設定する。

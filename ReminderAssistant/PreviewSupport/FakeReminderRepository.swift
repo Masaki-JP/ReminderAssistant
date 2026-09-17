@@ -25,7 +25,7 @@ actor FakeReminderRepository: ReminderRepositoryProtocol {
         }
     }
     
-    enum FailureOperation { case create, delete, fetch, setCompletion }
+    enum FailureOperation { case create, update, delete, fetch, setCompletion }
     
     /// リマインダーを作成できる編集可能なリスト。
     private var editableLists: [ReminderList]
@@ -106,6 +106,54 @@ actor FakeReminderRepository: ReminderRepositoryProtocol {
             )
             
             editableLists[listIndex].reminders.append(reminder)
+            notifyRemindersMayHaveChanged()
+        }
+    }
+    
+    func update(
+        id: String,
+        title: String? = nil,
+        deadline: String? = nil,
+        priority: Reminder.Priority? = nil,
+        notes: String?? = nil,
+    ) async throws(ReminderRepositoryError) {
+        try await operation(priority: .medium) { () async throws(ReminderRepositoryError) -> Void in
+            guard let listIndex = editableLists.firstIndex(where: { $0.reminders.contains(where: { $0.id == id }) }),
+                  let index = editableLists[listIndex].reminders.firstIndex(where: { $0.id == id }) else {
+                throw .reminderNotFound(id: id)
+            }
+            guard title != nil || deadline != nil || priority != nil || notes != nil else { return }
+            
+            if let title, title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                throw .invalidTitle
+            }
+            let reminder = editableLists[listIndex].reminders[index]
+            
+            let dueDate = try deadline.map { deadline throws(ReminderRepositoryError) -> DateComponents in
+                guard deadline.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false,
+                      let date = JapaneseDateConverter().convert(from: deadline) else {
+                    throw .deadlineConversionFailed
+                }
+                
+                return Calendar.gregorianCalendar().dateComponents(
+                    [.year, .month, .day, .hour, .minute],
+                    from: date
+                )
+            }
+            
+            try throwOneTimeErrorIfNeeded(for: .update)
+            
+            editableLists[listIndex].reminders[index] = Reminder(
+                id: reminder.id,
+                title: title ?? reminder.title,
+                dueDateComponents: dueDate ?? reminder.dueDateComponents,
+                priority: priority ?? reminder.priority,
+                notes: notes ?? reminder.notes,
+                isCompleted: reminder.isCompleted,
+                creationDate: reminder.creationDate,
+                lastModifiedDate: .now,
+                completionDate: reminder.completionDate
+            )
             notifyRemindersMayHaveChanged()
         }
     }
@@ -212,7 +260,7 @@ actor FakeReminderRepository: ReminderRepositoryProtocol {
         
         oneTimeFailureOperation = nil
         switch operation {
-        case .create, .setCompletion: throw .saveFailed
+        case .create, .update, .setCompletion: throw .saveFailed
         case .delete: throw .deleteFailed
         case .fetch: throw .fetchFailed
         }

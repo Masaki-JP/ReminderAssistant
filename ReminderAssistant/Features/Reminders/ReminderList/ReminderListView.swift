@@ -4,16 +4,19 @@ import ReminderCore
 struct ReminderListView: View {
     let sections: [ReminderListSection]
     let toggleCompletionAction: (Reminder) -> Void
+    let editAction: (Reminder) -> Void
     let deleteAction: (_ id: String) -> Void
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     
     init(
         sections: [ReminderListSection],
         onToggleCompletion: @escaping (Reminder) -> Void,
+        onEdit: @escaping (Reminder) -> Void,
         onDelete: @escaping (_ id: String) -> Void,
     ) {
         self.sections = sections
         self.toggleCompletionAction = onToggleCompletion
+        self.editAction = onEdit
         self.deleteAction = onDelete
     }
     
@@ -47,6 +50,9 @@ struct ReminderListView: View {
                 .listRowInsets(.init())
                 .listRowSeparator(.hidden)
                 .contextMenu {
+                    Button("編集", systemImage: "pencil") {
+                        editAction(reminder)
+                    }
                     Button("削除（即時実行）", systemImage: "trash", role: .destructive) {
                         deleteAction(reminder.id)
                     }
@@ -118,9 +124,10 @@ private let reminderListPreviewCalendar = Calendar.gregorianCalendar()
         ReminderListSection(title: "期限前", tint: .blue, reminders: upcomingPreviewReminders),
     ]
     
-    ReminderListView(sections: sections, onToggleCompletion: { _ in }, onDelete: { _ in })
-        .background(.green)
-        .preferredColorScheme(.light)
+    ReminderListView(
+        sections: sections, onToggleCompletion: { _ in }, onEdit: { _ in }, onDelete: { _ in }
+    )
+    .preferredColorScheme(.light)
 }
 
 #Preview("Dark") {
@@ -137,8 +144,10 @@ private let reminderListPreviewCalendar = Calendar.gregorianCalendar()
         ReminderListSection(title: "期限前", tint: .blue, reminders: upcomingPreviewReminders),
     ]
     
-    ReminderListView(sections: sections, onToggleCompletion: { _ in }, onDelete: { _ in })
-        .preferredColorScheme(.dark)
+    ReminderListView(
+        sections: sections, onToggleCompletion: { _ in }, onEdit: { _ in }, onDelete: { _ in }
+    )
+    .preferredColorScheme(.dark)
 }
 
 /// ※1: primaryが機能しないため。

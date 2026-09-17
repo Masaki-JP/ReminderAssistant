@@ -1,6 +1,6 @@
 /// リマインダー一覧画面で表示するエラー。
 enum ContentViewModelError: Error {
-    case createReminderFailed
+    case saveReminderFailed
     case loadRemindersFailed
     case toggleCompletionFailed
     case deleteReminderFailed
@@ -8,7 +8,7 @@ enum ContentViewModelError: Error {
     
     var title: String {
         switch self {
-        case .createReminderFailed: "作成失敗"
+        case .saveReminderFailed: "保存失敗"
         case .loadRemindersFailed: "読み込み失敗"
         case .toggleCompletionFailed: "更新失敗"
         case .deleteReminderFailed: "削除失敗"
@@ -18,7 +18,7 @@ enum ContentViewModelError: Error {
     
     var message: String {
         switch self {
-        case .createReminderFailed: "新規リマインダーを作成できませんでした。もう一度お試しください。"
+        case .saveReminderFailed: "リマインダーを保存できませんでした。もう一度お試しください。"
         case .loadRemindersFailed: "リマインダーを読み込めませんでした。もう一度お試しください。"
         case .toggleCompletionFailed: "完了状態を更新できませんでした。最新の状態を再読み込みします。"
         case .deleteReminderFailed: "リマインダーを削除できませんでした。最新の状態を再読み込みします。"
@@ -31,7 +31,7 @@ enum ContentViewModelError: Error {
     var recoveryBehavior: RecoveryBehavior {
         switch self {
         case .loadRemindersFailed: .reload
-        case .createReminderFailed, .toggleCompletionFailed, .deleteReminderFailed, .reminderDestinationListUnavailable: .dismiss
+        case .saveReminderFailed, .toggleCompletionFailed, .deleteReminderFailed, .reminderDestinationListUnavailable: .dismiss
         }
     }
 }

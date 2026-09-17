@@ -19,7 +19,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
         reminderOperations.contains { if case .load = $0 { true } else { false } }
     }
     
-    /// 予約・実行中のリマインダー取得・作成・完了状態更新・削除を追加順に保持する操作一覧。
+    /// 予約・実行中のリマインダー取得・保存・完了状態更新・削除を追加順に保持する操作一覧。
     private var reminderOperations: [ReminderOperation] = .init()
     /// 初回キャッシュの読み込みを試行済みかどうか。
     private var hasReadInitialCache = false
@@ -117,25 +117,20 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
         }
     }
     
-    // MARK: - Reminder Creation
+    // MARK: - Reminder Saving
     
-    /// 作成先を確認し、新しいリマインダーをリポジトリに作成する。
-    ///
-    /// `createReminder(_:)` は `createReminderTask(request:operationID:)` で作成タスクを生成して `reminderOperations` へ登録し、
-    /// `cancelLoad()` で進行中の取得を止めてから、キャンセルハンドラーを使用して作成結果を待つ。
-    /// 取得を止めることで、作成前の取得結果が作成後に返り、表示やキャッシュを古い状態へ戻すことを防ぐ。
-    /// 作成タスクは `reminderDestinationList(for:)` で作成先を取得し、`reminderRepository.create(...)` でリポジトリへ保存する。
-    /// 保存に成功すると成功の触覚フィードバックを発生させ、失敗すると `handleCreateReminderError(_:)` を呼び出す。
-    /// `handleCreateReminderError(_:)` と `resolveCreateReminderError(_:)` は、キャンセル・期限変換失敗・作成先なし・保存失敗を
-    /// `CreateReminderError` へ変換し、キャンセル以外の場合にエラーの触覚フィードバックを発生させる。
-    /// 作成タスクは成否にかかわらず `finishReminderMutation(with:)` を呼び、操作一覧から自身を取り除く。
-    
-    /// 指定された内容でリマインダーを作成し、作成に失敗した場合は画面用のエラーを送出する。
-    func createReminder(_ request: CreateReminderRequest) async throws(CreateReminderError) {
+    /// モードに応じて作成・編集を実行し、失敗した場合はシートに表示するエラーを送出する。
+    /// 古い取得結果が保存後の状態を上書きしないよう、進行中の取得をキャンセルしてから保存結果を待つ。
+    /// 作成先の設定は作成時だけ使用し、編集時は元のリマインダーの所属リストを保持する。
+    func saveReminder(
+        _ draft: ReminderDraft,
+        mode: ReminderEditorMode,
+        listIdentifier: String?,
+    ) async throws(ReminderEditorError) {
         let operationID = UUID()
-        let task = createReminderTask(request: request, operationID: operationID)
+        let task = saveReminderTask(draft: draft, mode: mode, listIdentifier: listIdentifier, operationID: operationID)
         
-        reminderOperations.append(.create(id: operationID, task: task))
+        reminderOperations.append(.save(id: operationID, task: task))
         cancelLoad()
         
         let result = await withTaskCancellationHandler {
@@ -149,25 +144,42 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
         }
     }
     
-    /// リマインダー作成と、その結果に応じた後処理を実行するタスクを作成する。
-    private func createReminderTask(
-        request: CreateReminderRequest,
+    /// リマインダーの保存と、その結果に応じた後処理を実行するタスクを作成する。
+    private func saveReminderTask(
+        draft: ReminderDraft,
+        mode: ReminderEditorMode,
+        listIdentifier: String?,
         operationID: UUID,
-    ) -> Task<Result<Void, CreateReminderError>, Never> {
-        Task { [weak self] () -> Result<Void, CreateReminderError> in
+    ) -> Task<Result<Void, ReminderEditorError>, Never> {
+        Task { [weak self] () -> Result<Void, ReminderEditorError> in
             defer { self?.finishReminderMutation(with: operationID) }
             
             do {
-                guard let list = try self?.reminderDestinationList(for: request.listIdentifier) else {
-                    return .failure(.cancelled)
+                switch mode {
+                case .create:
+                    guard let list = try self?.reminderDestinationList(for: listIdentifier) else {
+                        return .failure(.cancelled)
+                    }
+                    try await self?.reminderRepository.create(
+                        title: draft.title, deadline: draft.deadline, priority: draft.priority, notes: draft.notes, list: list,
+                    )
+                case .edit(let reminder):
+                    let notes: String?? = if draft.notes == (reminder.notes ?? "") {
+                        nil
+                    } else {
+                        .some(draft.notes.isEmpty ? nil : draft.notes)
+                    }
+                    try await self?.reminderRepository.update(
+                        id: reminder.id,
+                        title: draft.title == reminder.title ? nil : draft.title,
+                        deadline: draft.deadlineUpdate,
+                        priority: draft.priority == reminder.priority ? nil : draft.priority,
+                        notes: notes,
+                    )
                 }
-                
-                try await self?.reminderRepository.create(
-                    title: request.title, deadline: request.deadline, priority: request.priority, notes: request.notes, list: list,
-                )
             } catch {
                 guard let self else { return .failure(.cancelled) }
-                return .failure(self.handleCreateReminderError(error))
+                return .failure(self.handleSaveReminderError(error))
             }
             
             guard self != nil else { return .failure(.cancelled) }
@@ -185,26 +197,31 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
         }
     }
     
-    /// リマインダー作成エラーを画面用のエラーへ変換し、必要に応じて失敗の触覚フィードバックを発生させる。
-    private func handleCreateReminderError(_ error: any Error) -> CreateReminderError {
-        let createReminderError = resolveCreateReminderError(error)
+    /// リマインダー保存エラーを画面用のエラーへ変換し、必要に応じて失敗の触覚フィードバックを発生させる。
+    private func handleSaveReminderError(_ error: any Error) -> ReminderEditorError {
+        let saveReminderError = resolveSaveReminderError(error)
         
-        switch createReminderError {
+        switch saveReminderError {
         case .cancelled: break
         default: UINotificationFeedbackGenerator().notificationOccurred(.error)
         }
         
-        return createReminderError
+        return saveReminderError
     }
     
-    /// リマインダー作成時のエラーを、作成画面で扱うエラーに解決する。
-    private func resolveCreateReminderError(_ error: any Error) -> CreateReminderError {
-        guard let resolvedError = resolveError(error, as: .createReminderFailed) else {
+    /// リマインダー保存時のエラーを、作成・編集画面で扱うエラーに解決する。
+    private func resolveSaveReminderError(_ error: any Error) -> ReminderEditorError {
+        guard let resolvedError = resolveError(error, as: .saveReminderFailed) else {
             return .cancelled
         }
         
-        return if (error as? ReminderRepositoryError) == .deadlineConversionFailed {
+        return if (error as? ReminderRepositoryError) == .invalidTitle {
+            .invalidTitle
+        } else if (error as? ReminderRepositoryError) == .deadlineConversionFailed {
             .invalidDeadline
+        } else if let repositoryError = error as? ReminderRepositoryError,
+                  case .reminderNotFound = repositoryError {
+            .reminderUnavailable
         } else if case .reminderDestinationListUnavailable = resolvedError {
             .destinationListUnavailable
         } else {
@@ -339,14 +356,14 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     
     /// 複数の変更操作の終了と、失敗後に実行する再取得を調整する。
     ///
-    /// `finishReminderMutation(with:)` は終了した作成・完了状態更新・削除を `reminderOperations.remove(with:)` で取り除き、
+    /// `finishReminderMutation(with:)` は終了した保存・完了状態更新・削除を `reminderOperations.remove(with:)` で取り除き、
     /// 続けて `reloadRemindersAfterMutationFailureIfNeeded()` を呼び出す。
-    /// `reloadRemindersAfterMutationFailureIfNeeded()` は再取得が予約され、かつ `.create`・`.toggleCompletion`・`.delete` が
+    /// `reloadRemindersAfterMutationFailureIfNeeded()` は再取得が予約され、かつ `.save`・`.toggleCompletion`・`.delete` が
     /// 一つも残っていない場合だけ予約を解除して `loadReminders()` を呼ぶ。
     /// これにより、変更途中に取得した一覧が楽観的に更新した表示を上書きしたり、その一覧がキャッシュへ保存されたりすることを防ぎ、
     /// すべての変更を反映した状態を一度だけ取得する。
     
-    /// 作成・完了状態更新・削除の終了を記録し、必要であれば再読み込みする。
+    /// 保存・完了状態更新・削除の終了を記録し、必要であれば再読み込みする。
     private func finishReminderMutation(with operationID: UUID) {
         reminderOperations.remove(with: operationID)
         reloadRemindersAfterMutationFailureIfNeeded()
@@ -358,7 +375,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
         
         let hasPendingMutation = reminderOperations.contains { operation in
             switch operation {
-            case .create, .toggleCompletion, .delete: true
+            case .save, .toggleCompletion, .delete: true
             case .load: false
             }
         }
@@ -434,7 +451,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
 /// ViewModelが管理する操作と、その操作を実行するタスク。
 /// 各操作は実行単位のUUIDで識別し、完了状態更新と削除は対象のリマインダーIDも保持する。
 private enum ReminderOperation {
-    case create(id: UUID, task: Task<Result<Void, CreateReminderError>, Never>)
+    case save(id: UUID, task: Task<Result<Void, ReminderEditorError>, Never>)
     case toggleCompletion(id: UUID, reminderID: Reminder.ID, task: Task<Void, Never>)
     case delete(id: UUID, reminderID: Reminder.ID, task: Task<Void, Never>)
     case load(id: UUID, task: Task<Void, Never>)
@@ -442,14 +459,14 @@ private enum ReminderOperation {
     /// この操作を一意に識別するID。
     var id: UUID {
         switch self {
-        case .create(let id, _), .toggleCompletion(let id, _, _), .delete(let id, _, _), .load(let id, _): id
+        case .save(let id, _), .toggleCompletion(let id, _, _), .delete(let id, _, _), .load(let id, _): id
         }
     }
     
     /// この操作に紐づくTaskをキャンセルする。
     func cancel() {
         switch self {
-        case .create(_, let task): task.cancel()
+        case .save(_, let task): task.cancel()
         case .toggleCompletion(_, _, let task), .delete(_, _, let task), .load(_, let task): task.cancel()
         }
     }

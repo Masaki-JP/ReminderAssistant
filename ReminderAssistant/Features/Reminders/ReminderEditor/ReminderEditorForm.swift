@@ -1,10 +1,11 @@
 import SwiftUI
 import ReminderCore
 
-struct CreateReminderForm: View {
+struct ReminderEditorForm: View {
     @Environment(\.colorScheme) var colorScheme: ColorScheme
-    @Binding var request: CreateReminderRequest
-    var focus: FocusState<CreateReminderField?>.Binding
+    @Binding var draft: ReminderDraft
+    var focus: FocusState<ReminderEditorField?>.Binding
+    let showsDeadline: Bool
     
     /// `TextField`の初回フォーカス時に高さが変わる問題に対処するために使用する。
     @ScaledMetric(relativeTo: .body) var singleLineTextFieldHeight = 22.0
@@ -38,11 +39,13 @@ struct CreateReminderForm: View {
                     .padding(.top, betweenDividerAndTextFieldSpacing)
                     .padding(.bottom, betweenDividerAndContentSpacing)
                 
-                deadlineSection
-                
-                formDivider
-                    .padding(.top, betweenDividerAndTextFieldSpacing)
-                    .padding(.bottom, betweenDividerAndContentSpacing)
+                if showsDeadline {
+                    deadlineSection
+                    
+                    formDivider
+                        .padding(.top, betweenDividerAndTextFieldSpacing)
+                        .padding(.bottom, betweenDividerAndContentSpacing)
+                }
                 
                 prioritySection
                 
@@ -62,7 +65,7 @@ struct CreateReminderForm: View {
     
     var titleSection: some View {
         section(label: "件名", systemImage: "checklist") {
-            TextField("観葉植物に肥料を追加する", text: $request.title)
+            TextField("観葉植物に肥料を追加する", text: $draft.title)
                 .frame(height: singleLineTextFieldHeight)
                 .focused(focus, equals: .title)
         }
@@ -70,7 +73,7 @@ struct CreateReminderForm: View {
     
     var deadlineSection: some View {
         section(label: "期限", systemImage: "clock") {
-            TextField("来月15日の昼", text: $request.deadline)
+            TextField("来月15日の昼", text: $draft.deadline)
                 .frame(height: singleLineTextFieldHeight)
                 .focused(focus, equals: .deadline)
         }
@@ -90,7 +93,7 @@ struct CreateReminderForm: View {
         section(label: "備考", systemImage: "text.alignleft") {
             TextField(
                 "備考",
-                text: $request.notes,
+                text: $draft.notes,
                 prompt: Text(notesTextFieldPlaceholder),
                 axis: .vertical
             )
@@ -118,20 +121,20 @@ struct CreateReminderForm: View {
     
     func priorityButton(_ priority: Reminder.Priority) -> some View {
         Button {
-            request.priority = priority
+            draft.priority = priority
         } label: {
             Text(priority.displayName)
                 .font(.subheadline.weight(.medium))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 7)
-                .foregroundStyle(request.priority == priority ? .white : .primary)
-                .background(request.priority == priority ? .secondary : colorScheme == .light ? .quinary : .quaternary, in: .capsule)
+                .foregroundStyle(draft.priority == priority ? .white : .primary)
+                .background(draft.priority == priority ? .secondary : colorScheme == .light ? .quinary : .quaternary, in: .capsule)
         }
         .foregroundStyle(.primary)
     }
 }
 
-nonisolated enum CreateReminderField: CaseIterable, Identifiable {
+nonisolated enum ReminderEditorField: CaseIterable, Identifiable {
     case title, deadline, notes
     
     var id: Self { self }
@@ -146,18 +149,24 @@ nonisolated enum CreateReminderField: CaseIterable, Identifiable {
 }
 
 #Preview("Light・Empty") {
-    @Previewable @State var request = CreateReminderRequest(title: "", deadline: "", priority: .none, notes: "")
-    @Previewable @FocusState var focus: CreateReminderField?
-    CreateReminderForm(request: $request, focus: $focus).preferredColorScheme(.light)
+    @Previewable @State var draft = ReminderDraft()
+    @Previewable @FocusState var focus: ReminderEditorField?
+    ReminderEditorForm(draft: $draft, focus: $focus, showsDeadline: true).preferredColorScheme(.light)
 }
 
 #Preview("Dark・Input") {
-    @Previewable @State var request = CreateReminderRequest(
+    @Previewable @State var draft = ReminderDraft(
         title: "観葉植物に肥料を追加する",
         deadline: "来月15日の昼",
         priority: .medium,
         notes: "ポトスには薄めた液体肥料を使用する",
     )
-    @Previewable @FocusState var focus: CreateReminderField?
-    CreateReminderForm(request: $request, focus: $focus).preferredColorScheme(.dark)
+    @Previewable @FocusState var focus: ReminderEditorField?
+    ReminderEditorForm(draft: $draft, focus: $focus, showsDeadline: true).preferredColorScheme(.dark)
+}
+
+#Preview("Light・Without deadline") {
+    @Previewable @State var draft = ReminderDraft(title: "観葉植物に肥料を追加する")
+    @Previewable @FocusState var focus: ReminderEditorField?
+    ReminderEditorForm(draft: $draft, focus: $focus, showsDeadline: false).preferredColorScheme(.light)
 }
