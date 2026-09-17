@@ -6,6 +6,7 @@ struct ReminderRowView: View {
     let reminder: Reminder
     let toggleCompletionAction: () -> Void
     @Environment(\.scenePhase) var scenePhase: ScenePhase
+    @Environment(\.colorScheme) var colorScheme: ColorScheme
     
     init(reminder: Reminder, onToggleCompletion: @escaping () -> Void) {
         self.reminder = reminder
@@ -13,35 +14,41 @@ struct ReminderRowView: View {
     }
     
     var body: some View {
-        VStack(alignment: .listRowSeparatorLeading, spacing: 4) {
-            HStack(alignment: .center, spacing: nil) {
-                toggleCompletionButton
-                reminderTitle
-                    .foregroundStyle(reminder.isMarkedForDeletion ? .red : .primary)
-                Spacer(minLength: nil)
-                if reminder.priority != .none {
-                    Image(systemName: "flag.fill")
-                        .foregroundStyle(flagColor)
-                }
-            }
-            
-            if let notes = reminder.notes, notes.isEmpty == false {
-                HStack {
-                    Image(systemName: "swift").hidden() // Workaround
+        HStack(spacing: 6) {
+            VStack(alignment: .listRowSeparatorLeading, spacing: 4) {
+                HStack(spacing: nil) {
+                    reminderTitle
+                        .foregroundStyle(reminder.isMarkedForDeletion ? .red : .primary)
                     
+                    Spacer(minLength: nil)
+                    
+                    if reminder.priority != .none {
+                        Image(systemName: "flag.fill")
+                            .foregroundStyle(flagColor)
+                    }
+                }
+                
+                if let notes = reminder.notes, notes.isEmpty == false {
                     Text(notes)
                         .foregroundStyle(.secondary)
                         .lineLimit(5)
                         .font(.caption)
                 }
+                
+                if let dueDate = reminder.dueDate() {
+                    Text(dueDateText(dueDate))
+                        .foregroundStyle(dueDateTextColor)
+                        .font(.caption)
+                }
             }
+            .padding(.top, 2) // ※1
             
-            if let dueDate = reminder.dueDate() {
-                Text(dueDateText(dueDate))
-                    .foregroundStyle(dueDateTextColor)
-                    .font(.caption)
-            }
+            toggleCompletionButton
         }
+        .padding(.leading, 18)
+        .padding(.trailing, 12)
+        .padding(.vertical, 12) // ※1
+        .background(rowBackgroundColor, in: .rect(cornerRadius: 12))
         .sensoryFeedback(.selection, trigger: reminder.displayedIsCompleted)
     }
     
@@ -74,6 +81,11 @@ struct ReminderRowView: View {
     }
     
     var dueDateTextColor: Color { reminder.dueDateStatus() == .overdue ? .red : .secondary }
+    
+    var rowBackgroundColor: Color {
+        let grayLevel = colorScheme == .light ? 1.0 : 0.075
+        return .init(red: grayLevel, green: grayLevel, blue: grayLevel)
+    }
 }
 
 extension ReminderRowView {
@@ -172,6 +184,9 @@ private func previewDateComponents(
     
     return components
 }
+
+/// ※1
+/// チェックマークは行の上下中央、上下の余白は上を2pt高く設定している。
 
 private var sampleReminders: [Reminder] = [
     .init(
