@@ -43,8 +43,9 @@ struct ReminderListView: View {
                     onToggleCompletion: { toggleCompletionAction(reminder) },
                 )
                 .disabled(reminder.isMarkedForDeletion)
-                .padding(.trailing, 14)
-                .padding([.top, .leading, .bottom], 12)
+                .padding(.leading, 18)
+                .padding(.trailing, 12)
+                .padding(.vertical, 14)
                 .background(rowBackgroundColor, in: .rect(cornerRadius: 16))
                 .listRowBackground(Color.clear)
                 .listRowInsets(.init())
