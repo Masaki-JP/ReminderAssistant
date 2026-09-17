@@ -22,14 +22,7 @@ struct ReminderDraft: Equatable {
         priority = reminder.priority
         notes = reminder.notes ?? ""
         
-        if let date = reminder.dueDate() {
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "ja_JP")
-            formatter.calendar = reminder.dueDateCalendar()
-            formatter.timeZone = formatter.calendar.timeZone
-            formatter.dateFormat = reminder.hasDueTime ? "yyyy年M月d日 H時m分" : "yyyy年M月d日"
-            deadline = formatter.string(from: date)
-        }
+        deadline = ReminderDeadlineText.string(for: reminder) ?? ""
         initialDeadline = deadline
     }
     

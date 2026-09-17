@@ -13,6 +13,14 @@ struct ReminderRowView: View {
         self.toggleCompletionAction = onToggleCompletion
     }
     
+    func dueDateText(_ date: Date) -> String {
+        ReminderDeadlineText.string(
+            for: date,
+            hasDueTime: reminder.hasDueTime,
+            calendar: reminder.dueDateCalendar()
+        )
+    }
+    
     var body: some View {
         HStack(spacing: 6) {
             VStack(alignment: .listRowSeparatorLeading, spacing: 4) {
@@ -86,52 +94,6 @@ struct ReminderRowView: View {
         let grayLevel = colorScheme == .light ? 1.0 : 0.075
         return .init(red: grayLevel, green: grayLevel, blue: grayLevel)
     }
-}
-
-extension ReminderRowView {
-    func dueDateText(_ date: Date) -> String {
-        let calendar = reminder.dueDateCalendar()
-        let dateText = if calendar.isDateInYesterday(date) {
-            "昨日"
-        } else if calendar.isDateInToday(date) {
-            "今日"
-        } else if calendar.isDateInTomorrow(date) {
-            "明日"
-        } else if let dayBeforeYesterday = calendar.date(byAdding: .day, value: -2, to: .now),
-                  calendar.isDate(date, inSameDayAs: dayBeforeYesterday) {
-            "一昨日"
-        } else if let dayAfterTomorrow = calendar.date(byAdding: .day, value: 2, to: .now),
-                  calendar.isDate(date, inSameDayAs: dayAfterTomorrow) {
-            "明後日"
-        } else {
-            date.formatted(Self.japaneseDateFormatStyle(calendar: calendar))
-        }
-        
-        guard reminder.hasDueTime == true else { return dateText }
-        
-        return "\(dateText) \(date.formatted(Self.timeFormatStyle(calendar: calendar)))"
-    }
-    
-    static func japaneseDateFormatStyle(calendar: Calendar) -> Date.VerbatimFormatStyle {
-        .verbatim(
-            japaneseDateFormat,
-            locale: Locale(identifier: "ja_JP"),
-            timeZone: calendar.timeZone,
-            calendar: calendar
-        )
-    }
-    
-    static func timeFormatStyle(calendar: Calendar) -> Date.VerbatimFormatStyle {
-        .verbatim(
-            timeFormat,
-            locale: Locale(identifier: "ja_JP"),
-            timeZone: calendar.timeZone,
-            calendar: calendar
-        )
-    }
-    
-    static let japaneseDateFormat: Date.FormatString = "\(month: .defaultDigits)月\(day: .defaultDigits)日（\(weekday: .abbreviated)）"
-    static let timeFormat: Date.FormatString = "\(hour: .defaultDigits(clock: .twentyFourHour, hourCycle: .zeroBased)):\(minute: .twoDigits)"
 }
 
 #if DEBUG
