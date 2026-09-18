@@ -27,7 +27,7 @@ struct ReminderDraft: Equatable {
             formatter.locale = Locale(identifier: "ja_JP")
             formatter.calendar = reminder.dueDateCalendar()
             formatter.timeZone = formatter.calendar.timeZone
-            formatter.dateFormat = reminder.hasDueTime ? "yyyy年M月d日 H時m分" : "yyyy年M月d日"
+            formatter.dateFormat = reminder.hasDueTime ? "yyyy年M月d日 H時mm分" : "yyyy年M月d日"
             deadline = formatter.string(from: date)
         }
         initialDeadline = deadline
