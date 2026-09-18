@@ -134,7 +134,10 @@ public final actor ReminderRepository: ReminderRepositoryProtocol {
             if let title { reminder.title = title }
             if let priority { reminder.priority = priority.ekReminderPriority }
             if let notes { reminder.notes = notes }
-            if let dueDate { reminder.dueDateComponents = dueDate }
+            if let dueDate {
+                updateAlarmDates(of: reminder, from: reminder.dueDateComponents, to: dueDate)
+                reminder.dueDateComponents = dueDate
+            }
             
             try save(reminder)
         }
@@ -241,6 +244,25 @@ public final actor ReminderRepository: ReminderRepositoryProtocol {
     private func checkAuthorization() throws(ReminderRepositoryError) {
         guard EKEventStore.authorizationStatus(for: .reminder) == .fullAccess else {
             throw .accessNotAuthorized
+        }
+    }
+
+    /// 期限に合わせた絶対日時アラームを、新しい期限との時間差だけ移動する。
+    private func updateAlarmDates(
+        of reminder: EKReminder,
+        from previousDueDateComponents: DateComponents?,
+        to dueDateComponents: DateComponents
+    ) {
+        guard let previousDueDateComponents,
+              let previousDueDate = Reminder.dueDate(from: previousDueDateComponents),
+              let dueDate = Reminder.dueDate(from: dueDateComponents)
+        else { return }
+
+        let deadlineInterval = dueDate.timeIntervalSince(previousDueDate)
+        
+        reminder.alarms?.forEach { alarm in
+            guard let absoluteDate = alarm.absoluteDate else { return }
+            alarm.absoluteDate = absoluteDate.addingTimeInterval(deadlineInterval)
         }
     }
     
