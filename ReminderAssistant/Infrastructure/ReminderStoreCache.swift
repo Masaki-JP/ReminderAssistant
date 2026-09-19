@@ -23,7 +23,7 @@ actor ReminderStoreCache {
     func fetch() -> [ReminderList]? {
         guard let fileURL,
               let data = try? Data(contentsOf: fileURL),
-              let attributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path()),
+              let attributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path(percentEncoded: false)),
               let cacheModificationDate = attributes[.modificationDate] as? Date,
               cacheModificationDate.addingTimeInterval(Self.cacheLifetime) > .now,
               let editableLists = try? JSONDecoder().decode([ReminderList].self, from: data)
@@ -47,7 +47,7 @@ actor ReminderStoreCache {
             try data.write(to: fileURL, options: .atomic)
             try FileManager.default.setAttributes(
                 [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
-                ofItemAtPath: fileURL.path(),
+                ofItemAtPath: fileURL.path(percentEncoded: false),
             )
         } catch {
             return
