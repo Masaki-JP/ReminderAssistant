@@ -1,7 +1,7 @@
 import SwiftUI
 import ReminderCore
 
-struct ReminderEditorSheet: View {
+struct ReminderFormView: View {
     @State var draft: ReminderDraft
     @State var isDismissConfirmationDialogPresented = false
     @Environment(\.dismiss) var dismiss
@@ -47,7 +47,7 @@ struct ReminderEditorSheet: View {
     
     var body: some View {
         NavigationStack {
-            ReminderEditorForm(draft: $draft, focus: $focus, showsDeadline: mode.showsDeadline)
+            ReminderForm(draft: $draft, focus: $focus, showsDeadline: mode.showsDeadline)
                 .disabled(isSaving)
                 .navigationTitle(mode.navigationTitle)
                 .navigationBarTitleDisplayMode(.inline)
@@ -136,7 +136,7 @@ struct ReminderEditorSheet: View {
     }
 }
 
-extension ReminderEditorSheet {
+extension ReminderFormView {
     func dismissSheet() {
         if canDismissWithoutConfirmation == true {
             dismiss()
@@ -163,12 +163,12 @@ extension ReminderEditorSheet {
     }
 }
 
-#Preview("Light・Create") { ReminderEditorSheet(mode: .create) { _ in }.preferredColorScheme(.light) }
-#Preview("Dark・Create") { ReminderEditorSheet(mode: .create) { _ in }.preferredColorScheme(.dark) }
+#Preview("Light・Create") { ReminderFormView(mode: .create) { _ in }.preferredColorScheme(.light) }
+#Preview("Dark・Create") { ReminderFormView(mode: .create) { _ in }.preferredColorScheme(.dark) }
 #Preview("Light・Edit") {
-    ReminderEditorSheet(mode: .edit(Reminder.samples[0])) { _ in }.preferredColorScheme(.light)
+    ReminderFormView(mode: .edit(Reminder.samples[0])) { _ in }.preferredColorScheme(.light)
 }
 #Preview("Dark・Edit without deadline") {
-    ReminderEditorSheet(mode: .edit(.init(id: "preview", title: "観葉植物に肥料を追加する"))) { _ in }
+    ReminderFormView(mode: .edit(.init(id: "preview", title: "観葉植物に肥料を追加する"))) { _ in }
         .preferredColorScheme(.dark)
 }

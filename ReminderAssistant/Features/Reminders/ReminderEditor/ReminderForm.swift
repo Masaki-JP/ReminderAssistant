@@ -1,7 +1,7 @@
 import SwiftUI
 import ReminderCore
 
-struct ReminderEditorForm: View {
+struct ReminderForm: View {
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     @Binding var draft: ReminderDraft
     var focus: FocusState<ReminderEditorField?>.Binding
@@ -151,7 +151,7 @@ nonisolated enum ReminderEditorField: CaseIterable, Identifiable {
 #Preview("Light・Empty") {
     @Previewable @State var draft = ReminderDraft()
     @Previewable @FocusState var focus: ReminderEditorField?
-    ReminderEditorForm(draft: $draft, focus: $focus, showsDeadline: true).preferredColorScheme(.light)
+    ReminderForm(draft: $draft, focus: $focus, showsDeadline: true).preferredColorScheme(.light)
 }
 
 #Preview("Dark・Input") {
@@ -162,11 +162,11 @@ nonisolated enum ReminderEditorField: CaseIterable, Identifiable {
         notes: "ポトスには薄めた液体肥料を使用する",
     )
     @Previewable @FocusState var focus: ReminderEditorField?
-    ReminderEditorForm(draft: $draft, focus: $focus, showsDeadline: true).preferredColorScheme(.dark)
+    ReminderForm(draft: $draft, focus: $focus, showsDeadline: true).preferredColorScheme(.dark)
 }
 
 #Preview("Light・Without deadline") {
     @Previewable @State var draft = ReminderDraft(title: "観葉植物に肥料を追加する")
     @Previewable @FocusState var focus: ReminderEditorField?
-    ReminderEditorForm(draft: $draft, focus: $focus, showsDeadline: false).preferredColorScheme(.light)
+    ReminderForm(draft: $draft, focus: $focus, showsDeadline: false).preferredColorScheme(.light)
 }
