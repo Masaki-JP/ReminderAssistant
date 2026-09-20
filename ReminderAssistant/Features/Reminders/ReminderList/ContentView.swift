@@ -8,11 +8,14 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
     @State var searchText = ""
     @State var reminderEditorMode: ReminderEditorMode?
     @State var isSettingsViewPresented = false
+    @State var isCustomListStorageErrorPresented = false
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     let isPlaceholder: Bool
     
     @AppStorage(UserDefaultsKey.AppStorageKey.lastDisplayedListID.rawValue)
     var displayedListID: String?
+    @AppStorage(UserDefaultsKey.AppStorageKey.customReminderLists.rawValue)
+    var customListsData = Data()
     @AppStorage(UserDefaultsKey.AppStorageKey.reminderDestinationListID.rawValue)
     var reminderDestinationListID: String?
     @AppStorage(UserDefaultsKey.AppStorageKey.hasInitializedReminderDestinationList.rawValue)
@@ -44,12 +47,44 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
     var displayedList: ReminderList? {
         viewModel.editableLists.first { $0.id == displayedListID }
     }
+
+    var customLists: [CustomReminderList] {
+        (try? CustomReminderListStorage.decode(customListsData)) ?? []
+    }
+
+    var customListsBinding: Binding<[CustomReminderList]> {
+        .init(
+            get: { customLists },
+            set: { lists in
+                do {
+                    // 既存データが読み込めない場合、書き込みを行わない。
+                    _ = try CustomReminderListStorage.decode(customListsData)
+                    customListsData = try CustomReminderListStorage.encode(lists)
+                } catch {
+                    isCustomListStorageErrorPresented = true
+                }
+            }
+        )
+    }
+
+    var displayedCustomList: CustomReminderList? {
+        guard isPlaceholder == false else { return nil }
+        return customLists.first { $0.id.uuidString == displayedListID }
+    }
+
+    var selectedReminders: [Reminder] {
+        if isPlaceholder || displayedListID == nil {
+            viewModel.reminders
+        } else if let displayedCustomList {
+            displayedCustomList.reminders(in: viewModel.editableLists)
+        } else {
+            displayedList?.reminders ?? []
+        }
+    }
     
     var displayedReminders: [Reminder] {
         sortOrder.sorted(
-            viewModel.editableLists.filter { list in
-                isPlaceholder || displayedListID.map { list.id == $0 } ?? true
-            }.flatMap(\.reminders).filter { reminder in
+            selectedReminders.filter { reminder in
                 (searchText.isEmpty || reminder.title.localizedCaseInsensitiveContains(searchText))
                 && filter.matches(reminder)
             }
@@ -97,7 +132,8 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
             .sheet(isPresented: $isSettingsViewPresented) {
                 SettingsView(
                     reminderDestinationListID: $reminderDestinationListID,
-                    lists: viewModel.editableLists
+                    customLists: customListsBinding,
+                    lists: viewModel.editableLists,
                 )
                 .preferredColorScheme(colorScheme)
             }
@@ -106,7 +142,7 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
                     try await saveReminder(draft, mode: mode)
                 }
             }
-            .navigationTitle(displayedList?.title ?? "すべて")
+            .navigationTitle(displayedCustomList?.title ?? displayedList?.title ?? "すべて")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbar }
             .toolbarTitleMenu { reminderListPicker }
@@ -114,14 +150,27 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
         .searchable(text: $searchText, prompt: "リマインダーを検索")
         .animation(.default, value: viewModel.reminders)
         .task(viewModel.loadReminders)
+        .onAppear(perform: validateCustomReminderListsData)
         .onChange(of: viewModel.editableLists) { _, lists in
             ensureDisplayedList(from: lists)
             ensureReminderDestinationList(from: lists)
+        }
+        .onChange(of: customLists) { oldLists, newLists in
+            // 選択していたカスタムリストを削除した場合は「すべて」に戻す。
+            if oldLists.contains(where: { $0.id.uuidString == displayedListID }) == true,
+               newLists.contains(where: { $0.id.uuidString == displayedListID }) == false {
+                displayedListID = nil
+            }
         }
         .alert(viewModel.error?.title ?? "エラー", isPresented: viewModel.errorBinding) {
             errorAlertActions
         } message: {
             Text(viewModel.error?.message ?? "")
+        }
+        .alert("カスタムリストを読み込めません", isPresented: $isCustomListStorageErrorPresented) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("保存済みデータは上書きせずに保持しています。")
         }
         .focusedSceneValue(\.presentCreateReminderSheetAction, presentCreateReminderSheetAction)
     }
@@ -160,6 +209,15 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
             
             ForEach(viewModel.editableLists) { list in
                 Text(list.title).tag(Optional(list.id))
+            }
+
+            if !customLists.isEmpty && !isPlaceholder {
+                Section("カスタムリスト") {
+                    ForEach(customLists) { list in
+                        Label(list.title, systemImage: "square.stack")
+                            .tag(Optional(list.id.uuidString))
+                    }
+                }
             }
         }
     }
@@ -208,15 +266,24 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
 }
 
 extension ContentView {
+    func validateCustomReminderListsData() {
+        do {
+            _ = try CustomReminderListStorage.decode(customListsData)
+        } catch {
+            isCustomListStorageErrorPresented = true
+        }
+    }
+
     func saveReminder(_ draft: ReminderDraft, mode: ReminderEditorMode) async throws(ReminderEditorError) {
         guard isPlaceholder == false else { throw .cancelled }
         try await viewModel.saveReminder(draft, mode: mode, listIdentifier: reminderDestinationListID)
     }
     
-    /// 表示対象のリスト（``displayedListID``）が未設定、または現在の編集可能なリストに存在しない場合、表示対象のリストにデフォルトリスト、または「すべて（`nil`）」を設定する。
+    /// 選択中の通常リストが利用できない場合、デフォルトリストまたは「すべて」に戻す。カスタムリストは構成元が利用できなくても選択を保持する。
     ///
     func ensureDisplayedList(from lists: [ReminderList]) {
         guard isPlaceholder == false else { return }
+        guard displayedCustomList == nil else { return }
         
         // 選択中のリストが指定されたリスト群（[ReminderList]）に含まれている場合は終了する。
         guard displayedListID.map({ displayedListID in
