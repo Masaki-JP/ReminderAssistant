@@ -2,6 +2,7 @@ import SwiftUI
 import ReminderCore
 
 struct ReminderForm: View {
+    @State var isCalendarPresented = false
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     @Binding var draft: ReminderDraft
     var focus: FocusState<ReminderEditorField?>.Binding
@@ -73,10 +74,52 @@ struct ReminderForm: View {
     
     var deadlineSection: some View {
         section(label: "期限", systemImage: "clock") {
+            if isCalendarPresented == false {
+                deadlineTextInput
+            } else {
+                deadlineCalendarInput
+            }
+        }
+    }
+    
+    var deadlineTextInput: some View {
+        HStack(spacing: 5) {
             TextField("来月15日の昼", text: $draft.deadline)
                 .frame(height: singleLineTextFieldHeight)
                 .focused(focus, equals: .deadline)
+            
+            Button {
+                withAnimation { isCalendarPresented = true }
+            } label: {
+                Image(systemName: "calendar")
+                    .resizable()
+                    .scaledToFit()
+                    .padding(.vertical, 1)
+                    .padding(.trailing, 2)
+                    .frame(height: singleLineTextFieldHeight)
+            }
+            .buttonStyle(.plain)
         }
+    }
+    
+    var deadlineCalendarInput: some View {
+        let bgColor = colorScheme == .light ? AnyShapeStyle(.background.opacity(0.75)) : AnyShapeStyle(Color(red: 0.15, green: 0.15, blue: 0.15))
+        
+        return VStack(alignment: .trailing, spacing: 12) {
+            DatePicker(
+                "期限", selection: .constant(.now), displayedComponents: [.date, .hourAndMinute]
+            )
+            .datePickerStyle(.graphical)
+            .padding(.horizontal, 8)
+            .padding(.bottom, -24)
+            .background(bgColor, in: .rect(cornerRadius: 12))
+            
+            Button("テキストで期限を設定") {
+                withAnimation { isCalendarPresented = false }
+            }
+            .font(.callout)
+        }
+        .padding(.bottom, 4)
     }
     
     var prioritySection: some View {
@@ -104,7 +147,7 @@ struct ReminderForm: View {
         }
     }
     
-    func section<Content: View>(label: String, systemImage: String, content: () -> Content) -> some View {
+    func section<Content: View>(label: String, systemImage: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: labelToContentSpacing) {
             Label(label, systemImage: systemImage)
                 .font(.footnote)
