@@ -138,7 +138,7 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
                 .preferredColorScheme(colorScheme)
             }
             .sheet(item: $reminderEditorMode) { mode in
-                ReminderEditorSheet(mode: mode) { draft async throws(ReminderEditorError) in
+                ReminderFormView(mode: mode) { draft async throws(ReminderEditorError) in
                     try await saveReminder(draft, mode: mode)
                 }
             }
