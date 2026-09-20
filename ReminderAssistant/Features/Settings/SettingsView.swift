@@ -6,6 +6,7 @@ struct SettingsView: View {
     @AppStorage(UserDefaultsKey.AppStorageKey.colorScheme.rawValue)
     var colorSchemeSetting = ColorSchemeSetting.defaultValue
     @Binding var reminderDestinationListID: String?
+    @Binding var customLists: [CustomReminderList]
     let lists: [ReminderList]
     
     var body: some View {
@@ -26,6 +27,14 @@ struct SettingsView: View {
                     Text("作成")
                 } footer: {
                     Text("新規リマインダーの作成先として使用するリストを設定できます。")
+                }
+                
+                Section("表示") {
+                    NavigationLink("カスタムリスト") {
+                        CustomListCollectionView(customLists: $customLists, lists: lists)
+                            .navigationTitle("カスタムリスト")
+                            .navigationBarTitleDisplayMode(.inline)
+                    }
                 }
                 
                 Section {
@@ -78,6 +87,7 @@ struct SettingsView: View {
     .sheet(isPresented: $isPresented) {
         SettingsView(
             reminderDestinationListID: $reminderDestinationListID,
+            customLists: .constant([]),
             lists: [
                 .init(id: "assistant", title: "Reminder Assistant", isDefault: true, reminders: []),
                 .init(id: "shopping", title: "買い物リスト", isDefault: false, reminders: []),
