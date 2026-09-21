@@ -1,6 +1,17 @@
 import Foundation
 import ReminderCore
 
+enum ReminderDeadlineFormatter {
+    static func string(from date: Date, calendar: Calendar = .gregorianCalendar(), includesTime: Bool) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ja_JP")
+        formatter.calendar = calendar
+        formatter.timeZone = calendar.timeZone
+        formatter.dateFormat = includesTime ? "yyyy年M月d日 H時mm分" : "yyyy年M月d日"
+        return formatter.string(from: date)
+    }
+}
+
 /// 作成・編集フォームの入力値。保存が確定するまで元のリマインダーには反映しない。
 struct ReminderDraft: Equatable {
     var title: String = ""
@@ -23,12 +34,11 @@ struct ReminderDraft: Equatable {
         notes = reminder.notes ?? ""
         
         if let date = reminder.dueDate() {
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "ja_JP")
-            formatter.calendar = reminder.dueDateCalendar()
-            formatter.timeZone = formatter.calendar.timeZone
-            formatter.dateFormat = reminder.hasDueTime ? "yyyy年M月d日 H時mm分" : "yyyy年M月d日"
-            deadline = formatter.string(from: date)
+            deadline = ReminderDeadlineFormatter.string(
+                from: date,
+                calendar: reminder.dueDateCalendar(),
+                includesTime: reminder.hasDueTime,
+            )
         }
         initialDeadline = deadline
     }

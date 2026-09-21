@@ -1,8 +1,10 @@
 import SwiftUI
+import JapaneseDateConverter
 import ReminderCore
 
 struct ReminderFormView: View {
     @State var draft: ReminderDraft
+    @State var calendarDeadline: Date
     @State var isDismissConfirmationDialogPresented = false
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var colorScheme: ColorScheme
@@ -14,7 +16,7 @@ struct ReminderFormView: View {
     var focusBinding: Binding<ReminderEditorField?> {
         .init(get: { focus }, set: { focus = $0 })
     }
-
+    
     var focusFields: [ReminderEditorField] {
         ReminderEditorField.allCases.filter { mode.showsDeadline || $0 != .deadline }
     }
@@ -27,13 +29,19 @@ struct ReminderFormView: View {
     
     let mode: ReminderEditorMode
     let initialDraft: ReminderDraft
+    let japaneseDateConverter = {
+        let jdc = JapaneseDateConverter()
+        _ = jdc.convert(from: "test") // warmup
+        return jdc
+    }()
     let confirmAction: (ReminderDraft) async throws(ReminderEditorError) -> Void
     
     init(mode: ReminderEditorMode, onConfirm: @escaping (ReminderDraft) async throws(ReminderEditorError) -> Void) {
         self.mode = mode
         let initialDraft = mode.initialDraft
         self.initialDraft = initialDraft
-        _draft = .init(initialValue: initialDraft)
+        self._draft = .init(initialValue: initialDraft)
+        self._calendarDeadline = .init(initialValue: mode.initialCalendarDeadline)
         self.confirmAction = onConfirm
     }
     
@@ -47,18 +55,24 @@ struct ReminderFormView: View {
     
     var body: some View {
         NavigationStack {
-            ReminderForm(draft: $draft, focus: $focus, showsDeadline: mode.showsDeadline)
-                .disabled(isSaving)
-                .navigationTitle(mode.navigationTitle)
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar { toolbarContent }
-                .safeAreaInset(edge: .bottom) {
-                    if focus != nil, case .phone = InterfaceIdiom.current {
-                        customPhoneKeyboardToolbar
-                            .padding(.horizontal)
-                            .padding(.bottom, 8)
-                    }
+            ReminderForm(
+                draft: $draft,
+                calendarDeadline: $calendarDeadline,
+                japaneseDateConverter: japaneseDateConverter,
+                focus: $focus,
+                showsDeadline: mode.showsDeadline
+            )
+            .disabled(isSaving)
+            .navigationTitle(mode.navigationTitle)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { toolbarContent }
+            .safeAreaInset(edge: .bottom) {
+                if focus != nil, case .phone = InterfaceIdiom.current {
+                    customPhoneKeyboardToolbar
+                        .padding(.horizontal)
+                        .padding(.bottom, 8)
                 }
+            }
         }
         .interactiveDismissDisabled(isSaving || !canDismissWithoutConfirmation)
         .alert(mode.errorTitle, isPresented: saveErrorBinding) {

@@ -1,9 +1,13 @@
 import SwiftUI
+import JapaneseDateConverter
 import ReminderCore
 
 struct ReminderForm: View {
+    @State var isCalendarPresented = false
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     @Binding var draft: ReminderDraft
+    @Binding var calendarDeadline: Date
+    let japaneseDateConverter: JapaneseDateConverter
     var focus: FocusState<ReminderEditorField?>.Binding
     let showsDeadline: Bool
     
@@ -20,14 +24,21 @@ struct ReminderForm: View {
     let betweenDividerAndTextFieldSpacing: CGFloat = 8
     let borderWidth: CGFloat = 1.0
     
-    var labelTextColor: Color {
-        let grayLevel = colorScheme == .light ? 0.5 : 0.6
-        return Color(red: grayLevel, green: grayLevel, blue: grayLevel)
+    func presentCalendarInput() {
+        focus.wrappedValue = nil
+        if let convertedDeadline = japaneseDateConverter.convert(from: draft.deadline) {
+            calendarDeadline = convertedDeadline
+        }
+        updateDeadlineFromCalendar()
+        withAnimation { isCalendarPresented = true }
     }
     
-    var borderColor: Color {
-        let grayLevel = colorScheme == .light ? 0.8 : 0.3
-        return .init(red: grayLevel, green: grayLevel, blue: grayLevel)
+    func presentTextDeadlineInput() {
+        withAnimation { isCalendarPresented = false }
+    }
+    
+    func updateDeadlineFromCalendar() {
+        draft.deadline = ReminderDeadlineFormatter.string(from: calendarDeadline, includesTime: true)
     }
     
     var body: some View {
@@ -61,6 +72,7 @@ struct ReminderForm: View {
         .contentMargins(.horizontal, 20)
         .contentMargins(.top, 18)
         .contentMargins(.bottom, 12)
+        .onChange(of: calendarDeadline, updateDeadlineFromCalendar)
     }
     
     var titleSection: some View {
@@ -73,10 +85,47 @@ struct ReminderForm: View {
     
     var deadlineSection: some View {
         section(label: "期限", systemImage: "clock") {
+            if isCalendarPresented == false {
+                deadlineTextInput
+            } else {
+                deadlineCalendarInput
+            }
+        }
+    }
+    
+    var deadlineTextInput: some View {
+        HStack(spacing: 5) {
             TextField("来月15日の昼", text: $draft.deadline)
                 .frame(height: singleLineTextFieldHeight)
                 .focused(focus, equals: .deadline)
+            
+            Button(action: presentCalendarInput) {
+                Image(systemName: "calendar")
+                    .resizable()
+                    .scaledToFit()
+                    .padding(.vertical, 1)
+                    .padding(.trailing, 2)
+                    .frame(height: singleLineTextFieldHeight)
+            }
+            .buttonStyle(.plain)
         }
+    }
+    
+    var deadlineCalendarInput: some View {
+        let bgColor = colorScheme == .light ? AnyShapeStyle(.background.opacity(0.75)) : AnyShapeStyle(Color(red: 0.15, green: 0.15, blue: 0.15))
+        
+        return VStack(alignment: .trailing, spacing: 12) {
+            DatePicker(
+                "期限", selection: $calendarDeadline, displayedComponents: [.date, .hourAndMinute]
+            )
+            .datePickerStyle(.graphical)
+            .padding(.horizontal, 8)
+            .background(bgColor, in: .rect(cornerRadius: 12))
+            
+            Button("テキストで期限を設定", action: presentTextDeadlineInput)
+                .font(.callout)
+        }
+        .padding(.bottom, 4)
     }
     
     var prioritySection: some View {
@@ -104,7 +153,7 @@ struct ReminderForm: View {
         }
     }
     
-    func section<Content: View>(label: String, systemImage: String, content: () -> Content) -> some View {
+    func section<Content: View>(label: String, systemImage: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: labelToContentSpacing) {
             Label(label, systemImage: systemImage)
                 .font(.footnote)
@@ -132,6 +181,16 @@ struct ReminderForm: View {
         }
         .foregroundStyle(.primary)
     }
+    
+    var labelTextColor: Color {
+        let grayLevel = colorScheme == .light ? 0.5 : 0.6
+        return Color(red: grayLevel, green: grayLevel, blue: grayLevel)
+    }
+    
+    var borderColor: Color {
+        let grayLevel = colorScheme == .light ? 0.8 : 0.3
+        return .init(red: grayLevel, green: grayLevel, blue: grayLevel)
+    }
 }
 
 nonisolated enum ReminderEditorField: CaseIterable, Identifiable {
@@ -150,8 +209,16 @@ nonisolated enum ReminderEditorField: CaseIterable, Identifiable {
 
 #Preview("Light・Empty") {
     @Previewable @State var draft = ReminderDraft()
+    @Previewable @State var calendarDeadline = Date.now
     @Previewable @FocusState var focus: ReminderEditorField?
-    ReminderForm(draft: $draft, focus: $focus, showsDeadline: true).preferredColorScheme(.light)
+    ReminderForm(
+        draft: $draft,
+        calendarDeadline: $calendarDeadline,
+        japaneseDateConverter: JapaneseDateConverter(),
+        focus: $focus,
+        showsDeadline: true,
+    )
+    .preferredColorScheme(.light)
 }
 
 #Preview("Dark・Input") {
@@ -161,12 +228,28 @@ nonisolated enum ReminderEditorField: CaseIterable, Identifiable {
         priority: .medium,
         notes: "ポトスには薄めた液体肥料を使用する",
     )
+    @Previewable @State var calendarDeadline = Date.now
     @Previewable @FocusState var focus: ReminderEditorField?
-    ReminderForm(draft: $draft, focus: $focus, showsDeadline: true).preferredColorScheme(.dark)
+    ReminderForm(
+        draft: $draft,
+        calendarDeadline: $calendarDeadline,
+        japaneseDateConverter: JapaneseDateConverter(),
+        focus: $focus,
+        showsDeadline: true,
+    )
+    .preferredColorScheme(.dark)
 }
 
 #Preview("Light・Without deadline") {
     @Previewable @State var draft = ReminderDraft(title: "観葉植物に肥料を追加する")
+    @Previewable @State var calendarDeadline = Date.now
     @Previewable @FocusState var focus: ReminderEditorField?
-    ReminderForm(draft: $draft, focus: $focus, showsDeadline: false).preferredColorScheme(.light)
+    ReminderForm(
+        draft: $draft,
+        calendarDeadline: $calendarDeadline,
+        japaneseDateConverter: JapaneseDateConverter(),
+        focus: $focus,
+        showsDeadline: false,
+    )
+    .preferredColorScheme(.light)
 }
