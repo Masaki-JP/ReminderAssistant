@@ -91,13 +91,11 @@ actor FakeReminderRepository: ReminderRepositoryProtocol {
                 )
             }
             
-            let dueDateCalendar = Calendar.gregorianCalendar()
-            let dueDate = japaneseDateConverter.convert(from: deadline).map {
-                dueDateCalendar.dateComponents([.year, .month, .day, .hour, .minute], from: $0)
+            guard let dueDate = japaneseDateConverter.convert(from: deadline).map({
+                Calendar.gregorianCalendar().dateComponents([.year, .month, .day, .hour, .minute], from: $0)
+            }) else {
+                throw .deadlineConversionFailed
             }
-            
-            try checkCancel()
-            guard let dueDate else { throw ReminderRepositoryError.deadlineConversionFailed }
             
             let now = Date.now
             let reminder = Reminder(
