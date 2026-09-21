@@ -82,13 +82,11 @@ public final actor ReminderRepository: ReminderRepositoryProtocol {
                 throw .listNotFound(id: list.id)
             }
             
-            let dueDateCalendar = Calendar.gregorianCalendar()
-            let dueDate = japaneseDateConverter.convert(from: deadline).map {
-                dueDateCalendar.dateComponents([.year, .month, .day, .hour, .minute], from: $0)
+            guard let dueDate = japaneseDateConverter.convert(from: deadline).map ({
+                Calendar.gregorianCalendar().dateComponents([.year, .month, .day, .hour, .minute], from: $0)
+            }) else {
+                throw .deadlineConversionFailed
             }
-            try checkAuthorization()
-            try checkCancel()
-            guard let dueDate else { throw .deadlineConversionFailed }
             
             let reminder = EKReminder(eventStore: eventStore)
             reminder.title = title
