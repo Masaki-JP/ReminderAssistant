@@ -39,7 +39,32 @@ enum ReminderEditorMode: Identifiable {
         case .edit(let reminder): .init(reminder: reminder)
         }
     }
-
+    
+    var initialCalendarDeadline: Date {
+        let calendar = Calendar.gregorianCalendar()
+        let defaultDeadline = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: .now) ?? .now
+        
+        guard case .edit(let reminder) = self,
+              let dueDateComponents = reminder.dueDateComponents else {
+            return defaultDeadline
+        }
+        
+        if reminder.hasDueTime == true {
+            return reminder.dueDate() ?? defaultDeadline
+        }
+        
+        var calendarDeadlineComponents = DateComponents()
+        calendarDeadlineComponents.calendar = calendar
+        calendarDeadlineComponents.timeZone = calendar.timeZone
+        calendarDeadlineComponents.year = dueDateComponents.year
+        calendarDeadlineComponents.month = dueDateComponents.month
+        calendarDeadlineComponents.day = dueDateComponents.day
+        calendarDeadlineComponents.hour = 9
+        calendarDeadlineComponents.minute = 0
+        calendarDeadlineComponents.second = 0
+        return calendar.date(from: calendarDeadlineComponents) ?? defaultDeadline
+    }
+    
     /// 作成時、または編集対象に期限がある場合だけ期限欄を表示し、入力を必須にする。
     var showsDeadline: Bool {
         switch self {
