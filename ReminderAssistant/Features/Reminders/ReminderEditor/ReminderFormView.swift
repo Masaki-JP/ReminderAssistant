@@ -5,6 +5,7 @@ import ReminderCore
 struct ReminderFormView: View {
     @State var draft: ReminderDraft
     @State var calendarDeadline: Date
+    @State var destinationListID: ReminderList.ID?
     @State var isDismissConfirmationDialogPresented = false
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var colorScheme: ColorScheme
@@ -28,6 +29,7 @@ struct ReminderFormView: View {
     ) }
     
     let mode: ReminderEditorMode
+    let destinationLists: [ReminderList]
     let initialDraft: ReminderDraft
     let japaneseDateConverter = {
         let jdc = JapaneseDateConverter()
@@ -36,12 +38,23 @@ struct ReminderFormView: View {
     }()
     let confirmAction: (ReminderDraft) async throws(ReminderEditorError) -> Void
     
-    init(mode: ReminderEditorMode, onConfirm: @escaping (ReminderDraft) async throws(ReminderEditorError) -> Void) {
+    init(
+        mode: ReminderEditorMode,
+        destinationLists: [ReminderList] = [],
+        destinationListID: ReminderList.ID? = nil,
+        onConfirm: @escaping (ReminderDraft) async throws(ReminderEditorError) -> Void
+    ) {
         self.mode = mode
+        self.destinationLists = destinationLists
         let initialDraft = mode.initialDraft
         self.initialDraft = initialDraft
         self._draft = .init(initialValue: initialDraft)
         self._calendarDeadline = .init(initialValue: mode.initialCalendarDeadline)
+        self._destinationListID = .init(
+            initialValue: destinationListID
+                ?? destinationLists.first(where: \.isDefault)?.id
+                ?? destinationLists.first?.id
+        )
         self.confirmAction = onConfirm
     }
     
@@ -58,9 +71,12 @@ struct ReminderFormView: View {
             ReminderForm(
                 draft: $draft,
                 calendarDeadline: $calendarDeadline,
+                destinationListID: $destinationListID,
+                destinationLists: destinationLists,
                 japaneseDateConverter: japaneseDateConverter,
                 focus: $focus,
-                showsDeadline: mode.showsDeadline
+                showsDeadline: mode.showsDeadline,
+                showsDestinationList: mode.showsDestinationList
             )
             .disabled(isSaving)
             .navigationTitle(mode.navigationTitle)
