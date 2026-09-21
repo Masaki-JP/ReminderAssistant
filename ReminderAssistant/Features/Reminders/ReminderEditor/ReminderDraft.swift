@@ -18,7 +18,7 @@ struct ReminderDraft: Equatable {
     var deadline: String = ""
     var priority: Reminder.Priority = .none
     var notes: String = ""
-    private var initialDeadline: String = ""
+    private let initialDeadline: String
     
     init(title: String = "", deadline: String = "", priority: Reminder.Priority = .none, notes: String = "") {
         self.title = title
