@@ -31,6 +31,11 @@ actor FakeReminderRepository: ReminderRepositoryProtocol {
     private var editableLists: [ReminderList]
     /// fetchが結果を返すまでの待機時間。
     private let fetchDelay: Duration
+    private let japaneseDateConverter = {
+        let jdc = JapaneseDateConverter()
+        _ = jdc.convert(from: "test") // warmup
+        return jdc
+    }()
     /// 一度だけ失敗させる操作。`nil`の場合は意図的なエラーを発生させない。
     private var oneTimeFailureOperation: FailureOperation?
     /// 定期的な追加の設定と実行状態。`nil`の場合は定期追加を行わない。
@@ -87,7 +92,7 @@ actor FakeReminderRepository: ReminderRepositoryProtocol {
             }
             
             let dueDateCalendar = Calendar.gregorianCalendar()
-            let dueDate = JapaneseDateConverter().convert(from: deadline).map {
+            let dueDate = japaneseDateConverter.convert(from: deadline).map {
                 dueDateCalendar.dateComponents([.year, .month, .day, .hour, .minute], from: $0)
             }
             
@@ -131,7 +136,7 @@ actor FakeReminderRepository: ReminderRepositoryProtocol {
             
             let dueDate = try deadline.map { deadline throws(ReminderRepositoryError) -> DateComponents in
                 guard deadline.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false,
-                      let date = JapaneseDateConverter().convert(from: deadline) else {
+                      let date = japaneseDateConverter.convert(from: deadline) else {
                     throw .deadlineConversionFailed
                 }
                 
