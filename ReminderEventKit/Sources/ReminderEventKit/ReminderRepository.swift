@@ -45,6 +45,11 @@ public final actor ReminderRepository: ReminderRepositoryProtocol {
     public nonisolated let remindersMayHaveChanged: Notification.Name
     
     private let eventStore: EKEventStore
+    private let japaneseDateConverter = {
+        let jdc = JapaneseDateConverter()
+        _ = jdc.convert(from: "test") // warmup
+        return jdc
+    }()
     /// `EventKit`の変更を監視するためのトークン。
     private var token: NotificationCenter.ObservationToken
     
@@ -78,7 +83,7 @@ public final actor ReminderRepository: ReminderRepositoryProtocol {
             }
             
             let dueDateCalendar = Calendar.gregorianCalendar()
-            let dueDate = JapaneseDateConverter().convert(from: deadline).map {
+            let dueDate = japaneseDateConverter.convert(from: deadline).map {
                 dueDateCalendar.dateComponents([.year, .month, .day, .hour, .minute], from: $0)
             }
             try checkAuthorization()
@@ -121,7 +126,7 @@ public final actor ReminderRepository: ReminderRepositoryProtocol {
             
             let dueDate = try deadline.map { deadline throws(ReminderRepositoryError) -> DateComponents in
                 guard deadline.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false,
-                      let date = JapaneseDateConverter().convert(from: deadline) else {
+                      let date = japaneseDateConverter.convert(from: deadline) else {
                     throw .deadlineConversionFailed
                 }
                 
