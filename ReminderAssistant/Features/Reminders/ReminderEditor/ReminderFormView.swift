@@ -5,6 +5,7 @@ import ReminderCore
 struct ReminderFormView: View {
     @State var draft: ReminderDraft
     @State var calendarDeadline: Date
+    @State var destinationListID: ReminderList.ID?
     @State var isDismissConfirmationDialogPresented = false
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var colorScheme: ColorScheme
@@ -28,20 +29,32 @@ struct ReminderFormView: View {
     ) }
     
     let mode: ReminderEditorMode
+    let destinationLists: [ReminderList]
     let initialDraft: ReminderDraft
     let japaneseDateConverter = {
         let jdc = JapaneseDateConverter()
         _ = jdc.convert(from: "test") // warmup
         return jdc
     }()
-    let confirmAction: (ReminderDraft) async throws(ReminderEditorError) -> Void
+    let confirmAction: (ReminderDraft, ReminderList.ID?) async throws(ReminderEditorError) -> Void
     
-    init(mode: ReminderEditorMode, onConfirm: @escaping (ReminderDraft) async throws(ReminderEditorError) -> Void) {
+    init(
+        mode: ReminderEditorMode,
+        destinationLists: [ReminderList] = [],
+        destinationListID: ReminderList.ID? = nil,
+        onConfirm: @escaping (ReminderDraft, ReminderList.ID?) async throws(ReminderEditorError) -> Void,
+    ) {
         self.mode = mode
+        self.destinationLists = destinationLists
         let initialDraft = mode.initialDraft
         self.initialDraft = initialDraft
         self._draft = .init(initialValue: initialDraft)
         self._calendarDeadline = .init(initialValue: mode.initialCalendarDeadline)
+        self._destinationListID = .init(
+            initialValue: destinationListID
+                ?? destinationLists.first(where: \.isDefault)?.id
+                ?? destinationLists.first?.id
+        )
         self.confirmAction = onConfirm
     }
     
@@ -58,9 +71,12 @@ struct ReminderFormView: View {
             ReminderForm(
                 draft: $draft,
                 calendarDeadline: $calendarDeadline,
+                destinationListID: $destinationListID,
+                destinationLists: destinationLists,
                 japaneseDateConverter: japaneseDateConverter,
                 focus: $focus,
-                showsDeadline: mode.showsDeadline
+                showsDeadline: mode.showsDeadline,
+                showsDestinationList: mode.showsDestinationList
             )
             .disabled(isSaving)
             .navigationTitle(mode.navigationTitle)
@@ -166,7 +182,7 @@ extension ReminderFormView {
             defer { saveTask = nil }
             
             do {
-                try await confirmAction(draft); dismiss()
+                try await confirmAction(draft, destinationListID); dismiss()
             } catch let error as ReminderEditorError {
                 if case .cancelled = error { return }
                 saveError = error
@@ -177,12 +193,18 @@ extension ReminderFormView {
     }
 }
 
-#Preview("Light・Create") { ReminderFormView(mode: .create) { _ in }.preferredColorScheme(.light) }
-#Preview("Dark・Create") { ReminderFormView(mode: .create) { _ in }.preferredColorScheme(.dark) }
+#Preview("Light・Create") {
+    ReminderFormView(mode: .create, destinationLists: ReminderList.samples) { _, _ in }
+        .preferredColorScheme(.light)
+}
+#Preview("Dark・Create") {
+    ReminderFormView(mode: .create, destinationLists: ReminderList.samples) { _, _ in }
+        .preferredColorScheme(.dark)
+}
 #Preview("Light・Edit") {
-    ReminderFormView(mode: .edit(Reminder.samples[0])) { _ in }.preferredColorScheme(.light)
+    ReminderFormView(mode: .edit(Reminder.samples[0])) { _, _ in }.preferredColorScheme(.light)
 }
 #Preview("Dark・Edit without deadline") {
-    ReminderFormView(mode: .edit(.init(id: "preview", title: "観葉植物に肥料を追加する"))) { _ in }
+    ReminderFormView(mode: .edit(.init(id: "preview", title: "観葉植物に肥料を追加する"))) { _, _ in }
         .preferredColorScheme(.dark)
 }

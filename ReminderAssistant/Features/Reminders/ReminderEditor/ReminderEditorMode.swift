@@ -72,6 +72,10 @@ enum ReminderEditorMode: Identifiable {
         case .edit(let reminder): reminder.dueDateComponents != nil
         }
     }
+
+    var showsDestinationList: Bool {
+        if case .create = self { true } else { false }
+    }
     
     func canSave(_ draft: ReminderDraft, initialDraft: ReminderDraft) -> Bool {
         guard draft.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false else { return false }

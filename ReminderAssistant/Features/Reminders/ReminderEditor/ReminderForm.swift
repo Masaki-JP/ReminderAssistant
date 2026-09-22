@@ -7,9 +7,12 @@ struct ReminderForm: View {
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     @Binding var draft: ReminderDraft
     @Binding var calendarDeadline: Date
+    @Binding var destinationListID: ReminderList.ID?
+    let destinationLists: [ReminderList]
     let japaneseDateConverter: JapaneseDateConverter
     var focus: FocusState<ReminderEditorField?>.Binding
     let showsDeadline: Bool
+    let showsDestinationList: Bool
     
     /// `TextField`の初回フォーカス時に高さが変わる問題に対処するために使用する。
     @ScaledMetric(relativeTo: .body) var singleLineTextFieldHeight = 22.0
@@ -58,13 +61,21 @@ struct ReminderForm: View {
                         .padding(.bottom, betweenDividerAndContentSpacing)
                 }
                 
-                prioritySection
+                notesSection
                 
                 formDivider
                     .padding(.top, betweenDividerAndContentSpacing)
                     .padding(.bottom, betweenDividerAndContentSpacing)
-                
-                notesSection
+
+                if showsDestinationList {
+                    destinationListSection
+                    
+                    formDivider
+                        .padding(.top, 4)
+                        .padding(.bottom, betweenDividerAndContentSpacing)
+                }
+
+                prioritySection
             }
         }
         .scrollIndicators(.hidden)
@@ -90,6 +101,19 @@ struct ReminderForm: View {
             } else {
                 deadlineCalendarInput
             }
+        }
+    }
+
+    var destinationListSection: some View {
+        section(label: "作成先", systemImage: "list.bullet") {
+            Picker("作成先", selection: $destinationListID) {
+                ForEach(destinationLists) { list in
+                    Text(list.title).tag(Optional(list.id))
+                }
+            }
+            .pickerStyle(.menu)
+            .labelsHidden()
+            .tint(.primary)
         }
     }
     
@@ -211,12 +235,21 @@ nonisolated enum ReminderEditorField: CaseIterable, Identifiable {
     @Previewable @State var draft = ReminderDraft()
     @Previewable @State var calendarDeadline = Date.now
     @Previewable @FocusState var focus: ReminderEditorField?
+    let sampleLists: [ReminderList] = [
+        .init(id: "sampleList1", title: "Sample List 1", isDefault: true, reminders: []),
+        .init(id: "sampleList2", title: "Sample List 2", isDefault: false, reminders: []),
+        .init(id: "sampleList3", title: "Sample List 3", isDefault: false, reminders: []),
+    ]
+    
     ReminderForm(
         draft: $draft,
         calendarDeadline: $calendarDeadline,
+        destinationListID: .constant(sampleLists.first!.id),
+        destinationLists: sampleLists,
         japaneseDateConverter: JapaneseDateConverter(),
         focus: $focus,
         showsDeadline: true,
+        showsDestinationList: true,
     )
     .preferredColorScheme(.light)
 }
@@ -233,9 +266,12 @@ nonisolated enum ReminderEditorField: CaseIterable, Identifiable {
     ReminderForm(
         draft: $draft,
         calendarDeadline: $calendarDeadline,
+        destinationListID: .constant("assistant"),
+        destinationLists: [.init(id: "assistant", title: "Reminder Assistant", isDefault: true, reminders: [])],
         japaneseDateConverter: JapaneseDateConverter(),
         focus: $focus,
         showsDeadline: true,
+        showsDestinationList: true,
     )
     .preferredColorScheme(.dark)
 }
@@ -247,9 +283,12 @@ nonisolated enum ReminderEditorField: CaseIterable, Identifiable {
     ReminderForm(
         draft: $draft,
         calendarDeadline: $calendarDeadline,
+        destinationListID: .constant(nil),
+        destinationLists: [],
         japaneseDateConverter: JapaneseDateConverter(),
         focus: $focus,
         showsDeadline: false,
+        showsDestinationList: false,
     )
     .preferredColorScheme(.light)
 }
