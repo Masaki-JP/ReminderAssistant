@@ -69,9 +69,9 @@ struct ReminderForm: View {
 
                 if showsDestinationList {
                     destinationListSection
-
+                    
                     formDivider
-                        .padding(.top, betweenDividerAndContentSpacing)
+                        .padding(.top, 4)
                         .padding(.bottom, betweenDividerAndContentSpacing)
                 }
 

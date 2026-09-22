@@ -142,8 +142,8 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
                     mode: mode,
                     destinationLists: viewModel.editableLists,
                     destinationListID: reminderDestinationListID
-                ) { draft async throws(ReminderEditorError) in
-                    try await saveReminder(draft, mode: mode)
+                ) { draft, destinationListID async throws(ReminderEditorError) in
+                    try await saveReminder(draft, mode: mode, destinationListID: destinationListID)
                 }
             }
             .navigationTitle(displayedCustomList?.title ?? displayedList?.title ?? "すべて")
@@ -278,9 +278,13 @@ extension ContentView {
         }
     }
 
-    func saveReminder(_ draft: ReminderDraft, mode: ReminderEditorMode) async throws(ReminderEditorError) {
+    func saveReminder(
+        _ draft: ReminderDraft,
+        mode: ReminderEditorMode,
+        destinationListID: ReminderList.ID?,
+    ) async throws(ReminderEditorError) {
         guard isPlaceholder == false else { throw .cancelled }
-        try await viewModel.saveReminder(draft, mode: mode, listIdentifier: reminderDestinationListID)
+        try await viewModel.saveReminder(draft, mode: mode, listIdentifier: destinationListID)
     }
     
     /// 選択中の通常リストが利用できない場合、デフォルトリストまたは「すべて」に戻す。カスタムリストは構成元が利用できなくても選択を保持する。

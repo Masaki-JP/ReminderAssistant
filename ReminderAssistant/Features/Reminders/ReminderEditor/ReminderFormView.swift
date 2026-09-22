@@ -36,13 +36,13 @@ struct ReminderFormView: View {
         _ = jdc.convert(from: "test") // warmup
         return jdc
     }()
-    let confirmAction: (ReminderDraft) async throws(ReminderEditorError) -> Void
+    let confirmAction: (ReminderDraft, ReminderList.ID?) async throws(ReminderEditorError) -> Void
     
     init(
         mode: ReminderEditorMode,
         destinationLists: [ReminderList] = [],
         destinationListID: ReminderList.ID? = nil,
-        onConfirm: @escaping (ReminderDraft) async throws(ReminderEditorError) -> Void
+        onConfirm: @escaping (ReminderDraft, ReminderList.ID?) async throws(ReminderEditorError) -> Void,
     ) {
         self.mode = mode
         self.destinationLists = destinationLists
@@ -182,7 +182,7 @@ extension ReminderFormView {
             defer { saveTask = nil }
             
             do {
-                try await confirmAction(draft); dismiss()
+                try await confirmAction(draft, destinationListID); dismiss()
             } catch let error as ReminderEditorError {
                 if case .cancelled = error { return }
                 saveError = error
@@ -194,17 +194,17 @@ extension ReminderFormView {
 }
 
 #Preview("Light・Create") {
-    ReminderFormView(mode: .create, destinationLists: ReminderList.samples) { _ in }
+    ReminderFormView(mode: .create, destinationLists: ReminderList.samples) { _, _ in }
         .preferredColorScheme(.light)
 }
 #Preview("Dark・Create") {
-    ReminderFormView(mode: .create, destinationLists: ReminderList.samples) { _ in }
+    ReminderFormView(mode: .create, destinationLists: ReminderList.samples) { _, _ in }
         .preferredColorScheme(.dark)
 }
 #Preview("Light・Edit") {
-    ReminderFormView(mode: .edit(Reminder.samples[0])) { _ in }.preferredColorScheme(.light)
+    ReminderFormView(mode: .edit(Reminder.samples[0])) { _, _ in }.preferredColorScheme(.light)
 }
 #Preview("Dark・Edit without deadline") {
-    ReminderFormView(mode: .edit(.init(id: "preview", title: "観葉植物に肥料を追加する"))) { _ in }
+    ReminderFormView(mode: .edit(.init(id: "preview", title: "観葉植物に肥料を追加する"))) { _, _ in }
         .preferredColorScheme(.dark)
 }
