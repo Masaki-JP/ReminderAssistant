@@ -105,7 +105,7 @@ struct ReminderForm: View {
     }
 
     var destinationListSection: some View {
-        section(label: "リスト", systemImage: "list.bullet") {
+        section(label: "作成先", systemImage: "list.bullet") {
             Picker("作成先", selection: $destinationListID) {
                 ForEach(destinationLists) { list in
                     Text(list.title).tag(Optional(list.id))
