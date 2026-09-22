@@ -8,14 +8,14 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
     @State var searchText = ""
     @State var reminderEditorMode: ReminderEditorMode?
     @State var isSettingsViewPresented = false
-    @State var isCustomListStorageErrorPresented = false
+    @State var isMixListStorageErrorPresented = false
     @Environment(\.colorScheme) var colorScheme: ColorScheme
     let isPlaceholder: Bool
     
     @AppStorage(UserDefaultsKey.AppStorageKey.lastDisplayedListID.rawValue)
     var displayedListID: String?
-    @AppStorage(UserDefaultsKey.AppStorageKey.customReminderLists.rawValue)
-    var customListsData = Data()
+    @AppStorage(UserDefaultsKey.AppStorageKey.mixReminderLists.rawValue)
+    var mixListsData = Data()
     @AppStorage(UserDefaultsKey.AppStorageKey.reminderDestinationListID.rawValue)
     var reminderDestinationListID: String?
     @AppStorage(UserDefaultsKey.AppStorageKey.hasInitializedReminderDestinationList.rawValue)
@@ -48,35 +48,35 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
         viewModel.editableLists.first { $0.id == displayedListID }
     }
 
-    var customLists: [CustomReminderList] {
-        (try? CustomReminderListStorage.decode(customListsData)) ?? []
+    var mixLists: [MixReminderList] {
+        (try? MixReminderListStorage.decode(mixListsData)) ?? []
     }
 
-    var customListsBinding: Binding<[CustomReminderList]> {
+    var mixListsBinding: Binding<[MixReminderList]> {
         .init(
-            get: { customLists },
+            get: { mixLists },
             set: { lists in
                 do {
                     // 既存データが読み込めない場合、書き込みを行わない。
-                    _ = try CustomReminderListStorage.decode(customListsData)
-                    customListsData = try CustomReminderListStorage.encode(lists)
+                    _ = try MixReminderListStorage.decode(mixListsData)
+                    mixListsData = try MixReminderListStorage.encode(lists)
                 } catch {
-                    isCustomListStorageErrorPresented = true
+                    isMixListStorageErrorPresented = true
                 }
             }
         )
     }
 
-    var displayedCustomList: CustomReminderList? {
+    var displayedMixList: MixReminderList? {
         guard isPlaceholder == false else { return nil }
-        return customLists.first { $0.id.uuidString == displayedListID }
+        return mixLists.first { $0.id.uuidString == displayedListID }
     }
 
     var selectedReminders: [Reminder] {
         if isPlaceholder || displayedListID == nil {
             viewModel.reminders
-        } else if let displayedCustomList {
-            displayedCustomList.reminders(in: viewModel.editableLists)
+        } else if let displayedMixList {
+            displayedMixList.reminders(in: viewModel.editableLists)
         } else {
             displayedList?.reminders ?? []
         }
@@ -132,7 +132,7 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
             .sheet(isPresented: $isSettingsViewPresented) {
                 SettingsView(
                     reminderDestinationListID: $reminderDestinationListID,
-                    customLists: customListsBinding,
+                    mixLists: mixListsBinding,
                     lists: viewModel.editableLists,
                 )
                 .preferredColorScheme(colorScheme)
@@ -146,7 +146,7 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
                     try await saveReminder(draft, mode: mode, destinationListID: destinationListID)
                 }
             }
-            .navigationTitle(displayedCustomList?.title ?? displayedList?.title ?? "すべて")
+            .navigationTitle(displayedMixList?.title ?? displayedList?.title ?? "すべて")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbar }
             .toolbarTitleMenu { reminderListPicker }
@@ -154,13 +154,13 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
         .searchable(text: $searchText, prompt: "リマインダーを検索")
         .animation(.default, value: viewModel.reminders)
         .task(viewModel.loadReminders)
-        .onAppear(perform: validateCustomReminderListsData)
+        .onAppear(perform: validateMixReminderListsData)
         .onChange(of: viewModel.editableLists) { _, lists in
             ensureDisplayedList(from: lists)
             ensureReminderDestinationList(from: lists)
         }
-        .onChange(of: customLists) { oldLists, newLists in
-            // 選択していたカスタムリストを削除した場合は「すべて」に戻す。
+        .onChange(of: mixLists) { oldLists, newLists in
+            // 選択していたミックスリストを削除した場合は「すべて」に戻す。
             if oldLists.contains(where: { $0.id.uuidString == displayedListID }) == true,
                newLists.contains(where: { $0.id.uuidString == displayedListID }) == false {
                 displayedListID = nil
@@ -171,7 +171,7 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
         } message: {
             Text(viewModel.error?.message ?? "")
         }
-        .alert("カスタムリストを読み込めません", isPresented: $isCustomListStorageErrorPresented) {
+        .alert("ミックスリストを読み込めません", isPresented: $isMixListStorageErrorPresented) {
             Button("OK", role: .cancel) {}
         } message: {
             Text("保存済みデータは上書きせずに保持しています。")
@@ -215,9 +215,9 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
                 Text(list.title).tag(Optional(list.id))
             }
 
-            if !customLists.isEmpty && !isPlaceholder {
-                Section("カスタムリスト") {
-                    ForEach(customLists) { list in
+            if !mixLists.isEmpty && !isPlaceholder {
+                Section("ミックスリスト") {
+                    ForEach(mixLists) { list in
                         Label(list.title, systemImage: "square.stack")
                             .tag(Optional(list.id.uuidString))
                     }
@@ -270,11 +270,11 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
 }
 
 extension ContentView {
-    func validateCustomReminderListsData() {
+    func validateMixReminderListsData() {
         do {
-            _ = try CustomReminderListStorage.decode(customListsData)
+            _ = try MixReminderListStorage.decode(mixListsData)
         } catch {
-            isCustomListStorageErrorPresented = true
+            isMixListStorageErrorPresented = true
         }
     }
 
@@ -287,11 +287,11 @@ extension ContentView {
         try await viewModel.saveReminder(draft, mode: mode, listIdentifier: destinationListID)
     }
     
-    /// 選択中の通常リストが利用できない場合、デフォルトリストまたは「すべて」に戻す。カスタムリストは構成元が利用できなくても選択を保持する。
+    /// 選択中の通常リストが利用できない場合、デフォルトリストまたは「すべて」に戻す。ミックスリストは構成元が利用できなくても選択を保持する。
     ///
     func ensureDisplayedList(from lists: [ReminderList]) {
         guard isPlaceholder == false else { return }
-        guard displayedCustomList == nil else { return }
+        guard displayedMixList == nil else { return }
         
         // 選択中のリストが指定されたリスト群（[ReminderList]）に含まれている場合は終了する。
         guard displayedListID.map({ displayedListID in

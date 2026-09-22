@@ -6,7 +6,7 @@ struct SettingsView: View {
     @AppStorage(UserDefaultsKey.AppStorageKey.colorScheme.rawValue)
     var colorSchemeSetting = ColorSchemeSetting.defaultValue
     @Binding var reminderDestinationListID: String?
-    @Binding var customLists: [CustomReminderList]
+    @Binding var mixLists: [MixReminderList]
     let lists: [ReminderList]
     
     var body: some View {
@@ -30,9 +30,9 @@ struct SettingsView: View {
                 }
                 
                 Section("表示") {
-                    NavigationLink("カスタムリスト") {
-                        CustomListCollectionView(customLists: $customLists, lists: lists)
-                            .navigationTitle("カスタムリスト")
+                    NavigationLink("ミックスリスト") {
+                        MixListCollectionView(mixLists: $mixLists, lists: lists)
+                            .navigationTitle("ミックスリスト")
                             .navigationBarTitleDisplayMode(.inline)
                     }
                 }
@@ -87,7 +87,7 @@ struct SettingsView: View {
     .sheet(isPresented: $isPresented) {
         SettingsView(
             reminderDestinationListID: $reminderDestinationListID,
-            customLists: .constant([]),
+            mixLists: .constant([]),
             lists: [
                 .init(id: "assistant", title: "Reminder Assistant", isDefault: true, reminders: []),
                 .init(id: "shopping", title: "買い物リスト", isDefault: false, reminders: []),

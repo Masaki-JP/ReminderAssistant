@@ -1,13 +1,13 @@
 public import Foundation
 
-nonisolated public enum CustomReminderListStorageError: Error, Sendable {
+nonisolated public enum MixReminderListStorageError: Error, Sendable {
     case encodingFailed
     case invalidData
     case unsupportedVersion(Int)
 }
 
-/// `CustomReminderList`の保存形式を管理する。
-nonisolated public enum CustomReminderListStorage {
+/// `MixReminderList`の保存形式を管理する。
+nonisolated public enum MixReminderListStorage {
     private static let currentVersion = 1
 
     private struct VersionHeader: Decodable {
@@ -16,12 +16,12 @@ nonisolated public enum CustomReminderListStorage {
 
     private struct Version1Document: Codable {
         let version: Int
-        let lists: [CustomReminderList]
+        let lists: [MixReminderList]
     }
 
     public static func encode(
-        _ lists: [CustomReminderList]
-    ) throws(CustomReminderListStorageError) -> Data {
+        _ lists: [MixReminderList]
+    ) throws(MixReminderListStorageError) -> Data {
         do {
             return try JSONEncoder().encode(Version1Document(version: currentVersion, lists: lists))
         } catch {
@@ -31,7 +31,7 @@ nonisolated public enum CustomReminderListStorage {
 
     public static func decode(
         _ data: Data
-    ) throws(CustomReminderListStorageError) -> [CustomReminderList] {
+    ) throws(MixReminderListStorageError) -> [MixReminderList] {
         guard data.isEmpty == false else {
             return []
         }
