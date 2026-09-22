@@ -1,63 +1,63 @@
 import SwiftUI
 import ReminderCore
 
-struct CustomListFormView: View {
-    /// フォームで編集中のカスタムリスト名。
-    @State var customListTitle: String
+struct MixListFormView: View {
+    /// フォームで編集中のミックスリスト名。
+    @State var mixListTitle: String
     /// フォームで編集中の構成元リスト ID。
     @State var sourceListIDs: Set<String>
     /// 保存後にフォームを閉じるためのアクション。
     @Environment(\.dismiss) var dismiss
-    /// 編集するカスタムリスト。nil の場合は新規作成する。
-    let customList: CustomReminderList?
-    /// カスタムリストの構成元として選択できる通常リスト。
+    /// 編集するミックスリスト。nil の場合は新規作成する。
+    let mixList: MixReminderList?
+    /// ミックスリストの構成元として選択できる通常リスト。
     let selectableLists: [ReminderList]
-    /// 重複する名前を検証するための既存のカスタムリスト。
-    let customLists: [CustomReminderList]
-    /// 保存するカスタムリストを呼び出し元へ渡すアクション。
-    let saveAction: (CustomReminderList) -> Void
+    /// 重複する名前を検証するための既存のミックスリスト。
+    let mixLists: [MixReminderList]
+    /// 保存するミックスリストを呼び出し元へ渡すアクション。
+    let saveAction: (MixReminderList) -> Void
     
     init(
-        customList: CustomReminderList? = nil,
+        mixList: MixReminderList? = nil,
         selectableLists: [ReminderList],
-        customLists: [CustomReminderList],
-        onSave: @escaping (CustomReminderList) -> Void,
+        mixLists: [MixReminderList],
+        onSave: @escaping (MixReminderList) -> Void,
     ) {
-        self._customListTitle = .init(initialValue: customList?.title ?? "")
-        self._sourceListIDs = .init(initialValue: customList?.listIDs ?? [])
-        self.customList = customList
+        self._mixListTitle = .init(initialValue: mixList?.title ?? "")
+        self._sourceListIDs = .init(initialValue: mixList?.listIDs ?? [])
+        self.mixList = mixList
         self.selectableLists = selectableLists
-        self.customLists = customLists
+        self.mixLists = mixLists
         self.saveAction = onSave
     }
     
-    var isCreatingNewCustomList: Bool { customList == nil }
+    var isCreatingNewMixList: Bool { mixList == nil }
 
     var unavailableListIDs: Set<String> { sourceListIDs.subtracting(selectableLists.map(\.id)) }
 
     var hasDuplicateTitle: Bool {
-        CustomReminderList.hasDuplicateTitle(customListTitle, in: customLists, excludingListID: customList?.id)
+        MixReminderList.hasDuplicateTitle(mixListTitle, in: mixLists, excludingListID: mixList?.id)
     }
 
     var canSave: Bool {
-        CustomReminderList.canSave(
-            title: customListTitle,
+        MixReminderList.canSave(
+            title: mixListTitle,
             listIDs: sourceListIDs,
             in: selectableLists,
-            customLists: customLists,
-            excludingListID: customList?.id,
+            mixLists: mixLists,
+            excludingListID: mixList?.id,
         )
     }
     
     var body: some View {
         Form {
             Section {
-                TextField("マイカスタムリスト", text: $customListTitle)
+                TextField("マイミックスリスト", text: $mixListTitle)
             } header: {
                 Text("名前")
             } footer: {
                 if hasDuplicateTitle == true {
-                    Text("同名のカスタムリストがあります。別の名前を設定してください。")
+                    Text("同名のミックスリストがあります。別の名前を設定してください。")
                         .foregroundStyle(.red)
                 }
             }
@@ -82,7 +82,7 @@ struct CustomListFormView: View {
                 }
             }
         }
-        .navigationTitle(isCreatingNewCustomList ? "新規作成" : "編集")
+        .navigationTitle(isCreatingNewMixList ? "新規作成" : "編集")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
@@ -95,7 +95,7 @@ struct CustomListFormView: View {
     }
 }
 
-extension CustomListFormView {
+extension MixListFormView {
     func selectionBinding(for listID: String) -> Binding<Bool> {
         .init(
             get: { sourceListIDs.contains(listID) },
@@ -105,15 +105,15 @@ extension CustomListFormView {
     
     func save() {
         guard canSave == true else { return }
-        saveAction(.init(id: customList?.id ?? .init(), title: customListTitle.trimmingCharacters(in: .whitespacesAndNewlines), listIDs: sourceListIDs))
+        saveAction(.init(id: mixList?.id ?? .init(), title: mixListTitle.trimmingCharacters(in: .whitespacesAndNewlines), listIDs: sourceListIDs))
         dismiss()
     }
 }
 
 #Preview {
-    CustomListFormView(selectableLists: [
+    MixListFormView(selectableLists: [
         .init(id: "a", title: "リストA", isDefault: true, reminders: []),
         .init(id: "b", title: "リストB", isDefault: false, reminders: []),
         .init(id: "c", title: "リストC", isDefault: false, reminders: []),
-    ], customLists: []) { _ in }
+    ], mixLists: []) { _ in }
 }

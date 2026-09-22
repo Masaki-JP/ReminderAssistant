@@ -4,7 +4,7 @@ extension UserDefaultsKey {
     /// `rawValue`は`@AppStorage`のキー文字列として使用される。
     enum AppStorageKey: String {
         case colorScheme
-        case customReminderLists
+        case mixReminderLists = "customReminderLists"
         case hasInitializedReminderDestinationList
         case lastDisplayedListID = "lastSelectListID"
         case reminderDestinationListID
