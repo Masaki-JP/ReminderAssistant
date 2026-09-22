@@ -193,8 +193,14 @@ extension ReminderFormView {
     }
 }
 
-#Preview("Light・Create") { ReminderFormView(mode: .create) { _ in }.preferredColorScheme(.light) }
-#Preview("Dark・Create") { ReminderFormView(mode: .create) { _ in }.preferredColorScheme(.dark) }
+#Preview("Light・Create") {
+    ReminderFormView(mode: .create, destinationLists: ReminderList.samples) { _ in }
+        .preferredColorScheme(.light)
+}
+#Preview("Dark・Create") {
+    ReminderFormView(mode: .create, destinationLists: ReminderList.samples) { _ in }
+        .preferredColorScheme(.dark)
+}
 #Preview("Light・Edit") {
     ReminderFormView(mode: .edit(Reminder.samples[0])) { _ in }.preferredColorScheme(.light)
 }
