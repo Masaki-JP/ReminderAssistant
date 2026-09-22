@@ -48,14 +48,6 @@ struct ReminderForm: View {
         ScrollView {
             VStack(alignment: .leading, spacing: .zero) {
                 titleSection
-
-                if showsDestinationList {
-                    formDivider
-                        .padding(.top, betweenDividerAndTextFieldSpacing)
-                        .padding(.bottom, betweenDividerAndContentSpacing)
-
-                    destinationListSection
-                }
                 
                 formDivider
                     .padding(.top, betweenDividerAndTextFieldSpacing)
@@ -69,13 +61,21 @@ struct ReminderForm: View {
                         .padding(.bottom, betweenDividerAndContentSpacing)
                 }
                 
-                prioritySection
+                notesSection
                 
                 formDivider
                     .padding(.top, betweenDividerAndContentSpacing)
                     .padding(.bottom, betweenDividerAndContentSpacing)
-                
-                notesSection
+
+                if showsDestinationList {
+                    destinationListSection
+
+                    formDivider
+                        .padding(.top, betweenDividerAndContentSpacing)
+                        .padding(.bottom, betweenDividerAndContentSpacing)
+                }
+
+                prioritySection
             }
         }
         .scrollIndicators(.hidden)
