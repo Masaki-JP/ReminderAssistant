@@ -123,15 +123,21 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
         reminderOperations.append(.load(id: operationID, task: task))
     }
     
-    /// 古い取得結果が後から表示やキャッシュを上書きしないよう、実行中のリマインダー取得をすべてキャンセルする。
-    private func cancelLoad() {
+    /// 古い取得結果が後から表示やキャッシュを上書きしないよう、実行中のリマインダー取得をすべてキャンセルし、キャンセルしたかどうかを返す。
+    @discardableResult
+    private func cancelLoad() -> Bool {
+        var hasCancelledLoad = false
+        
         reminderOperations.removeAll { operation in
             if case .load(_, let loadTask) = operation {
+                hasCancelledLoad = true
                 loadTask.cancel(); return true
             } else {
                 return false
             }
         }
+        
+        return hasCancelledLoad
     }
     
     // MARK: - Reminder Saving
@@ -290,6 +296,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     }
     
     /// 完了状態の更新を予約し、変更前・変更途中の取得結果による上書きを防ぐため、進行中の取得をキャンセルする。
+    /// 取得をキャンセルした場合は、完了状態の更新が取り消されても最新状態を取得できるよう、変更操作終了後の再取得を予約する。
     private func requestCompletionToggle(for reminder: Reminder) {
         let operationID = UUID()
         let completion = !reminder.isCompleted
@@ -314,7 +321,9 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
         reminderOperations.append(
             .toggleCompletion(id: operationID, reminderID: reminder.id, task: task)
         )
-        cancelLoad()
+        if cancelLoad() == true {
+            shouldReloadAfterMutation = true
+        }
     }
     
     /// 短時間の反対操作を相殺して不要なリポジトリ更新を避けるため、予約されている完了状態更新をキャンセルする。
