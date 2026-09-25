@@ -155,9 +155,9 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
         .animation(.default, value: viewModel.reminders)
         .task(viewModel.loadReminders)
         .onAppear(perform: validateMixReminderListsData)
-        .onChange(of: viewModel.editableLists) { _, lists in
-            ensureDisplayedList(from: lists)
-            ensureReminderDestinationList(from: lists)
+        .onChange(of: viewModel.lastAppliedRepositoryFetchID) {
+            ensureDisplayedList(from: viewModel.editableLists)
+            ensureReminderDestinationList(from: viewModel.editableLists)
         }
         .onChange(of: mixLists) { oldLists, newLists in
             // 選択していたミックスリストを削除した場合は「すべて」に戻す。

@@ -5,6 +5,8 @@ import ReminderCore
 final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol> {
     private(set) var editableLists: [ReminderList] = []
     var reminders: [Reminder] { editableLists.flatMap(\.reminders) }
+    /// リポジトリから取得した最新のリマインダー一覧を画面へ反映した処理のID。
+    private(set) var lastAppliedRepositoryFetchID: UUID? = nil
     
     private(set) var error: ContentViewModelError? = nil
     var errorBinding: Binding<Bool> {
@@ -87,7 +89,8 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     ///
     /// `loadReminders()` は最初に `cancelLoad()` を呼び、それ以前の取得結果が後から表示を上書きすることを防ぐ。
     /// 続いて `reminderRepository.fetch()` を開始し、初回のみ `reminderStoreCache.fetch()` の結果を先に `editableLists` へ反映する。
-    /// リポジトリから最新の一覧を取得した後は、`editableLists` を更新して `reminderStoreCache.save(_:)` でキャッシュへ保存する。
+    /// リポジトリから最新の一覧を取得した後は、`editableLists` と `lastAppliedRepositoryFetchID` を更新して
+    /// `reminderStoreCache.save(_:)` でキャッシュへ保存する。
     /// 取得タスクは終了時に `reminderOperations.remove(with:)` で管理対象から外れ、エラーは `handleError(_:as:)` で処理される。
     /// `cancelLoad()` によってキャンセルされた場合は、`handleError(_:as:)` がキャンセルを判定するため画面にエラーを表示しない。
     
@@ -114,6 +117,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
                 let lists = try await fetchedLists
                 try Task.checkCancellation()
                 self?.editableLists = lists
+                self?.lastAppliedRepositoryFetchID = operationID
                 await reminderStoreCache?.save(lists)
             } catch {
                 self?.handleError(error, as: .loadRemindersFailed)
