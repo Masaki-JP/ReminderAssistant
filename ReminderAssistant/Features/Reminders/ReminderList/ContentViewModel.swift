@@ -254,7 +254,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     /// 保存前の待機中であれば `cancelCompletionToggle(for:)` で取り消し、更新がなければ `requestCompletionToggle(for:)` で保存を予約する。
     /// 取り消しによって短時間の反対操作を相殺し、リポジトリへの往復更新を避ける。
     /// その後、`reminderIndex(for:)` で対象の位置を取得し、保存の完了を待たずに画面上の完了状態を切り替える。
-    /// `requestCompletionToggle(for:)` は反対操作で相殺できるよう0.3秒待機した後、再度の切り替えを禁止して
+    /// `requestCompletionToggle(for:)` は反対操作で相殺できるよう1.5秒待機した後、再度の切り替えを禁止して
     /// `reminderRepository.set(id:completion:)` で保存し、処理の終了時に禁止を解除する。
     /// また、`cancelLoad()` で進行中の取得を止め、変更前・変更途中の取得結果が後から表示やキャッシュを上書きすることを防ぐ。
     /// 保存に成功すると `setIsCompleted(_:)` で実値を確定し、失敗すると `handleError(_:as:)` でエラーを表示して
@@ -297,7 +297,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
             defer { self?.finishReminderMutation(with: operationID) }
             
             do {
-                try await Task.sleep(for: .seconds(0.3))
+                try await Task.sleep(for: .seconds(1.5))
                 defer { self?.completionToggleLockedReminderIDs.remove(reminder.id) }
                 self?.completionToggleLockedReminderIDs.insert(reminder.id)
                 
