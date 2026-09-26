@@ -20,6 +20,8 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
     var reminderDestinationListID: String?
     @AppStorage(UserDefaultsKey.AppStorageKey.hasInitializedReminderDestinationList.rawValue)
     var hasInitializedReminderDestinationList = UserDefaultsKey.AppStorageDefaultValue.hasInitializedReminderDestinationList
+    @AppStorage(UserDefaultsKey.AppStorageKey.completionDebounceDelayInSeconds.rawValue)
+    var completionDebounceDelayInSeconds = UserDefaultsKey.AppStorageDefaultValue.completionDebounceDelayInSeconds
     
     init(configuration: Configuration) {
         switch configuration {
@@ -114,7 +116,7 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
                 sections: reminderSections,
                 onToggleCompletion: { reminder in
                     guard isPlaceholder == false else { return }
-                    viewModel.onToggleCompletion(reminder)
+                    viewModel.onToggleCompletion(reminder, delayInSeconds: completionDebounceDelayInSeconds)
                 },
                 onEdit: { reminder in
                     guard isPlaceholder == false else { return }

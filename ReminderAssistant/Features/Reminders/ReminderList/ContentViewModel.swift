@@ -264,14 +264,14 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     /// 保存前の待機中であれば `cancelCompletionToggle(for:)` で取り消し、更新がなければ `requestCompletionToggle(for:)` で保存を予約する。
     /// 取り消しによって短時間の反対操作を相殺し、リポジトリへの往復更新を避ける。
     /// その後、`reminderIndex(for:)` で対象の位置を取得し、保存の完了を待たずに画面上の完了状態を切り替える。
-    /// `requestCompletionToggle(for:)` は反対操作で相殺できるよう1.5秒待機した後、再度の切り替えを禁止して
+    /// `requestCompletionToggle(for:delayInSeconds:)` は反対操作で相殺できるよう指定された時間だけ待機した後、再度の切り替えを禁止して
     /// `reminderRepository.set(id:completion:)` で保存し、処理の終了時に禁止を解除する。
     /// また、`cancelLoad()` で進行中の取得を止め、変更前・変更途中の取得結果が後から表示やキャッシュを上書きすることを防ぐ。
     /// 保存に成功すると `setIsCompleted(_:)` で実値を確定し、失敗すると `handleError(_:as:)` でエラーを表示して
     /// `shouldReloadAfterMutation` を有効にし、すべての変更操作が終わった後の再取得を予約する。
     
     /// リマインダーの完了状態の更新を予約または取り消し、画面表示を即時に切り替える。
-    func onToggleCompletion(_ reminder: Reminder) {
+    func onToggleCompletion(_ reminder: Reminder, delayInSeconds: Double) {
         guard completionToggleLockedReminderIDs.contains(reminder.id) == false,
               let index = reminderIndex(for: reminder),
               editableLists[index.list].reminders[index.reminder].isMarkedForDeletion == false
@@ -280,7 +280,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
         let isPending = hasPendingCompletionToggle(for: reminder)
         
         if isPending == false {
-            requestCompletionToggle(for: reminder)
+            requestCompletionToggle(for: reminder, delayInSeconds: delayInSeconds)
         } else {
             cancelCompletionToggle(for: reminder)
         }
@@ -301,14 +301,14 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     
     /// 完了状態の更新を予約し、変更前・変更途中の取得結果による上書きを防ぐため、進行中の取得をキャンセルする。
     /// 取得をキャンセルした場合は、完了状態の更新が取り消されても最新状態を取得できるよう、変更操作終了後の再取得を予約する。
-    private func requestCompletionToggle(for reminder: Reminder) {
+    private func requestCompletionToggle(for reminder: Reminder, delayInSeconds: Double) {
         let operationID = UUID()
         let completion = !reminder.isCompleted
         let task = Task { [weak self] in
             defer { self?.finishReminderMutation(with: operationID) }
             
             do {
-                try await Task.sleep(for: .seconds(1.5))
+                try await Task.sleep(for: .seconds(delayInSeconds))
                 defer { self?.completionToggleLockedReminderIDs.remove(reminder.id) }
                 self?.completionToggleLockedReminderIDs.insert(reminder.id)
                 

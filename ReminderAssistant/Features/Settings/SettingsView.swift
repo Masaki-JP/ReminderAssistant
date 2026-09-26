@@ -5,6 +5,8 @@ struct SettingsView: View {
     @Environment(\.dismiss) var dismiss: DismissAction
     @AppStorage(UserDefaultsKey.AppStorageKey.colorScheme.rawValue)
     var colorSchemeSetting = ColorSchemeSetting.defaultValue
+    @AppStorage(UserDefaultsKey.AppStorageKey.completionDebounceDelayInSeconds.rawValue)
+    var completionDebounceDelayInSeconds = UserDefaultsKey.AppStorageDefaultValue.completionDebounceDelayInSeconds
     @Binding var reminderDestinationListID: String?
     @Binding var mixLists: [MixReminderList]
     let lists: [ReminderList]
@@ -35,6 +37,20 @@ struct SettingsView: View {
                             .navigationTitle("ミックスリスト")
                             .navigationBarTitleDisplayMode(.inline)
                     }
+                }
+
+                Section {
+                    Picker("完了操作後の遅延", selection: $completionDebounceDelayInSeconds) {
+                        ForEach(0...10, id: \.self) { step in
+                            let delay = Double(step) * 0.5
+                            Text(delay.formatted(.number.precision(.fractionLength(1))) + "秒")
+                                .tag(delay)
+                        }
+                    }
+                } header: {
+                    Text("リマインダー")
+                } footer: {
+                    Text("完了状態の変更をリマインダーに保存するまでの待ち時間を設定できます。")
                 }
                 
                 Section {
