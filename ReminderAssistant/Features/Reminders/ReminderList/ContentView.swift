@@ -10,6 +10,7 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
     @State var isSettingsViewPresented = false
     @State var isMixListStorageErrorPresented = false
     @Environment(\.colorScheme) var colorScheme: ColorScheme
+    @Environment(\.scenePhase) var scenePhase: ScenePhase
     let isPlaceholder: Bool
     
     @AppStorage(UserDefaultsKey.AppStorageKey.lastDisplayedListID.rawValue)
@@ -20,6 +21,8 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
     var reminderDestinationListID: String?
     @AppStorage(UserDefaultsKey.AppStorageKey.hasInitializedReminderDestinationList.rawValue)
     var hasInitializedReminderDestinationList = UserDefaultsKey.AppStorageDefaultValue.hasInitializedReminderDestinationList
+    @AppStorage(UserDefaultsKey.AppStorageKey.completionDebounceDelayInSeconds.rawValue)
+    var completionDebounceDelayInSeconds = UserDefaultsKey.AppStorageDefaultValue.completionDebounceDelayInSeconds
     
     init(configuration: Configuration) {
         switch configuration {
@@ -114,7 +117,7 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
                 sections: reminderSections,
                 onToggleCompletion: { reminder in
                     guard isPlaceholder == false else { return }
-                    viewModel.onToggleCompletion(reminder)
+                    viewModel.onToggleCompletion(reminder, delayInSeconds: completionDebounceDelayInSeconds)
                 },
                 onEdit: { reminder in
                     guard isPlaceholder == false else { return }
@@ -158,6 +161,10 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
         .onChange(of: viewModel.lastAppliedRepositoryFetchID) {
             ensureDisplayedList(from: viewModel.editableLists)
             ensureReminderDestinationList(from: viewModel.editableLists)
+        }
+        .onChange(of: scenePhase) { _, newValue in
+            guard newValue != .active else { return }
+            viewModel.flushPendingCompletionTogglesImmediately()
         }
         .onChange(of: mixLists) { oldLists, newLists in
             // 選択していたミックスリストを削除した場合は「すべて」に戻す。
