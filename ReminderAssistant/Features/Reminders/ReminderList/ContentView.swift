@@ -10,6 +10,7 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
     @State var isSettingsViewPresented = false
     @State var isMixListStorageErrorPresented = false
     @Environment(\.colorScheme) var colorScheme: ColorScheme
+    @Environment(\.scenePhase) var scenePhase: ScenePhase
     let isPlaceholder: Bool
     
     @AppStorage(UserDefaultsKey.AppStorageKey.lastDisplayedListID.rawValue)
@@ -160,6 +161,10 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
         .onChange(of: viewModel.lastAppliedRepositoryFetchID) {
             ensureDisplayedList(from: viewModel.editableLists)
             ensureReminderDestinationList(from: viewModel.editableLists)
+        }
+        .onChange(of: scenePhase) { _, newValue in
+            guard newValue != .active else { return }
+            viewModel.flushPendingCompletionTogglesImmediately()
         }
         .onChange(of: mixLists) { oldLists, newLists in
             // 選択していたミックスリストを削除した場合は「すべて」に戻す。

@@ -22,7 +22,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     }
     /// 保存・完了状態更新・削除のいずれかが予約または実行中かどうか。
     private var hasPendingMutation: Bool {
-        reminderOperations.contains { operation in
+        pendingCompletionUpdates.isEmpty == false || reminderOperations.contains { operation in
             switch operation {
             case .save, .toggleCompletion, .delete: true
             case .load: false
@@ -34,10 +34,12 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     private var reminderOperations: [ReminderOperation] = .init()
     /// 完了状態をリポジトリへ保存中で、再度の切り替えを禁止するリマインダーのID。
     private var completionToggleLockedReminderIDs: Set<Reminder.ID> = []
-    /// 完了状態変更が続いている間に更新されるデバウンスの識別子と期限。
+    /// デバウンス中の完了状態をリマインダーIDごとに保持する。
+    private var pendingCompletionUpdates: [Reminder.ID: Bool] = [:]
+    /// 完了状態更新をまとめて保存するためのデバウンスタスク。
+    private var completionDebounceTask: Task<Void, Never>? = nil
+    /// 古いデバウンスタスクが新しいタスクより後に実行されるのを防ぐID。
     private var completionDebounceID: UUID? = nil
-    private var completionDebounceDeadline: ContinuousClock.Instant? = nil
-    private let completionDebounceClock = ContinuousClock()
     /// 初回キャッシュの読み込みを試行済みかどうか。
     private var hasReadInitialCache = false
     /// 進行中の変更操作がすべて終了した際に再読み込みするかどうか。
@@ -84,6 +86,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     /// ViewModelの破棄後は処理結果を画面へ反映できないため、作成・更新が完了しない可能性を許容する。
     isolated deinit {
         notificationToken.map { NotificationCenter.default.removeObserver($0) }
+        completionDebounceTask?.cancel()
         reminderOperations.removeAll { $0.cancel(); return true }
     }
     
@@ -100,6 +103,10 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     
     /// リマインダーを取得し、初回のみキャッシュを先に表示してから最新の取得結果で更新する。
     func loadReminders() {
+        guard hasPendingMutation == false else {
+            shouldReloadAfterMutation = true; return
+        }
+
         cancelLoad()
         
         let shouldReadInitialCache = hasReadInitialCache == false
@@ -262,88 +269,90 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     
     // MARK: - Reminder Completion
     
-    /// 操作を画面へ即時に反映し、リマインダーの完了状態をリポジトリへ保存する。
-    ///
-    /// `onToggleCompletion(_:delayInSeconds:)` は同じリマインダーの完了状態をリポジトリへ保存中であれば操作を受け付けない。
-    /// 完了状態の変更があるたびに共通のデバウンス期限を更新し、保存前の待機中であれば `cancelCompletionToggle(for:)` で取り消す。
-    /// 更新が予約されている場合は、最後の変更から指定された時間が経過した後にリポジトリへ保存する。
-    /// 反対操作の取り消しによってリポジトリへの往復更新を避ける。
-    /// その後、`reminderIndex(for:)` で対象の位置を取得し、保存の完了を待たずに画面上の完了状態を切り替える。
-    /// `requestCompletionToggle(for:debounceID:deadline:)` は共通のデバウンス期限まで待機し、
-    /// 期限が延長されていた場合は新しい期限まで待ってから、再度の切り替えを禁止して `reminderRepository.set(id:completion:)` で保存する。
-    /// 処理の終了時に禁止を解除する。
-    /// また、`cancelLoad()` で進行中の取得を止め、変更前・変更途中の取得結果が後から表示やキャッシュを上書きすることを防ぐ。
-    /// 保存に成功すると `setIsCompleted(_:)` で実値を確定し、失敗すると `handleError(_:as:)` でエラーを表示して
-    /// `shouldReloadAfterMutation` を有効にし、すべての変更操作が終わった後の再取得を予約する。
-    
-    /// リマインダーの完了状態の更新を予約または取り消し、画面表示を即時に切り替える。
+    /// 完了状態を画面へ即時に反映し、設定されたデバウンス時間の後にリポジトリへ保存する。
     func onToggleCompletion(_ reminder: Reminder, delayInSeconds: Double) {
         guard completionToggleLockedReminderIDs.contains(reminder.id) == false,
               let index = reminderIndex(for: reminder),
               editableLists[index.list].reminders[index.reminder].isMarkedForDeletion == false
         else { return }
         
-        let isPending = hasPendingCompletionToggle(for: reminder)
-        let debounceID = UUID()
-        let deadline = completionDebounceClock.now.advanced(by: .seconds(delayInSeconds))
-        completionDebounceID = debounceID
-        completionDebounceDeadline = deadline
+        let currentReminder = editableLists[index.list].reminders[index.reminder]
+        let completion = !currentReminder.displayedIsCompleted
+        editableLists[index.list].reminders[index.reminder].setDisplayedIsCompleted(completion)
         
-        if isPending == false {
-            requestCompletionToggle(for: reminder, debounceID: debounceID, deadline: deadline)
+        if completion == currentReminder.isCompleted {
+            pendingCompletionUpdates.removeValue(forKey: reminder.id)
         } else {
-            cancelCompletionToggle(for: reminder)
-        }
-        
-        let newValue = isPending ? reminder.isCompleted : !reminder.isCompleted
-        editableLists[index.list].reminders[index.reminder].setDisplayedIsCompleted(newValue)
-    }
-    
-    /// 指定リマインダーの完了状態更新が予約または実行中かどうかを返す。
-    private func hasPendingCompletionToggle(for reminder: Reminder) -> Bool {
-        reminderOperations.contains { operation in
-            switch operation {
-            case .toggleCompletion(_, let reminderID, _) where reminderID == reminder.id: true
-            default: false
+            pendingCompletionUpdates[reminder.id] = completion
+            if cancelLoad() == true {
+                shouldReloadAfterMutation = true
             }
         }
+        
+        if pendingCompletionUpdates.isEmpty == true {
+            cancelCompletionDebounce()
+            reloadRemindersAfterMutationIfNeeded()
+        } else {
+            scheduleCompletionDebounce(after: delayInSeconds)
+        }
     }
     
-    /// 完了状態の更新を予約し、変更前・変更途中の取得結果による上書きを防ぐため、進行中の取得をキャンセルする。
-    /// 取得をキャンセルした場合は、完了状態の更新が取り消されても最新状態を取得できるよう、変更操作終了後の再取得を予約する。
-    private func requestCompletionToggle(
-        for reminder: Reminder, debounceID: UUID, deadline: ContinuousClock.Instant,
-    ) {
+    /// デバウンスタスクを再予約する。
+    private func scheduleCompletionDebounce(after delayInSeconds: Double) {
+        completionDebounceTask?.cancel()
+        let debounceID = UUID()
+        completionDebounceID = debounceID
+        completionDebounceTask = Task { [weak self] in
+            do {
+                try await Task.sleep(for: .seconds(delayInSeconds))
+            } catch {
+                return
+            }
+            guard let self, self.completionDebounceID == debounceID else { return }
+            self.flushPendingCompletionUpdates()
+        }
+    }
+    
+    /// ScenePhaseがアクティブでなくなったとき、保留中の完了状態更新を遅延なしで保存へ回す。
+    func flushPendingCompletionTogglesImmediately() {
+        flushPendingCompletionUpdates()
+    }
+    
+    /// デバウンスタスクを取り消し、保留中の完了状態を保存タスクへ移す。
+    private func flushPendingCompletionUpdates() {
+        cancelCompletionDebounce()
+        guard pendingCompletionUpdates.isEmpty == false else { return }
+        
+        let pendingUpdates = pendingCompletionUpdates
+        pendingCompletionUpdates.removeAll()
+        for (reminderID, completion) in pendingUpdates {
+            guard let reminder = reminders.first(where: { $0.id == reminderID }) else { continue }
+            requestCompletionToggle(for: reminder, completion: completion)
+        }
+        reloadRemindersAfterMutationIfNeeded()
+    }
+    
+    /// デバウンスタスクを取り消して無効化する。
+    private func cancelCompletionDebounce() {
+        completionDebounceTask?.cancel()
+        completionDebounceTask = nil
+        completionDebounceID = nil
+    }
+    
+    /// 指定した完了状態をリポジトリへ保存する操作を開始する。
+    private func requestCompletionToggle(for reminder: Reminder, completion: Bool) {
         let operationID = UUID()
-        let completion = !reminder.isCompleted
+        completionToggleLockedReminderIDs.insert(reminder.id)
         let task = Task { [weak self] in
-            defer { self?.finishReminderMutation(with: operationID) }
+            defer {
+                self?.completionToggleLockedReminderIDs.remove(reminder.id)
+                self?.finishReminderMutation(with: operationID)
+            }
             
             do {
-                var currentDebounceID = debounceID
-                var currentDeadline = deadline
-                var shouldWaitForLatestDebounceDeadline = true
-                
-                while shouldWaitForLatestDebounceDeadline == true {
-                    try await self?.completionDebounceClock.sleep(until: currentDeadline)
-                    guard let self else { return }
-                    shouldWaitForLatestDebounceDeadline = self.completionDebounceID != currentDebounceID
-                    if shouldWaitForLatestDebounceDeadline == true {
-                        guard let latestDeadline = self.completionDebounceDeadline,
-                              let latestDebounceID = self.completionDebounceID
-                        else { return }
-                        currentDebounceID = latestDebounceID
-                        currentDeadline = latestDeadline
-                    }
-                }
-                
-                guard let self else { return }
-                defer { self.completionToggleLockedReminderIDs.remove(reminder.id) }
-                self.completionToggleLockedReminderIDs.insert(reminder.id)
-                
-                try await self.reminderRepository.set(id: reminder.id, completion: completion)
-                guard let index = self.reminderIndex(for: reminder) else { return }
-                self.editableLists[index.list].reminders[index.reminder].setIsCompleted(completion)
+                try await self?.reminderRepository.set(id: reminder.id, completion: completion)
+                guard let index = self?.reminderIndex(for: reminder) else { return }
+                self?.editableLists[index.list].reminders[index.reminder].setIsCompleted(completion)
             } catch {
                 guard let self else { return }
                 guard handleError(error, as: .toggleCompletionFailed) == true else { return }
@@ -354,13 +363,14 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
         reminderOperations.append(
             .toggleCompletion(id: operationID, reminderID: reminder.id, task: task)
         )
-        if cancelLoad() == true {
-            shouldReloadAfterMutation = true
-        }
     }
     
-    /// 短時間の反対操作を相殺して不要なリポジトリ更新を避けるため、予約されている完了状態更新をキャンセルする。
+    /// 削除対象の保留中または実行中の完了状態更新を取り消す。
     private func cancelCompletionToggle(for reminder: Reminder) {
+        pendingCompletionUpdates.removeValue(forKey: reminder.id)
+        if pendingCompletionUpdates.isEmpty {
+            cancelCompletionDebounce()
+        }
         reminderOperations.removeAll { operation in
             if case let .toggleCompletion(_, reminderID, task) = operation, reminderID == reminder.id {
                 task.cancel(); return true
@@ -495,6 +505,8 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     /// 再読み込み予約を解除し、すべての操作をキャンセルして権限失効を通知する。
     private func handleReminderAccessRevoked() {
         shouldReloadAfterMutation = false
+        cancelCompletionDebounce()
+        pendingCompletionUpdates.removeAll()
         reminderOperations.removeAll { $0.cancel(); return true }
         reminderAccessRevokedHandler()
     }
