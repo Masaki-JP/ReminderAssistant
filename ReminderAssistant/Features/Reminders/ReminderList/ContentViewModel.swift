@@ -3,12 +3,18 @@ import ReminderCore
 
 @Observable
 final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol> {
+    // MARK: - View State
+
     private(set) var editableLists: [ReminderList] = []
     var reminders: [Reminder] { editableLists.flatMap(\.reminders) }
-    /// リポジトリから取得した最新のリマインダー一覧を画面へ反映した処理のID。
     private(set) var lastAppliedRepositoryFetchID: UUID? = nil
-    
     private(set) var error: ContentViewModelError? = nil
+    
+    /// リマインダー一覧の取得の実行状態を表す。（`ReminderStore`の仕様上、実際に取得を行なっている最中だけでなく、待機中も実行中と評価されることに注意。）
+    var isLoading: Bool {
+        reminderOperations.contains { if case .load = $0 { true } else { false } }
+    }
+    
     var errorBinding: Binding<Bool> {
         .init(
             get: { self.error != nil },
@@ -16,10 +22,21 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
         )
     }
     
-    /// リマインダー一覧の取得の実行状態を表す。（`ReminderStore`の仕様上、実際に取得を行なっている最中だけでなく、待機中も実行中と評価されることに注意。）
-    var isLoading: Bool {
-        reminderOperations.contains { if case .load = $0 { true } else { false } }
-    }
+    // MARK: - Dependencies
+
+    /// リマインダーを取得・作成・更新するリポジトリ。
+    private let reminderRepository: ReminderRepositoryType
+    /// リマインダー一覧をローカルに保存するキャッシュ。
+    private let reminderStoreCache: ReminderStoreCache?
+    /// リマインダーへのアクセス権限が失効した際の処理。
+    private let reminderAccessRevokedHandler: () -> Void
+
+    // MARK: - Mutation Coordination State
+
+    /// 予約・実行中のリマインダー取得・保存・完了状態更新・削除を追加順に保持する操作一覧。
+    private var reminderOperations: [ReminderOperation] = .init()
+    /// 進行中の変更操作がすべて終了した際に再読み込みするかどうか。
+    private var shouldReloadAfterMutation = false
     /// 保存・完了状態更新・削除のいずれかが予約または実行中かどうか。
     private var hasPendingMutation: Bool {
         pendingCompletionUpdates.isEmpty == false || reminderOperations.contains { operation in
@@ -29,9 +46,9 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
             }
         }
     }
-    
-    /// 予約・実行中のリマインダー取得・保存・完了状態更新・削除を追加順に保持する操作一覧。
-    private var reminderOperations: [ReminderOperation] = .init()
+
+    // MARK: - Completion Update State
+
     /// 完了状態をリポジトリへ保存中で、再度の切り替えを禁止するリマインダーのID。
     private var completionToggleLockedReminderIDs: Set<Reminder.ID> = []
     /// デバウンス中の完了状態をリマインダーIDごとに保持する。
@@ -40,18 +57,16 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     private var completionDebounceTask: Task<Void, Never>? = nil
     /// 古いデバウンスタスクが新しいタスクより後に実行されるのを防ぐID。
     private var completionDebounceID: UUID? = nil
+
+    // MARK: - Initial Cache State
+
     /// 初回キャッシュの読み込みを試行済みかどうか。
     private var hasReadInitialCache = false
-    /// 進行中の変更操作がすべて終了した際に再読み込みするかどうか。
-    private var shouldReloadAfterMutation = false
+
+    // MARK: - Notification State
+
     /// リマインダーの変更通知を解除するためのトークン。
     private var notificationToken: (any NSObjectProtocol)? = nil
-    /// リマインダーを取得・作成・更新するリポジトリ。
-    private let reminderRepository: ReminderRepositoryType
-    /// リマインダー一覧をローカルに保存するキャッシュ。
-    private let reminderStoreCache: ReminderStoreCache?
-    /// リマインダーへのアクセス権限が失効した際の処理。
-    private let reminderAccessRevokedHandler: () -> Void
     
     /// リマインダーリポジトリとキャッシュを設定し、リマインダー変更通知の監視を開始する。
     init(
