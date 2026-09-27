@@ -29,7 +29,11 @@ let package = Package(
             name: "ReminderCore",
             swiftSettings: swiftSettings,
         ),
-
+        .testTarget(
+            name: "ReminderCoreTests",
+            dependencies: ["ReminderCore"],
+            swiftSettings: swiftSettings,
+        ),
     ],
     swiftLanguageModes: [.v6]
 )
