@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>ReminderRepository 解説</title>
+  <style>
+    :root {
+      --ink: #20283a;
+      --muted: #647087;
+      --line: #e3e8f1;
+      --paper: #fff;
+      --canvas: #f5f7fb;
+      --blue: #5869dc;
+      --blue-soft: #edf0ff;
+      --mint: #168a74;
+      --mint-soft: #e7f7f1;
+      --amber: #b77719;
+      --amber-soft: #fff5df;
+      --rose: #bd5365;
+      --rose-soft: #fff0f2;
+      --shadow: 0 18px 52px rgba(35, 48, 83, .08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 84% 2%, rgba(144, 158, 255, .19), transparent 29rem),
+        radial-gradient(ellipse at 2% 26%, rgba(101, 209, 181, .11), transparent 28rem),
+        var(--canvas);
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", Meiryo, sans-serif;
+      line-height: 1.75;
+    }
+    a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    code { font-size: .91em; color: #3947a8; background: #f0f2ff; padding: .13em .38em; border-radius: 5px; }
+    .shell { width: min(1180px, calc(100% - 40px)); margin: 0 auto; padding: 40px 0 80px; }
+    .hero {
+      position: relative; overflow: hidden; padding: clamp(30px, 6vw, 64px);
+      border: 1px solid rgba(255,255,255,.7); border-radius: 28px;
+      color: #fff; background: linear-gradient(126deg, #212d55 0%, #343e83 55%, #5869dc 100%);
+      box-shadow: 0 24px 70px rgba(47, 57, 121, .22);
+    }
+    .hero::after { content: ""; position: absolute; width: 350px; height: 350px; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; right: -100px; top: -180px; box-shadow: 0 0 0 34px rgba(255,255,255,.035), 0 0 0 70px rgba(255,255,255,.025); }
+    .eyebrow { display: inline-flex; gap: 9px; align-items: center; color: #d4dcff; font-size: 13px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+    .eyebrow::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #7ce2c2; box-shadow: 0 0 16px #7ce2c2; }
+    h1 { max-width: 780px; margin: 14px 0 15px; font-size: clamp(34px, 5vw, 56px); line-height: 1.18; letter-spacing: -.045em; }
+    .hero p { max-width: 710px; margin: 0; color: #e2e6ff; font-size: 17px; }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 27px; }
+    .hero-meta span { border: 1px solid rgba(255,255,255,.2); border-radius: 999px; padding: 5px 11px; color: #f1f2ff; background: rgba(255,255,255,.08); font-size: 13px; }
+    .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 28px; align-items: start; margin-top: 28px; }
+    .toc { position: sticky; top: 20px; padding: 19px 14px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.75); box-shadow: 0 8px 24px rgba(35,48,83,.04); }
+    .toc-title { padding: 0 10px 9px; color: #8a93a5; font-size: 11px; font-weight: 800; letter-spacing: .13em; }
+    .toc a { display: block; padding: 7px 10px; border-radius: 8px; color: #4f5b73; font-size: 14px; text-decoration: none; }
+    .toc a:hover { color: var(--blue); background: var(--blue-soft); }
+    main { min-width: 0; }
+    section { scroll-margin-top: 22px; margin-bottom: 22px; padding: clamp(22px, 4vw, 34px); border: 1px solid var(--line); border-radius: 20px; background: var(--paper); box-shadow: var(--shadow); }
+    .section-head { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 21px; }
+    .section-no { flex: 0 0 auto; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; color: var(--blue); background: var(--blue-soft); font-size: 13px; font-weight: 850; }
+    h2 { margin: 0; font-size: 23px; line-height: 1.4; letter-spacing: -.025em; }
+    .section-head p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+    h3 { margin: 0 0 8px; font-size: 15px; }
+    p { margin: 8px 0; }
+    .muted { color: var(--muted); }
+    .small { font-size: 13px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .card { padding: 17px; border: 1px solid var(--line); border-radius: 14px; background: #fcfdff; }
+    .card p { margin-bottom: 0; color: var(--muted); font-size: 14px; }
+    .tag { display: inline-block; margin-bottom: 9px; padding: 2px 8px; border-radius: 999px; color: var(--blue); background: var(--blue-soft); font-size: 11px; font-weight: 800; letter-spacing: .04em; }
+    .tag.mint { color: var(--mint); background: var(--mint-soft); }
+    .tag.amber { color: var(--amber); background: var(--amber-soft); }
+    .tag.rose { color: var(--rose); background: var(--rose-soft); }
+    .flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; margin: 20px 0 12px; }
+    .flow-step { flex: 1 1 115px; min-width: 100px; padding: 13px 12px; border: 1px solid #e0e5f1; border-radius: 12px; background: linear-gradient(180deg, #fff, #f8f9ff); text-align: center; }
+    .flow-step b { display: block; font-size: 14px; }
+    .flow-step span { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .arrow { align-self: center; color: #aab2c4; font-size: 17px; font-weight: 800; }
+    .diagram { margin: 17px 0; padding: 18px; border-radius: 15px; background: #f8f9fd; overflow-x: auto; }
+    .diagram svg { display: block; width: 100%; min-width: 580px; height: auto; }
+    .queue-list { display: grid; gap: 8px; width: min(550px, 100%); margin: 14px auto; }
+    .queue-row { display: grid; grid-template-columns: 115px 1fr; align-items: center; gap: 12px; }
+    .queue-label { color: #65718a; font-size: 13px; font-weight: 750; text-align: right; }
+    .queue-box { min-height: 37px; display: flex; gap: 7px; align-items: center; padding: 6px 10px; border: 1px solid #dfe4ef; border-radius: 9px; background: white; }
+    .queue-box .pill { padding: 3px 8px; border-radius: 6px; background: #eef0ff; color: #4a58ba; font-size: 12px; font-weight: 700; }
+    .queue-box .empty { color: #a1a9b8; font-size: 12px; }
+    .callout { display: flex; gap: 12px; padding: 14px 16px; border-radius: 12px; color: #514418; background: var(--amber-soft); font-size: 14px; }
+    .callout strong { color: #86570e; }
+    .callout .icon { font-size: 17px; line-height: 1.2; }
+    .callout.blue { color: #414b80; background: #eff1ff; }
+    .code-panel { margin-top: 13px; padding: 16px 18px; overflow-x: auto; border: 1px solid #293451; border-radius: 13px; color: #e9edff; background: #202943; font: 13px/1.8 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre; }
+    .code-panel .dim { color: #9ba7c5; }
+    .code-panel .accent { color: #a5e8cd; }
+    .code-panel .yellow { color: #ffda8e; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: #65718a; background: #f7f8fc; font-size: 12px; letter-spacing: .04em; }
+    tr:last-child td { border-bottom: 0; }
+    td:first-child { color: #3947a8; font-family: ui-monospace, monospace; white-space: nowrap; }
+    .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin: 17px 0 5px; }
+    .time-item { position: relative; padding: 0 12px 0 0; }
+    .time-item::before { content: ""; position: absolute; left: 0; right: 0; top: 10px; height: 2px; background: #dfe4f1; }
+    .time-item:first-child::before { left: 10px; }
+    .time-item:last-child::before { right: calc(100% - 10px); }
+    .dot { position: relative; z-index: 1; width: 21px; height: 21px; display: grid; place-items: center; border: 4px solid #edf0ff; border-radius: 50%; color: white; background: var(--blue); font-size: 8px; }
+    .time-item b { display: block; margin-top: 9px; font-size: 13px; }
+    .time-item span { display: block; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .error-group { padding: 15px; border-radius: 13px; background: #fbfcff; border: 1px solid var(--line); }
+    .error-group ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; }
+    .source-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+    .source-list a { padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; color: #4e5b73; background: #fbfcff; font-size: 13px; text-decoration: none; }
+    footer { padding: 14px 3px; color: #8992a3; font-size: 12px; text-align: center; }
+    @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } .toc { position: static; display: flex; flex-wrap: wrap; gap: 2px; padding: 11px; } .toc-title { flex-basis: 100%; } .toc a { padding: 5px 8px; } }
+    @media (max-width: 580px) { .shell { width: min(100% - 22px, 1180px); padding-top: 11px; } .hero { border-radius: 20px; } .grid-2, .grid-3 { grid-template-columns: 1fr; } section { border-radius: 16px; } .timeline { grid-template-columns: 1fr 1fr; row-gap: 17px; } .queue-row { grid-template-columns: 82px 1fr; } }
+    @media print { body { background: white; } .shell { width: 100%; padding: 0; } .hero { box-shadow: none; print-color-adjust: exact; } .layout { display: block; } .toc { display: none; } section { box-shadow: none; break-inside: avoid; } a { color: inherit; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="hero">
+      <div class="eyebrow">Implementation guide · ReminderEventKit</div>
+      <h1>ReminderRepositoryを<br>役割ごとに読み解く</h1>
+      <p>EventKitとの橋渡し、actor再入を防ぐ実行キュー、入力データの変換、変更通知。ひとつの型に集まった責務を、処理の流れに沿って整理します。</p>
+      <div class="hero-meta"><span>対象: ReminderRepository.swift</span><span>補助: EKReminder+Reminder.swift</span><span>更新: 2026-09-28</span></div>
+    </header>
+
+    <div class="layout">
+      <nav class="toc" aria-label="目次">
+        <div class="toc-title">CONTENTS</div>
+        <a href="#overview">全体像</a><a href="#why-queue">なぜ独自キューがある？</a><a href="#queue">優先度付き直列化</a>
+        <a href="#operations">各操作の中身</a><a href="#fetch">取得とモデル変換</a><a href="#edges">細部で迷いやすい点</a>
+        <a href="#errors">エラーの読み方</a><a href="#summary">まとめ・参照</a>
+      </nav>
+
+      <main>
+        <section id="overview">
+          <div class="section-head"><div class="section-no">01</div><div><h2>全体像 — EventKitとアプリの境界</h2><p>RepositoryはEventKitの型をアプリ内部へ漏らさず、読み書きの窓口になります。</p></div></div>
+          <div class="diagram">
+            <svg viewBox="0 0 800 280" role="img" aria-label="画面からReminderRepositoryを経てEventKitへ操作し、EventKitの変更をRepositoryが検知して画面へ通知する構成図">
+              <defs><linearGradient id="repo" x1="0" x2="1"><stop stop-color="#5264d3"/><stop offset="1" stop-color="#7785ed"/></linearGradient><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#929bb1"/></marker><marker id="arr-mint" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#45a58e"/></marker></defs>
+              <rect x="12" y="47" width="175" height="110" rx="17" fill="#fff" stroke="#dfe4ef"/><text x="99" y="82" text-anchor="middle" font-size="13" font-weight="700" fill="#27314a">画面・ViewModel</text><text x="99" y="108" text-anchor="middle" font-size="13" fill="#727d93">ユーザー操作</text><text x="99" y="129" text-anchor="middle" font-size="12" fill="#929bb1">ReminderRepositoryProtocol</text>
+              <path d="M190 101 H293" stroke="#929bb1" stroke-width="2" marker-end="url(#arr)"/><text x="240" y="88" text-anchor="middle" font-size="12" fill="#778197">async / throws</text>
+              <rect x="307" y="27" width="210" height="150" rx="18" fill="url(#repo)"/><text x="412" y="68" text-anchor="middle" font-size="16" font-weight="750" fill="#fff">ReminderRepository</text><text x="412" y="94" text-anchor="middle" font-size="13" fill="#e3e7ff">権限・キュー・変換・エラー</text><line x1="345" y1="110" x2="479" y2="110" stroke="#ffffff" opacity=".24"/><text x="412" y="136" text-anchor="middle" font-size="12" fill="#f0f1ff">Reminder / ReminderList</text>
+              <path d="M520 101 H622" stroke="#929bb1" stroke-width="2" marker-end="url(#arr)"/><text x="572" y="88" text-anchor="middle" font-size="12" fill="#778197">単一実行枠</text>
+              <rect x="636" y="47" width="151" height="110" rx="17" fill="#e8f7f2" stroke="#c7e9dc"/><text x="711" y="82" text-anchor="middle" font-size="14" font-weight="700" fill="#176f60">EventKit</text><text x="711" y="108" text-anchor="middle" font-size="13" fill="#438d7e">EKEventStore</text><text x="711" y="129" text-anchor="middle" font-size="12" fill="#6a9e93">EKReminder / EKCalendar</text>
+              <path d="M636 151 C615 188 566 192 520 162" fill="none" stroke="#45a58e" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#arr-mint)"/>
+              <rect x="514" y="187" width="181" height="22" rx="11" fill="#f8f9fd"/>
+              <text x="604" y="202" text-anchor="middle" font-size="11" fill="#438d7e">EKEventStoreChangedを検知</text>
+              <path d="M330 177 C330 224 252 244 99 157" fill="none" stroke="#45a58e" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#arr-mint)"/>
+              <rect x="187" y="247" width="278" height="22" rx="11" fill="#f8f9fd"/>
+              <text x="326" y="262" text-anchor="middle" font-size="11" fill="#438d7e">NotificationCenter.post(remindersMayHaveChanged)</text>
+            </svg>
+          </div>
+          <div class="grid-3">
+            <div class="card"><span class="tag">共有状態</span><h3><code>shared</code> を1つ使う</h3><p>アプリ内の標準インスタンスは <code>ReminderRepository.shared</code>。ひとつの <code>EKEventStore</code> を所有します。</p></div>
+            <div class="card"><span class="tag mint">分離</span><h3>actorでMainActorから分ける</h3><p>EventKitアクセスと待機列をUIの実行領域から切り離します。プロトコルも <code>Actor</code> に準拠します。</p></div>
+            <div class="card"><span class="tag amber">境界</span><h3>失敗を共通エラーへ</h3><p>呼び出し側には <code>ReminderRepositoryError</code> を返し、EventKit固有の失敗を隠蔽します。</p></div>
+          </div>
+        </section>
+
+        <section id="why-queue">
+          <div class="section-head"><div class="section-no">02</div><div><h2>なぜactorだけでは足りないのか</h2><p>actorは状態への同時アクセスを防ぎますが、非同期処理の完了まで排他的に占有し続ける仕組みではありません。</p></div></div>
+          <p>actorメソッドが <code>await</code> で停止すると、そのactorは別の呼び出しを実行できます。たとえば <code>fetch()</code> がEventKitのコールバックを待っている間に、別の <code>create()</code> が入り込むことがあります。どちらも同じ <code>EKEventStore</code> を触るため、このRepositoryでは「actorで状態を守る」ことに加えて「EventKit操作の実行権を1つにする」必要があります。</p>
+          <div class="grid-2">
+            <div class="card"><span class="tag">actorの保証</span><h3>メモリ上の状態を安全に扱う</h3><p><code>isOperating</code> や待機配列を複数呼び出しが同時に書き換えるのを防ぎます。</p></div>
+            <div class="card"><span class="tag rose">追加の保証</span><h3>EventKit操作を重ねない</h3><p>取得・作成・更新・削除の各処理が完了するまで、次の操作に実行権を渡しません。</p></div>
+          </div>
+          <div class="callout blue" style="margin-top:14px"><div class="icon">↳</div><div><strong>ここが設計の要点</strong><br>実行権は <code>operation</code> が取得し、<code>defer</code> に登録された <code>releaseOperation()</code> が成功・失敗どちらでも必ず返却します。</div></div>
+        </section>
+
+        <section id="queue">
+          <div class="section-head"><div class="section-no">03</div><div><h2>優先度付き直列化キュー</h2><p><code>operation(priority:action:)</code> がすべてのEventKit操作を包みます。</p></div></div>
+          <div class="flow">
+            <div class="flow-step"><b>① 実行権を取得</b><span>空いていれば即時開始<br>使用中なら待機列へ</span></div><div class="arrow">›</div>
+            <div class="flow-step"><b>② 権限を確認</b><span>fullAccessでなければ<br>accessNotAuthorized</span></div><div class="arrow">›</div>
+            <div class="flow-step"><b>③ キャンセル確認</b><span>Task.checkCancellation()<br>→ cancelled</span></div><div class="arrow">›</div>
+            <div class="flow-step"><b>④ action実行</b><span>EventKitを読み書き<br>必要ならawait</span></div><div class="arrow">›</div>
+            <div class="flow-step"><b>⑤ 次へ引き継ぐ</b><span>優先度順に起こす<br>なければ枠を解放</span></div>
+          </div>
+          <div class="queue-list" aria-label="待機列の優先順位">
+            <div class="queue-row"><div class="queue-label">高 · 先に実行</div><div class="queue-box"><span class="empty">現在このRepositoryから登録する操作はない</span></div></div>
+            <div class="queue-row"><div class="queue-label">中 · FIFO</div><div class="queue-box"><span class="pill">create</span><span class="pill">update</span><span class="pill">set</span><span class="pill">delete</span></div></div>
+            <div class="queue-row"><div class="queue-label">低 · FIFO</div><div class="queue-box"><span class="pill">fetch</span></div></div>
+          </div>
+          <div class="callout"><div class="icon">!</div><div><strong>優先度は割り込みではありません。</strong><br>実行中の処理は中断されません。待機列から次に誰を選ぶかだけを決めます。同じ優先度内では配列の先頭から取り出すため、登録順です。</div></div>
+          <div class="code-panel"><span class="dim">// actionの途中でawaitしても、deferまで実行権を保持する</span>
+await acquireOperation(priority: priority)
+defer { releaseOperation() }
+try checkAuthorization()
+try checkCancel()
+return try await action()</div>
+          <div class="callout blue" style="margin-top:12px"><div class="icon">⚠</div><div><strong>ネスト呼び出し禁止</strong><br><code>operation</code> のaction内から、同じく <code>operation</code> を使うRepositoryメソッドを呼ぶと、内側が外側の解放を待ち、外側が内側の完了を待つデッドロックになります。</div></div>
+        </section>
+
+        <section id="operations">
+          <div class="section-head"><div class="section-no">04</div><div><h2>各操作の中身</h2><p>書き込み系は中優先度、一覧取得は低優先度で同じ実行枠を通ります。</p></div></div>
+          <div class="table-wrap"><table><thead><tr><th>メソッド</th><th>主な流れ</th><th>見どころ</th></tr></thead><tbody>
+            <tr><td>create</td><td>リストIDを解決 → 期限文字列を変換 → EKReminderを構築 → 保存</td><td>グレゴリオ暦の年・月・日・時・分へ変換。期限と同時刻の相対アラームを追加します。</td></tr>
+            <tr><td>update</td><td>対象取得 → 変更値の検証・変換 → 指定フィールドだけ更新 → 保存</td><td>未指定の値は保持。期限変更では絶対日時アラームも期限の差分だけ移動します。</td></tr>
+            <tr><td>set</td><td>対象取得 → <code>isCompleted</code> を設定 → 保存</td><td>完了状態の切り替えを独立した操作として扱います。</td></tr>
+            <tr><td>delete</td><td>対象取得 → <code>eventStore.remove(..., commit: true)</code></td><td>削除失敗は <code>deleteFailed</code> にまとめます。</td></tr>
+            <tr><td>fetch</td><td>編集可能なリスト取得 → リマインダー取得 → リストごとに整形</td><td>取得優先度は低。読み取りでも同じEventStoreを使うため、キューを通します。</td></tr>
+          </tbody></table></div>
+          <div class="grid-2" style="margin-top:14px">
+            <div class="card"><span class="tag mint">期限変更</span><h3>アラームを相対的にずらす</h3><p>変更前後の期限から差分秒数を計算し、<code>absoluteDate</code> を持つ各アラームに加算します。相対オフセット型アラームはここでは変更しません。</p></div>
+            <div class="card"><span class="tag amber">日時変換</span><h3>文字列をDateComponentsへ</h3><p><code>JapaneseDateConverter</code> の結果をグレゴリオ暦で分解し、EventKitへ渡します。変換できない値は <code>deadlineConversionFailed</code>。</p></div>
+          </div>
+        </section>
+
+        <section id="fetch">
+          <div class="section-head"><div class="section-no">05</div><div><h2>fetch — 非同期コールバックをモデルへ</h2><p>EventKitのcallback APIをasyncに橋渡しし、リスト単位の結果を組み立てます。</p></div></div>
+          <div class="timeline">
+            <div class="time-item"><div class="dot">1</div><b>リストを絞る</b><span>リマインダー種別のカレンダーから、編集可能なものだけ選ぶ。</span></div>
+            <div class="time-item"><div class="dot">2</div><b>取得を依頼</b><span>predicateを作り、fetchRemindersのcallbackを待つ。</span></div>
+            <div class="time-item"><div class="dot">3</div><b>検証・分類</b><span>EKReminderをReminderに変換し、listIDごとに辞書へ集約。</span></div>
+            <div class="time-item"><div class="dot">4</div><b>リストを返す</b><span>各カレンダーに、対応する配列（なければ空配列）を詰める。</span></div>
+          </div>
+          <div class="code-panel"><span class="dim">// callback API → async Result</span>
+await withCheckedContinuation { continuation in
+    eventStore.fetchReminders(matching: predicate) { reminders in
+        <span class="accent">// 有効なEKReminderだけをReminderへ変換</span>
+        <span class="accent">// [calendarIdentifier: [Reminder]] に分類</span>
+        continuation.resume(returning: result)
+    }
+}</div>
+          <p class="small muted">callbackで <code>nil</code> が返れば <code>fetchFailed</code>。配列が返った場合も、モデル変換できなかった項目は辞書に追加されず、一覧から除外されます。</p>
+          <div class="callout blue"><div class="icon">i</div><div><strong>取得後にも確認</strong><br>callback待ちのあいだに状態が変わる可能性を考慮し、取得結果を受け取った後にも権限とTaskキャンセルを確認してから返却します。</div></div>
+        </section>
+
+        <section id="edges">
+          <div class="section-head"><div class="section-no">06</div><div><h2>細部で迷いやすい点</h2><p>型や変換に込められた意味を知ると、実装の意図が見えやすくなります。</p></div></div>
+          <div class="grid-2">
+            <div class="card"><span class="tag">3つの状態</span><h3><code>notes: String??</code></h3><p>外側のOptionalが「更新するか」を、内側が「値があるか」を表します。空文字とnilの扱いを明示できます。</p>
+              <div class="table-wrap" style="margin-top:12px"><table><tbody><tr><td>nil</td><td>変更しない</td></tr><tr><td>.some(nil)</td><td>メモを消す</td></tr><tr><td>.some(.some("文"))</td><td>その文字列を保存</td></tr></tbody></table></div>
+            </div>
+            <div class="card"><span class="tag mint">境界で検証</span><h3>EKReminder → Reminder</h3><p><code>EKReminder+Reminder.swift</code> の変換プロパティは、ID・タイトル・カレンダー、期限日、優先度、完了日時と作成・更新日時の整合性を確認します。条件を満たさなければ <code>nil</code> を返します。</p></div>
+            <div class="card"><span class="tag amber">優先度対応</span><h3>EventKitとアプリの値を変換</h3><p>EventKitの数値範囲をアプリの4段階にまとめます。0は未指定、1–4は高、5は中、6–9は低。保存時は各段階の代表値を使います。</p></div>
+            <div class="card"><span class="tag rose">キャンセル</span><h3>待機中はすぐには抜けない</h3><p>キューの待機continuationは非throwingです。待機中にキャンセルされても実行権を受け取るまでは待ち、その後 <code>checkCancel()</code> が検知します。EventKit callback自体をキャンセルする処理はありません。</p></div>
+          </div>
+          <div class="callout" style="margin-top:14px"><div class="icon">↗</div><div><strong>変更通知は「再取得して」の合図</strong><br><code>EKEventStoreChanged</code> を受けると <code>remindersMayHaveChanged</code> をpostします。通知にデータは載らないため、最新一覧は呼び出し側が <code>fetch()</code> で読み直します。</div></div>
+        </section>
+
+        <section id="errors">
+          <div class="section-head"><div class="section-no">07</div><div><h2>エラーはどこで決まるか</h2><p>利用側が扱いやすい意味単位に変換しています。</p></div></div>
+          <div class="grid-3">
+            <div class="error-group"><span class="tag rose">共通ガード</span><ul><li><code>accessNotAuthorized</code><br>フルアクセスなし、または保存時の権限エラー</li><li><code>cancelled</code><br>Taskがキャンセル済み</li></ul></div>
+            <div class="error-group"><span class="tag amber">入力・対象</span><ul><li><code>listNotFound</code> / <code>reminderNotFound</code></li><li><code>invalidTitle</code></li><li><code>deadlineConversionFailed</code></li></ul></div>
+            <div class="error-group"><span class="tag">EventKit処理</span><ul><li><code>fetchFailed</code><br>取得callbackがnil</li><li><code>saveFailed</code><br>保存時のその他のエラー</li><li><code>deleteFailed</code><br>削除に失敗</li></ul></div>
+          </div>
+          <p class="small muted">権限要求そのものはRepositoryの責務ではありません。権限がない場合の要求UIは <code>ReminderAccessRequestView</code> が担当します。</p>
+        </section>
+
+        <section id="summary">
+          <div class="section-head"><div class="section-no">08</div><div><h2>読むときの短いまとめ</h2><p>複雑さの中心を4点に縮めると、コードを追いやすくなります。</p></div></div>
+          <div class="grid-2">
+            <div class="card"><span class="tag">1</span><h3>EventKitの共有窓口</h3><p>1つのEventStoreを保持し、CRUDの入口をまとめる。</p></div>
+            <div class="card"><span class="tag">2</span><h3>独自キューで直列化</h3><p>actor再入が起きてもEventKit操作は同時に走らせない。</p></div>
+            <div class="card"><span class="tag">3</span><h3>境界で変換・検証</h3><p>アプリ型とEventKit型、文字列と日付、エラーを相互変換する。</p></div>
+            <div class="card"><span class="tag">4</span><h3>通知は変更可能性だけ</h3><p>通知を受け取った呼び出し側がfetchして最新状態を得る。</p></div>
+          </div>
+          <div class="source-list">
+            <a href="ReminderEventKit/Sources/ReminderEventKit/ReminderRepository.swift">ReminderRepository.swift</a>
+            <a href="ReminderEventKit/Sources/ReminderEventKit/EKReminder+Reminder.swift">EKReminder+Reminder.swift</a>
+            <a href="ReminderCore/Sources/ReminderCore/ReminderRepositoryProtocol.swift">ReminderRepositoryProtocol.swift</a>
+          </div>
+          <p class="small muted" style="margin-top:14px">実行時間の参考値は実装コメント記載の測定値（2026年8月31日、iPhone 17）：作成 約0.07秒、完了更新 約0.1秒、取得 約0.8秒（初回 約2.0秒）。端末・データ量・環境で変わります。</p>
+        </section>
+      </main>
+    </div>
+    <footer>ReminderAssistant · ReminderRepository implementation guide</footer>
+  </div>
+</body>
+</html>
