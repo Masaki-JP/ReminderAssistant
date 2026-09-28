@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>ContentViewModel 解説</title>
+  <style>
+    :root {
+      --ink: #20283a;
+      --muted: #647087;
+      --line: #e3e8f1;
+      --paper: #fff;
+      --canvas: #f5f7fb;
+      --blue: #5869dc;
+      --blue-soft: #edf0ff;
+      --mint: #168a74;
+      --mint-soft: #e7f7f1;
+      --amber: #b77719;
+      --amber-soft: #fff5df;
+      --rose: #bd5365;
+      --rose-soft: #fff0f2;
+      --shadow: 0 18px 52px rgba(35, 48, 83, .08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 84% 2%, rgba(144, 158, 255, .19), transparent 29rem),
+        radial-gradient(ellipse at 2% 26%, rgba(101, 209, 181, .11), transparent 28rem),
+        var(--canvas);
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", Meiryo, sans-serif;
+      line-height: 1.75;
+    }
+    a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    code { font-size: .91em; color: #3947a8; background: #f0f2ff; padding: .13em .38em; border-radius: 5px; }
+    .shell { width: min(1180px, calc(100% - 40px)); margin: 0 auto; padding: 40px 0 80px; }
+    .hero {
+      position: relative; overflow: hidden; padding: clamp(30px, 6vw, 64px);
+      border: 1px solid rgba(255,255,255,.7); border-radius: 28px;
+      color: #fff; background: linear-gradient(126deg, #212d55 0%, #343e83 55%, #5869dc 100%);
+      box-shadow: 0 24px 70px rgba(47, 57, 121, .22);
+    }
+    .hero::after { content: ""; position: absolute; width: 350px; height: 350px; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; right: -100px; top: -180px; box-shadow: 0 0 0 34px rgba(255,255,255,.035), 0 0 0 70px rgba(255,255,255,.025); }
+    .eyebrow { display: inline-flex; gap: 9px; align-items: center; color: #d4dcff; font-size: 13px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+    .eyebrow::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #7ce2c2; box-shadow: 0 0 16px #7ce2c2; }
+    h1 { max-width: 780px; margin: 14px 0 15px; font-size: clamp(34px, 5vw, 56px); line-height: 1.18; letter-spacing: -.045em; }
+    .hero p { max-width: 710px; margin: 0; color: #e2e6ff; font-size: 17px; }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 27px; }
+    .hero-meta span { border: 1px solid rgba(255,255,255,.2); border-radius: 999px; padding: 5px 11px; color: #f1f2ff; background: rgba(255,255,255,.08); font-size: 13px; }
+    .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 28px; align-items: start; margin-top: 28px; }
+    .toc { position: sticky; top: 20px; padding: 19px 14px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.75); box-shadow: 0 8px 24px rgba(35,48,83,.04); }
+    .toc-title { padding: 0 10px 9px; color: #8a93a5; font-size: 11px; font-weight: 800; letter-spacing: .13em; }
+    .toc a { display: block; padding: 7px 10px; border-radius: 8px; color: #4f5b73; font-size: 14px; text-decoration: none; }
+    .toc a:hover { color: var(--blue); background: var(--blue-soft); }
+    main { min-width: 0; }
+    section { scroll-margin-top: 22px; margin-bottom: 22px; padding: clamp(22px, 4vw, 34px); border: 1px solid var(--line); border-radius: 20px; background: var(--paper); box-shadow: var(--shadow); }
+    .section-head { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 21px; }
+    .section-no { flex: 0 0 auto; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; color: var(--blue); background: var(--blue-soft); font-size: 13px; font-weight: 850; }
+    h2 { margin: 0; font-size: 23px; line-height: 1.4; letter-spacing: -.025em; }
+    .section-head p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+    h3 { margin: 0 0 8px; font-size: 15px; }
+    p { margin: 8px 0; }
+    .muted { color: var(--muted); }
+    .small { font-size: 13px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .card { padding: 17px; border: 1px solid var(--line); border-radius: 14px; background: #fcfdff; }
+    .card p { margin-bottom: 0; color: var(--muted); font-size: 14px; }
+    .tag { display: inline-block; margin-bottom: 9px; padding: 2px 8px; border-radius: 999px; color: var(--blue); background: var(--blue-soft); font-size: 11px; font-weight: 800; letter-spacing: .04em; }
+    .tag.mint { color: var(--mint); background: var(--mint-soft); }
+    .tag.amber { color: var(--amber); background: var(--amber-soft); }
+    .tag.rose { color: var(--rose); background: var(--rose-soft); }
+    .flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; margin: 20px 0 12px; }
+    .flow-step { flex: 1 1 115px; min-width: 100px; padding: 13px 12px; border: 1px solid #e0e5f1; border-radius: 12px; background: linear-gradient(180deg, #fff, #f8f9ff); text-align: center; }
+    .flow-step b { display: block; font-size: 14px; }
+    .flow-step span { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .arrow { align-self: center; color: #aab2c4; font-size: 17px; font-weight: 800; }
+    .diagram { margin: 17px 0; padding: 18px; border-radius: 15px; background: #f8f9fd; overflow-x: auto; }
+    .diagram svg { display: block; width: 100%; min-width: 580px; height: auto; }
+    .architecture { display: grid; grid-template-columns: minmax(72px, .9fr) 20px minmax(112px, 1.35fr) 20px minmax(128px, 1.45fr); align-items: center; gap: 7px; }
+    .architecture-card { min-width: 0; padding: 13px 9px; border: 1px solid #dfe4ef; border-radius: 13px; background: #fff; text-align: center; }
+    .architecture-card strong { display: block; color: #27314a; font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
+    .architecture-card span { display: block; margin-top: 5px; color: #727d93; font-size: 12px; line-height: 1.5; }
+    .architecture-card.viewmodel { padding: 18px 10px; border-color: #6878df; color: #fff; background: linear-gradient(126deg, #5264d3, #7785ed); }
+    .architecture-card.viewmodel strong, .architecture-card.viewmodel span { color: #fff; }
+    .architecture-card.repository { border-color: #c7e9dc; background: #e7f7f1; }
+    .architecture-card.repository strong { color: #176f60; }
+    .architecture-card.repository span { color: #438d7e; }
+    .architecture-card.cache { border-color: #f0dfb5; background: #fff5df; }
+    .architecture-card.cache strong { color: #86570e; }
+    .architecture-card.cache span { color: #a17431; }
+    .architecture-dependencies { display: grid; gap: 8px; min-width: 0; }
+    .architecture-arrow { color: #929bb1; font-size: 20px; font-weight: 800; text-align: center; }
+    .architecture-feedback { margin-top: 12px; padding: 8px 12px; border-top: 1px dashed #45a58e; color: #438d7e; font-size: 13px; text-align: center; overflow-wrap: anywhere; }
+    .queue-list { display: grid; gap: 8px; width: min(550px, 100%); margin: 14px auto; }
+    .queue-row { display: grid; grid-template-columns: 115px 1fr; align-items: center; gap: 12px; }
+    .queue-label { color: #65718a; font-size: 13px; font-weight: 750; text-align: right; }
+    .queue-box { min-height: 37px; display: flex; gap: 7px; align-items: center; padding: 6px 10px; border: 1px solid #dfe4ef; border-radius: 9px; background: white; }
+    .queue-box .pill { padding: 3px 8px; border-radius: 6px; background: #eef0ff; color: #4a58ba; font-size: 12px; font-weight: 700; }
+    .queue-box .empty { color: #a1a9b8; font-size: 12px; }
+    .callout { display: flex; gap: 12px; padding: 14px 16px; border-radius: 12px; color: #514418; background: var(--amber-soft); font-size: 14px; }
+    .callout strong { color: #86570e; }
+    .callout .icon { font-size: 17px; line-height: 1.2; }
+    .callout.blue { color: #414b80; background: #eff1ff; }
+    .code-panel { margin-top: 13px; padding: 16px 18px; overflow-x: auto; border: 1px solid #293451; border-radius: 13px; color: #e9edff; background: #202943; font: 13px/1.8 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre; }
+    .code-panel .dim { color: #9ba7c5; }
+    .code-panel .accent { color: #a5e8cd; }
+    .code-panel .yellow { color: #ffda8e; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: #65718a; background: #f7f8fc; font-size: 12px; letter-spacing: .04em; }
+    tr:last-child td { border-bottom: 0; }
+    td:first-child { color: #3947a8; font-family: ui-monospace, monospace; white-space: nowrap; }
+    .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin: 17px 0 5px; }
+    .time-item { position: relative; padding: 0 12px 0 0; }
+    .time-item::before { content: ""; position: absolute; left: 0; right: 0; top: 10px; height: 2px; background: #dfe4f1; }
+    .time-item:first-child::before { left: 10px; }
+    .time-item:last-child::before { right: calc(100% - 10px); }
+    .dot { position: relative; z-index: 1; width: 21px; height: 21px; display: grid; place-items: center; border: 4px solid #edf0ff; border-radius: 50%; color: white; background: var(--blue); font-size: 8px; }
+    .time-item b { display: block; margin-top: 9px; font-size: 13px; }
+    .time-item span { display: block; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .error-group { padding: 15px; border-radius: 13px; background: #fbfcff; border: 1px solid var(--line); }
+    .error-group ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; }
+    .source-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+    .source-list a { padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; color: #4e5b73; background: #fbfcff; font-size: 13px; text-decoration: none; }
+    footer { padding: 14px 3px; color: #8992a3; font-size: 12px; text-align: center; }
+    @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } .toc { position: static; display: flex; flex-wrap: wrap; gap: 2px; padding: 11px; } .toc-title { flex-basis: 100%; } .toc a { padding: 5px 8px; } }
+    @media (max-width: 580px) { .shell { width: min(100% - 22px, 1180px); padding-top: 11px; } .hero { border-radius: 20px; } .grid-2, .grid-3 { grid-template-columns: 1fr; } section { border-radius: 16px; } .timeline { grid-template-columns: 1fr 1fr; row-gap: 17px; } .queue-row { grid-template-columns: 82px 1fr; } .architecture { grid-template-columns: 1fr; } .architecture-arrow { transform: rotate(90deg); line-height: 1; } }
+    @media print { body { background: white; } .shell { width: 100%; padding: 0; } .hero { box-shadow: none; print-color-adjust: exact; } .layout { display: block; } .toc { display: none; } section { box-shadow: none; break-inside: avoid; } a { color: inherit; } }
+  
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="hero">
+      <div class="eyebrow">Implementation guide · ReminderAssistant</div>
+      <h1>ContentViewModelを<br>状態遷移から読み解く</h1>
+      <p>キャッシュを先に見せる一覧取得、即時反映する完了切り替え、保存・削除と外部変更通知。表示と永続状態が食い違わないよう調整する流れを解説します。</p>
+      <div class="hero-meta"><span>対象: ContentViewModel.swift</span><span>関連: ReminderStoreCache</span><span>更新: 2026-09-28</span></div>
+    </header>
+
+    <div class="layout">
+      <nav class="toc" aria-label="目次">
+        <div class="toc-title">CONTENTS</div>
+        <a href="#overview">全体像</a><a href="#state">状態と操作台帳</a><a href="#load">一覧取得・キャッシュ</a>
+        <a href="#save">作成・編集</a><a href="#completion">完了状態の更新</a><a href="#delete">削除</a>
+        <a href="#coordination">競合の調整</a><a href="#errors">エラー・破棄</a><a href="#summary">まとめ・参照</a>
+      </nav>
+
+      <main>
+        <section id="overview">
+          <div class="section-head"><div class="section-no">01</div><div><h2>全体像 — 表示状態と非同期操作をつなぐ</h2><p>ViewModelは、画面が見る状態とRepositoryが持つ永続データの間を調整します。</p></div></div>
+          <div class="diagram" role="img" aria-label="画面、ContentViewModel、Repository、キャッシュ、通知の構成図">
+            <div class="architecture">
+              <div class="architecture-card"><strong>View</strong><span>操作・表示<br>一覧 / エラー</span></div>
+              <div class="architecture-arrow" aria-hidden="true">↔</div>
+              <div class="architecture-card viewmodel"><strong>ContentViewModel</strong><span>表示状態・操作台帳<br>楽観更新・再取得調整</span></div>
+              <div class="architecture-arrow" aria-hidden="true">→</div>
+              <div class="architecture-dependencies">
+                <div class="architecture-card repository"><strong>ReminderRepository</strong><span>EventKitとの読み書き</span></div>
+                <div class="architecture-card cache"><strong>ReminderStoreCache</strong><span>初回表示・一覧の保存</span></div>
+              </div>
+            </div>
+            <div class="architecture-feedback">Repositoryの変更通知　↶　<code>remindersMayHaveChanged → loadReminders()</code></div>
+          </div>
+          <div class="grid-3">
+            <div class="card"><span class="tag">画面状態</span><h3><code>editableLists</code> が基準</h3><p>リストとリマインダーを保持。<code>reminders</code> はその配列を平坦化した読み取り用プロパティです。</p></div>
+            <div class="card"><span class="tag mint">調整</span><h3>操作をUUIDで追跡</h3><p>取得・保存・完了更新・削除を <code>reminderOperations</code> に登録し、完了時に取り除きます。</p></div>
+            <div class="card"><span class="tag amber">目的</span><h3>古い結果で巻き戻さない</h3><p>変更中の再取得を抑え、必要ならすべての変更後に最新状態を一度だけ読み直します。</p></div>
+          </div>
+        </section>
+
+        <section id="state">
+          <div class="section-head"><div class="section-no">02</div><div><h2>状態と操作台帳</h2><p>見た目の状態、進行中操作、後で行う処理をそれぞれ別に持ちます。</p></div></div>
+          <div class="table-wrap"><table><thead><tr><th>状態</th><th>役割</th><th>読み方のポイント</th></tr></thead><tbody>
+            <tr><td>editableLists</td><td>表示対象のリストと各リマインダー</td><td>キャッシュまたはRepositoryの取得結果が入る。操作によっては即時に楽観更新される。</td></tr>
+            <tr><td>reminderOperations</td><td>予約・実行中のTask一覧</td><td>各操作はUUIDを持つ。完了時に同じIDで除去するため、別操作を誤って消さない。</td></tr>
+            <tr><td>pendingCompletionUpdates</td><td>デバウンス待ちの完了状態</td><td>リマインダーIDごとに最後に選ばれたBoolを保持し、連続操作をまとめる。</td></tr>
+            <tr><td>shouldReloadAfterMutation</td><td>変更完了後の再取得予約</td><td>更新中に通知や失敗で必要になった読み直しを、全変更操作の終了まで保留する。</td></tr>
+            <tr><td>completionToggleLockedReminderIDs</td><td>保存中の完了切り替えロック</td><td>同じIDの保存が終わるまで、連続した新しい切り替えを受け付けない。</td></tr>
+          </tbody></table></div>
+          <div class="grid-2" style="margin-top:14px">
+            <div class="card"><span class="tag">isLoading</span><p><code>.load</code> が台帳にある間はtrue。Repositoryが実際に動作中かだけでなく、Repository内の待機中も含みます。</p></div>
+            <div class="card"><span class="tag mint">errorBinding</span><p>Viewのアラート表示と <code>error</code> を結び、アラートを閉じる操作でエラーをnilに戻します。</p></div>
+          </div>
+        </section>
+
+        <section id="load">
+          <div class="section-head"><div class="section-no">03</div><div><h2>一覧取得 — キャッシュを先に、最新値を後に</h2><p>起動直後の表示速度と、Repository由来の正確な状態を両立します。</p></div></div>
+          <div class="flow">
+            <div class="flow-step"><b>① 競合確認</b><span>変更中なら再取得を予約</span></div><div class="arrow">›</div>
+            <div class="flow-step"><b>② 古い取得を取消</b><span>前の結果による上書きを防止</span></div><div class="arrow">›</div>
+            <div class="flow-step"><b>③ Repository取得を開始</b><span>async letで非同期に起動</span></div><div class="arrow">›</div>
+            <div class="flow-step"><b>④ 初回キャッシュを並行読込</b><span>あれば最新取得より先に表示</span></div><div class="arrow">›</div>
+            <div class="flow-step"><b>⑤ 最新結果で更新</b><span>キャンセル確認後に一覧とcacheへ反映</span></div>
+          </div>
+          <div class="callout blue"><div class="icon">i</div><div><strong>初回キャッシュは「仮の表示」です。</strong><br>キャッシュが読めてもRepositoryの取得は続き、最新結果で置き換えてからキャッシュを更新します。キャッシュの有効期限は24時間で、読めなくても処理を続けます。</div></div>
+          <p class="small muted">取得Taskの終了時にはdeferで操作台帳から削除します。キャンセルされた取得はエラー表示されません。<code>lastAppliedRepositoryFetchID</code> はキャッシュではなく、Repositoryの結果を反映したときだけ更新され、画面側が選択中リストなどを再検証する合図になります。</p>
+        </section>
+
+        <section id="save">
+          <div class="section-head"><div class="section-no">04</div><div><h2>作成・編集 — 変更分だけ保存する</h2><p>入力フォームの確定をTaskとして追跡し、編集では差分のみRepositoryへ渡します。</p></div></div>
+          <div class="grid-2">
+            <div class="card"><span class="tag mint">作成</span><h3>作成先リストを解決</h3><p><code>listIdentifier</code> が現在の編集可能なリストに見つからない場合、内部の <code>ContentViewModelError.reminderDestinationListUnavailable</code> を <code>ReminderEditorError.destinationListUnavailable</code> に変換してフォームへ返します。見つかったリストと入力内容をRepositoryへ渡します。</p></div>
+            <div class="card"><span class="tag">編集</span><h3>変更がない項目はnil</h3><p>タイトル・優先度は元の値と比べ、変更時だけ値を渡します。期限はフォームの <code>deadlineUpdate</code> を利用し、編集時に元の所属リストを変更しません。</p></div>
+          </div>
+          <div class="code-panel"><span class="dim">// notesは「維持 / 消去 / 設定」の3状態をRepositoryへ伝える</span>
+let notes: String?? = if draft.notes == (reminder.notes ?? "") {
+    <span class="yellow">nil</span>                         <span class="dim">// 変更しない</span>
+} else {
+    .some(draft.notes.isEmpty ? nil : draft.notes) <span class="dim">// 空なら消去</span>
+}</div>
+          <p class="small muted">保存Taskは <code>Result</code> を返し、呼び出し元のフォームにエラーを返します。成功時は成功の触覚フィードバック、キャンセル以外の失敗時は失敗の触覚フィードバックを発生させます。</p>
+        </section>
+
+        <section id="completion">
+          <div class="section-head"><div class="section-no">05</div><div><h2>完了状態 — 楽観更新とデバウンス</h2><p>タップの反応をすぐ画面に出しつつ、Repositoryへの保存をまとめます。</p></div></div>
+          <div class="timeline">
+            <div class="time-item"><div class="dot">1</div><b>即時に表示更新</b><span>displayedIsCompletedを反転。削除予定や保存中の対象は無視。</span></div>
+            <div class="time-item"><div class="dot">2</div><b>変更をIDごとに記録</b><span>最後に選択された完了状態をpending辞書に置く。</span></div>
+            <div class="time-item"><div class="dot">3</div><b>待ち時間をリセット</b><span>追加のタップごとにデバウンスTaskを再予約。</span></div>
+            <div class="time-item"><div class="dot">4</div><b>まとめて保存</b><span>各IDについてsetを実行。成功したら確定状態も更新。</span></div>
+          </div>
+          <div class="grid-2">
+            <div class="card"><span class="tag amber">元の値に戻った</span><p>表示状態が保存済み状態と一致したらpendingから削除。無駄な保存をしません。</p></div>
+            <div class="card"><span class="tag rose">画面が非アクティブ</span><p>ScenePhaseがactive以外になったとき、待ち時間を待たずに保留中の更新を保存へ回します。</p></div>
+          </div>
+          <div class="callout" style="margin-top:14px"><div class="icon">!</div><div><strong>連続切り替えの重複を防ぐ</strong><br>保存中のリマインダーIDはロックされ、同じ項目への追加タップは無視します。削除が始まると、そのIDの保留中・実行中の完了更新をキャンセルします。</div></div>
+        </section>
+
+        <section id="delete">
+          <div class="section-head"><div class="section-no">06</div><div><h2>削除 — 表示を先に無効化する</h2><p>削除中の再操作と、削除前の古い取得結果による復活を防ぎます。</p></div></div>
+          <div class="flow">
+            <div class="flow-step"><b>① 削除予定にする</b><span>行の重複削除を防止</span></div><div class="arrow">›</div>
+            <div class="flow-step"><b>② 関連処理を止める</b><span>完了更新と一覧取得を取消</span></div><div class="arrow">›</div>
+            <div class="flow-step"><b>③ Repositoryで削除</b><span>操作Taskを台帳で追跡</span></div><div class="arrow">›</div>
+            <div class="flow-step"><b>④ 成否を反映</b><span>成功なら行を除去、失敗ならエラー</span></div><div class="arrow">›</div>
+            <div class="flow-step"><b>⑤ 必要なら再取得</b><span>通知や失敗後に最新状態を読み直す</span></div>
+          </div>
+          <p class="muted">削除成功時は画面上の項目を先に取り除きます。失敗時はエラーを表示し、変更操作がすべて終わってから再取得する予約を立てます。</p>
+        </section>
+
+        <section id="coordination">
+          <div class="section-head"><div class="section-no">07</div><div><h2>競合の調整 — 再取得は変更が落ち着いてから</h2><p>操作途中のスナップショットが楽観更新やキャッシュを巻き戻さないようにします。</p></div></div>
+          <div class="diagram">
+            <svg viewBox="0 0 760 185" role="img" aria-label="変更中に届いた再取得要求を最後にまとめて実行する流れ">
+              <defs><marker id="arrowCoord" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#929bb1"/></marker></defs>
+              <rect x="12" y="38" width="145" height="77" rx="14" fill="#fff5df" stroke="#f0dfb5"/><text x="84" y="68" text-anchor="middle" font-size="14" font-weight="700" fill="#86570e">保存・更新・削除中</text><text x="84" y="93" text-anchor="middle" font-size="12" fill="#a17431">hasPendingMutation = true</text>
+              <path d="M160 77 H257" stroke="#929bb1" stroke-width="2" marker-end="url(#arrowCoord)"/><text x="207" y="63" text-anchor="middle" font-size="12" fill="#778197">通知 / 失敗</text>
+              <rect x="270" y="38" width="158" height="77" rx="14" fill="#eff1ff" stroke="#dce0fa"/><text x="349" y="68" text-anchor="middle" font-size="14" font-weight="700" fill="#4a58ba">再取得を予約</text><text x="349" y="93" text-anchor="middle" font-size="12" fill="#6874c1">shouldReloadAfterMutation</text>
+              <path d="M431 77 H520" stroke="#929bb1" stroke-width="2" marker-end="url(#arrowCoord)"/><text x="476" y="63" text-anchor="middle" font-size="12" fill="#778197">操作終了</text>
+              <rect x="533" y="38" width="211" height="77" rx="14" fill="#e7f7f1" stroke="#c7e9dc"/><text x="638" y="68" text-anchor="middle" font-size="14" font-weight="700" fill="#176f60">変更がゼロになる</text><text x="638" y="93" text-anchor="middle" font-size="12" fill="#438d7e">予約を解除してloadReminders()</text>
+              <path d="M638 119 V153 H84 V121" fill="none" stroke="#45a58e" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#arrowCoord)"/><rect x="268" y="143" width="185" height="18" rx="9" fill="#f8f9fd"/><text x="360" y="156" text-anchor="middle" font-size="12" fill="#438d7e">最新一覧を取得・キャッシュ更新</text>
+            </svg>
+          </div>
+          <div class="callout blue"><div class="icon">i</div><div><strong>変更中にfetchを始めない</strong><br><code>loadReminders()</code> は変更中なら予約フラグだけを立てます。各変更Taskのdeferが台帳から自身を外し、最後の変更が終わった時点で予約があれば一度だけ再取得します。</div></div>
+          <p class="small muted">Repository変更通知も同じルールです。エラー表示中は通知からの自動再取得を抑え、利用者がエラーを確認・回復する操作を待ちます。</p>
+        </section>
+
+        <section id="errors">
+          <div class="section-head"><div class="section-no">08</div><div><h2>エラーとViewModelの破棄</h2><p>キャンセルは通常の失敗表示にせず、権限失効は専用の回復処理に渡します。</p></div></div>
+          <div class="grid-3">
+            <div class="error-group"><span class="tag rose">権限失効</span><ul><li>再取得予約を解除</li><li>デバウンス・保留更新を破棄</li><li>台帳のTaskをすべて取消</li><li>権限失効ハンドラーを実行</li></ul></div>
+            <div class="error-group"><span class="tag amber">キャンセル</span><ul><li>CancellationErrorとRepositoryのcancelledを検出</li><li>画面エラーに変換しない</li><li>古い取得結果を適用しない</li></ul></div>
+            <div class="error-group"><span class="tag">通常エラー</span><ul><li>一覧・完了・削除は用途別のContentViewModelError</li><li>入力エラーはReminderEditorError</li><li>保存失敗をフォームへthrow</li></ul></div>
+          </div>
+          <div class="grid-2" style="margin-top:14px">
+            <div class="card"><span class="tag">通知監視</span><p>初期化時にRepositoryの変更通知を購読。エラー表示中は無視し、変更操作中は再取得予約、それ以外はすぐ取得します。</p></div>
+            <div class="card"><span class="tag rose">deinit</span><p>通知監視を解除し、デバウンスTaskと管理中Taskをキャンセルします。破棄後は結果を画面に反映できないため、作成・更新が完了しない可能性を許容する設計です。</p></div>
+          </div>
+        </section>
+
+        <section id="summary">
+          <div class="section-head"><div class="section-no">09</div><div><h2>読むときの短いまとめ</h2><p>コードを追うときは、画面更新とRepository反映を別々のタイミングとして見るのがコツです。</p></div></div>
+          <div class="grid-2">
+            <div class="card"><span class="tag">取得</span><h3>キャッシュは初回の先行表示</h3><p>その後Repositoryの結果が正となり、画面とcacheを更新。</p></div>
+            <div class="card"><span class="tag mint">完了</span><h3>即時表示、遅延保存</h3><p>IDごとに最後の状態だけを一定時間後にまとめて保存。</p></div>
+            <div class="card"><span class="tag amber">変更中</span><h3>再取得要求を保留</h3><p>変更操作の最後が終わるまで待ち、必要なら一度だけ再取得。</p></div>
+            <div class="card"><span class="tag rose">寿命</span><h3>破棄時はTaskも停止</h3><p>画面がなくなった後に状態更新を続けない。</p></div>
+          </div>
+          <div class="source-list">
+            <a href="ReminderAssistant/Features/Reminders/ReminderList/ContentViewModel.swift">ContentViewModel.swift</a>
+            <a href="ReminderAssistant/Features/Reminders/ReminderList/ContentViewModelError.swift">ContentViewModelError.swift</a>
+            <a href="ReminderAssistant/Infrastructure/ReminderStoreCache.swift">ReminderStoreCache.swift</a>
+            <a href="ReminderRepository-Guide.html">ReminderRepositoryの解説</a>
+          </div>
+        </section>
+      </main>
+    </div>
+    <footer>ReminderAssistant · ContentViewModel implementation guide</footer>
+  </div>
+</body>
+</html>
