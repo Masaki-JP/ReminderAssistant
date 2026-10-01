@@ -1,5 +1,6 @@
 import SwiftUI
 import ReminderCore
+import OrderedCollections
 
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss: DismissAction
@@ -8,7 +9,7 @@ struct SettingsView: View {
     @AppStorage(UserDefaultsKey.AppStorageKey.completionDebounceDelayInSeconds.rawValue)
     var completionDebounceDelayInSeconds = UserDefaultsKey.AppStorageDefaultValue.completionDebounceDelayInSeconds
     @Binding var reminderDestinationListID: String?
-    @Binding var mixLists: [MixReminderList]
+    @Binding var mixLists: OrderedDictionary<UUID, MixReminderList>
     let lists: [ReminderList]
     
     var body: some View {
@@ -103,7 +104,7 @@ struct SettingsView: View {
     .sheet(isPresented: $isPresented) {
         SettingsView(
             reminderDestinationListID: $reminderDestinationListID,
-            mixLists: .constant([]),
+            mixLists: .constant([:]),
             lists: [
                 .init(id: "assistant", title: "Reminder Assistant", isDefault: true, reminders: []),
                 .init(id: "shopping", title: "買い物リスト", isDefault: false, reminders: []),

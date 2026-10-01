@@ -1,9 +1,10 @@
 import SwiftUI
 import ReminderCore
+import OrderedCollections
 
 struct MixListCollectionView: View {
     /// 既存のミックスリスト。
-    @Binding var mixLists: [MixReminderList]
+    @Binding var mixLists: OrderedDictionary<UUID, MixReminderList>
     /// ミックスリストの構成元として選択できる通常リスト。
     let lists: [ReminderList]
     
@@ -11,9 +12,14 @@ struct MixListCollectionView: View {
         List {
             if mixLists.isEmpty == false {
                 Section {
-                    ForEach(mixLists) { mixList in
+                    ForEach(mixLists.values) { mixList in
                         NavigationLink {
-                            MixListFormView(mixList: mixList, selectableLists: lists, mixLists: mixLists, onSave: save)
+                            MixListFormView(
+                                mixList: mixList,
+                                selectableLists: lists,
+                                mixLists: mixLists.map(\.value),
+                                onSave: save
+                            )
                         } label: {
                             VStack(alignment: .leading, spacing: nil) {
                                 Text(mixList.title)
@@ -23,7 +29,7 @@ struct MixListCollectionView: View {
                             }
                         }
                     }
-                    .onDelete { mixLists.remove(atOffsets: $0) }
+                    .onDelete(perform: delete)
                 } header: { Text("登録済み") } footer: { text }
             }
         }
@@ -37,7 +43,7 @@ struct MixListCollectionView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 NavigationLink {
-                    MixListFormView(selectableLists: lists, mixLists: mixLists, onSave: save)
+                    MixListFormView(selectableLists: lists, mixLists: Array(mixLists.values), onSave: save)
                 } label: {
                     Label("ミックスリストを作成", systemImage: "plus")
                 }
@@ -58,16 +64,19 @@ extension MixListCollectionView {
     }
     
     func save(_ mixList: MixReminderList) {
-        if let index = mixLists.firstIndex(where: { $0.id == mixList.id }) {
-            mixLists[index] = mixList
-        } else {
-            mixLists.append(mixList)
-        }
+        mixLists[mixList.id] = mixList
+    }
+    
+    func delete(at offsets: IndexSet) {
+        offsets.reversed().forEach { mixLists.remove(at: $0) }
     }
 }
 
 #Preview {
-    @Previewable @State var mixLists: [MixReminderList] = [.init(title: "ミックスリスト", listIDs: ["work", "home"])]
+    @Previewable @State var mixLists: OrderedDictionary<UUID, MixReminderList> = {
+        let mixList = MixReminderList(title: "ミックスリスト", listIDs: ["work", "home"])
+        return [mixList.id: mixList]
+    }()
     
     List { Text("Hello, world.") }
         .sheet(isPresented: .constant(true)) {

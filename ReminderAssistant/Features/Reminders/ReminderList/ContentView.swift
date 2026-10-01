@@ -1,5 +1,6 @@
 import SwiftUI
 import ReminderCore
+import OrderedCollections
 
 struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
     @State var viewModel: ContentViewModel<ReminderRepositoryType>
@@ -51,18 +52,19 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
         viewModel.editableLists.first { $0.id == displayedListID }
     }
 
-    var mixLists: [MixReminderList] {
-        (try? MixReminderListStorage.decode(mixListsData)) ?? []
+    var mixLists: OrderedDictionary<UUID, MixReminderList> {
+        guard let lists = try? MixReminderListStorage.decode(mixListsData) else { return [:] }
+        return .init(uniqueKeysWithValues: lists.map { ($0.id, $0) })
     }
 
-    var mixListsBinding: Binding<[MixReminderList]> {
+    var mixListsBinding: Binding<OrderedDictionary<UUID, MixReminderList>> {
         .init(
             get: { mixLists },
             set: { lists in
                 do {
                     // 既存データが読み込めない場合、書き込みを行わない。
                     _ = try MixReminderListStorage.decode(mixListsData)
-                    mixListsData = try MixReminderListStorage.encode(lists)
+                    mixListsData = try MixReminderListStorage.encode(Array(lists.values))
                 } catch {
                     isMixListStorageErrorPresented = true
                 }
@@ -71,8 +73,12 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
     }
 
     var displayedMixList: MixReminderList? {
-        guard isPlaceholder == false else { return nil }
-        return mixLists.first { $0.id.uuidString == displayedListID }
+        guard isPlaceholder == false,
+              let displayedListID,
+              let mixListID = UUID(uuidString: displayedListID)
+        else { return nil }
+        
+        return mixLists[mixListID]
     }
 
     var selectedReminders: [Reminder] {
@@ -168,8 +174,10 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
         }
         .onChange(of: mixLists) { oldLists, newLists in
             // 選択していたミックスリストを削除した場合は「すべて」に戻す。
-            if oldLists.contains(where: { $0.id.uuidString == displayedListID }) == true,
-               newLists.contains(where: { $0.id.uuidString == displayedListID }) == false {
+            if let selectedListID = displayedListID,
+               let mixListID = UUID(uuidString: selectedListID),
+               oldLists[mixListID] != nil,
+               newLists[mixListID] == nil {
                 displayedListID = nil
             }
         }
@@ -224,7 +232,7 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
 
             if !mixLists.isEmpty && !isPlaceholder {
                 Section("ミックスリスト") {
-                    ForEach(mixLists) { list in
+                    ForEach(mixLists.values) { list in
                         Label(list.title, systemImage: "square.stack")
                             .tag(Optional(list.id.uuidString))
                     }

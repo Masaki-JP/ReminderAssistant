@@ -42,6 +42,18 @@ struct MixReminderListStorageTests {
         }
     }
 
+    @Test("IDが重複するミックスリストを拒否する")
+    func duplicateListIDsThrowInvalidData() throws {
+        let id = UUID()
+        let lists = [
+            MixReminderList(id: id, title: "仕事", listIDs: ["work", "shared"]),
+            MixReminderList(id: id, title: "自宅", listIDs: ["home", "shared"]),
+        ]
+        let data = try MixReminderListStorage.encode(lists)
+
+        expectDecodeError(data, isInvalidData: true)
+    }
+
     private func expectDecodeError(_ data: Data, isInvalidData: Bool) {
         do {
             _ = try MixReminderListStorage.decode(data)
