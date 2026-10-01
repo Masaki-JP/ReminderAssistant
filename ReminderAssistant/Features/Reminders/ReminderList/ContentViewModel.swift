@@ -1,5 +1,6 @@
 import SwiftUI
 import ReminderCore
+import OrderedCollections
 
 @Observable
 final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol> {
@@ -12,7 +13,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     
     /// リマインダー一覧の取得の実行状態を表す。（`ReminderStore`の仕様上、実際に取得を行なっている最中だけでなく、待機中も実行中と評価されることに注意。）
     var isLoading: Bool {
-        reminderOperations.contains { if case .load = $0 { true } else { false } }
+        reminderOperations.values.contains { if case .load = $0 { true } else { false } }
     }
     
     var errorBinding: Binding<Bool> {
@@ -33,13 +34,13 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
 
     // MARK: - Mutation Coordination State
 
-    /// 予約・実行中のリマインダー取得・保存・完了状態更新・削除を追加順に保持する操作一覧。
-    private var reminderOperations: [ReminderOperation] = .init()
+    /// 予約・実行中のリマインダー取得・保存・完了状態更新・削除を、操作IDをキーとして追加順に保持する。
+    private var reminderOperations: OrderedDictionary<UUID, ReminderOperation> = [:]
     /// 進行中の変更操作がすべて終了した際に再読み込みするかどうか。
     private var shouldReloadAfterMutation = false
     /// 保存・完了状態更新・削除のいずれかが予約または実行中かどうか。
     private var hasPendingMutation: Bool {
-        pendingCompletionUpdates.isEmpty == false || reminderOperations.contains { operation in
+        pendingCompletionUpdates.isEmpty == false || reminderOperations.values.contains { operation in
             switch operation {
             case .save, .toggleCompletion, .delete: true
             case .load: false
@@ -102,7 +103,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     isolated deinit {
         notificationToken.map { NotificationCenter.default.removeObserver($0) }
         completionDebounceTask?.cancel()
-        reminderOperations.removeAll { $0.cancel(); return true }
+        reminderOperations.removeAll { $0.value.cancel(); return true }
     }
     
     // MARK: - Reminder Loading
@@ -113,7 +114,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     /// 続いて `reminderRepository.fetch()` を開始し、初回のみ `reminderStoreCache.fetch()` の結果を先に `editableLists` へ反映する。
     /// リポジトリから最新の一覧を取得した後は、`editableLists` と `lastAppliedRepositoryFetchID` を更新して
     /// `reminderStoreCache.save(_:)` でキャッシュへ保存する。
-    /// 取得タスクは終了時に `reminderOperations.remove(with:)` で管理対象から外れ、エラーは `handleError(_:as:)` で処理される。
+    /// 取得タスクは終了時に `reminderOperations.removeValue(forKey:)` で管理対象から外れ、エラーは `handleError(_:as:)` で処理される。
     /// `cancelLoad()` によってキャンセルされた場合は、`handleError(_:as:)` がキャンセルを判定するため画面にエラーを表示しない。
     
     /// リマインダーを取得し、初回のみキャッシュを先に表示してから最新の取得結果で更新する。
@@ -129,7 +130,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
         
         let operationID = UUID()
         let task = Task { [weak self, reminderRepository = self.reminderRepository, reminderStoreCache = self.reminderStoreCache] in
-            defer { self?.reminderOperations.remove(with: operationID) }
+            defer { self?.reminderOperations.removeValue(forKey: operationID) }
             
             do {
                 async let fetchedLists = reminderRepository.fetch()
@@ -150,7 +151,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
             }
         }
         
-        reminderOperations.append(.load(id: operationID, task: task))
+        reminderOperations[operationID] = .load(task: task)
     }
     
     /// 古い取得結果が後から表示やキャッシュを上書きしないよう、実行中のリマインダー取得をすべてキャンセルし、キャンセルしたかどうかを返す。
@@ -158,8 +159,8 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     private func cancelLoad() -> Bool {
         var hasCancelledLoad = false
         
-        reminderOperations.removeAll { operation in
-            if case .load(_, let loadTask) = operation {
+        reminderOperations.removeAll { _, operation in
+            if case .load(let loadTask) = operation {
                 hasCancelledLoad = true
                 loadTask.cancel(); return true
             } else {
@@ -183,7 +184,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
         let operationID = UUID()
         let task = saveReminderTask(draft: draft, mode: mode, listIdentifier: listIdentifier, operationID: operationID)
         
-        reminderOperations.append(.save(id: operationID, task: task))
+        reminderOperations[operationID] = .save(task: task)
         cancelLoad()
         
         let result = await withTaskCancellationHandler {
@@ -375,9 +376,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
             }
         }
         
-        reminderOperations.append(
-            .toggleCompletion(id: operationID, reminderID: reminder.id, task: task)
-        )
+        reminderOperations[operationID] = .toggleCompletion(reminderID: reminder.id, task: task)
     }
     
     /// 削除対象の保留中または実行中の完了状態更新を取り消す。
@@ -386,8 +385,8 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
         if pendingCompletionUpdates.isEmpty {
             cancelCompletionDebounce()
         }
-        reminderOperations.removeAll { operation in
-            if case let .toggleCompletion(_, reminderID, task) = operation, reminderID == reminder.id {
+        reminderOperations.removeAll { _, operation in
+            if case let .toggleCompletion(reminderID, task) = operation, reminderID == reminder.id {
                 task.cancel(); return true
             } else {
                 return false
@@ -439,14 +438,14 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
             }
         }
         
-        reminderOperations.append(.delete(id: operationID, reminderID: id, task: task))
+        reminderOperations[operationID] = .delete(reminderID: id, task: task)
     }
     
     // MARK: - Reminder Mutation Coordination
     
     /// 複数の変更操作の終了と、変更通知または失敗後に実行する再取得を調整する。
     ///
-    /// `finishReminderMutation(with:)` は終了した保存・完了状態更新・削除を `reminderOperations.remove(with:)` で取り除き、
+    /// `finishReminderMutation(with:)` は終了した保存・完了状態更新・削除を `reminderOperations.removeValue(forKey:)` で取り除き、
     /// 続けて `reloadRemindersAfterMutationIfNeeded()` を呼び出す。
     /// `reloadRemindersAfterMutationIfNeeded()` は再取得が予約され、かつ `.save`・`.toggleCompletion`・`.delete` が
     /// 一つも残っていない場合だけ予約を解除して `loadReminders()` を呼ぶ。
@@ -455,7 +454,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
     
     /// 保存・完了状態更新・削除の終了を記録し、必要であれば再読み込みする。
     private func finishReminderMutation(with operationID: UUID) {
-        reminderOperations.remove(with: operationID)
+        reminderOperations.removeValue(forKey: operationID)
         reloadRemindersAfterMutationIfNeeded()
     }
     
@@ -522,7 +521,7 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
         shouldReloadAfterMutation = false
         cancelCompletionDebounce()
         pendingCompletionUpdates.removeAll()
-        reminderOperations.removeAll { $0.cancel(); return true }
+        reminderOperations.removeAll { $0.value.cancel(); return true }
         reminderAccessRevokedHandler()
     }
     
@@ -534,32 +533,18 @@ final class ContentViewModel<ReminderRepositoryType: ReminderRepositoryProtocol>
 }
 
 /// ViewModelが管理する操作と、その操作を実行するタスク。
-/// 各操作は実行単位のUUIDで識別し、完了状態更新と削除は対象のリマインダーIDも保持する。
+/// 操作IDは`reminderOperations`のキーとして管理し、完了状態更新と削除は対象のリマインダーIDも保持する。
 private enum ReminderOperation {
-    case save(id: UUID, task: Task<Result<Void, ReminderEditorError>, Never>)
-    case toggleCompletion(id: UUID, reminderID: Reminder.ID, task: Task<Void, Never>)
-    case delete(id: UUID, reminderID: Reminder.ID, task: Task<Void, Never>)
-    case load(id: UUID, task: Task<Void, Never>)
-    
-    /// この操作を一意に識別するID。
-    var id: UUID {
-        switch self {
-        case .save(let id, _), .toggleCompletion(let id, _, _), .delete(let id, _, _), .load(let id, _): id
-        }
-    }
+    case save(task: Task<Result<Void, ReminderEditorError>, Never>)
+    case toggleCompletion(reminderID: Reminder.ID, task: Task<Void, Never>)
+    case delete(reminderID: Reminder.ID, task: Task<Void, Never>)
+    case load(task: Task<Void, Never>)
     
     /// この操作に紐づくTaskをキャンセルする。
     func cancel() {
         switch self {
-        case .save(_, let task): task.cancel()
-        case .toggleCompletion(_, _, let task), .delete(_, _, let task), .load(_, let task): task.cancel()
+        case .save(let task): task.cancel()
+        case .toggleCompletion(_, let task), .delete(_, let task), .load(let task): task.cancel()
         }
-    }
-}
-
-private extension Array<ReminderOperation> {
-    /// 指定されたIDを用いて、完了した操作を管理対象から削除する。
-    mutating func remove(with operationID: UUID) {
-        removeAll { $0.id == operationID }
     }
 }

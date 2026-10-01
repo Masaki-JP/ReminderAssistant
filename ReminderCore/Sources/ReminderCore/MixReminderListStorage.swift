@@ -45,7 +45,11 @@ nonisolated public enum MixReminderListStorage {
         switch header.version {
         case 1:
             do {
-                return try decoder.decode(Version1Document.self, from: data).lists
+                let lists = try decoder.decode(Version1Document.self, from: data).lists
+                guard Set(lists.map(\.id)).count == lists.count else {
+                    throw MixReminderListStorageError.invalidData
+                }
+                return lists
             } catch {
                 throw .invalidData
             }
