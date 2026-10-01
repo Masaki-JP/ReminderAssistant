@@ -1,5 +1,5 @@
 {
-  "originHash" : "4b3ca934d8800708acc251b1176c875d8431ff6085628e559b8faf494353c9a1",
+  "originHash" : "18c360c5fa452d8f818a13d045673dfe22dae5668bd34720d61b4e5fad9d30a5",
   "pins" : [
     {
       "identity" : "japanesedateconverter",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "5a6d4a71c11f1ac8a8f9ac6ff076cf38de4a1920",
         "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "swift-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-collections.git",
+      "state" : {
+        "revision" : "98ef3c98609a1e31b7e157b5b619579001a789d6",
+        "version" : "1.7.1"
       }
     }
   ],
