@@ -28,7 +28,7 @@ struct ReminderRowView: View {
                     }
                 }
                 
-                if let notes = reminder.notes, notes.isEmpty == false {
+                if let notes = reminder.notes, notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
                     Text(notes)
                         .foregroundStyle(.secondary)
                         .lineLimit(5)
