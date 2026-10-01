@@ -141,7 +141,7 @@
       <div class="eyebrow">Implementation guide · ReminderAssistant</div>
       <h1>ContentViewModelを<br>状態遷移から読み解く</h1>
       <p>キャッシュを先に見せる一覧取得、即時反映する完了切り替え、保存・削除と外部変更通知。表示と永続状態が食い違わないよう調整する流れを解説します。</p>
-      <div class="hero-meta"><span>対象: ContentViewModel.swift</span><span>関連: ReminderStoreCache</span><span>更新: 2026-09-28</span></div>
+      <div class="hero-meta"><span>対象: ContentViewModel.swift</span><span>関連: ReminderStoreCache</span><span>更新: 2026-10-01</span></div>
     </header>
 
     <div class="layout">
@@ -179,7 +179,7 @@
           <div class="section-head"><div class="section-no">02</div><div><h2>状態と操作台帳</h2><p>見た目の状態、進行中操作、後で行う処理をそれぞれ別に持ちます。</p></div></div>
           <div class="table-wrap"><table><thead><tr><th>状態</th><th>役割</th><th>読み方のポイント</th></tr></thead><tbody>
             <tr><td>editableLists</td><td>表示対象のリストと各リマインダー</td><td>キャッシュまたはRepositoryの取得結果が入る。操作によっては即時に楽観更新される。</td></tr>
-            <tr><td>reminderOperations</td><td>予約・実行中のTask一覧</td><td>各操作はUUIDを持つ。完了時に同じIDで除去するため、別操作を誤って消さない。</td></tr>
+            <tr><td>reminderOperations</td><td>操作IDをキーとするTaskの辞書</td><td><code>OrderedDictionary&lt;UUID, ReminderOperation&gt;</code> で追加順を保持する。UUIDは辞書のキーで管理し、完了時に <code>removeValue(forKey:)</code> で対応する操作だけを取り除く。</td></tr>
             <tr><td>pendingCompletionUpdates</td><td>デバウンス待ちの完了状態</td><td>リマインダーIDごとに最後に選ばれたBoolを保持し、連続操作をまとめる。</td></tr>
             <tr><td>shouldReloadAfterMutation</td><td>変更完了後の再取得予約</td><td>更新中に通知や失敗で必要になった読み直しを、全変更操作の終了まで保留する。</td></tr>
             <tr><td>completionToggleLockedReminderIDs</td><td>保存中の完了切り替えロック</td><td>同じIDの保存が終わるまで、連続した新しい切り替えを受け付けない。</td></tr>
