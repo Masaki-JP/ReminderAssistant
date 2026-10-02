@@ -5,8 +5,8 @@ public class JapaneseDateConverter {
     public init() {
         dateFormatter = DateFormatter()
         dateFormatter.calendar = Calendar(identifier: .gregorian)
-        dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
-        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
+        dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+        dateFormatter.locale = Locale(identifier: "ja_JP")
     }
     
     let dateFormatter: DateFormatter
