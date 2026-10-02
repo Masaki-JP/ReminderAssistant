@@ -270,6 +270,7 @@ extension JapaneseDateConverter {
                 let dateFormatter = DateFormatter()
                 dateFormatter.calendar = Calendar(identifier: .gregorian)
                 dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+                dateFormatter.calendar.timeZone = dateFormatter.timeZone
                 dateFormatter.locale = Locale(identifier: "ja_JP")
                 dateFormatter.dateFormat = "yyyy年MM月dd日"
 
@@ -299,6 +300,7 @@ extension JapaneseDateConverter {
                 let dateFormatter = DateFormatter()
                 dateFormatter.calendar = Calendar(identifier: .gregorian)
                 dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+                dateFormatter.calendar.timeZone = dateFormatter.timeZone
                 dateFormatter.locale = Locale(identifier: "ja_JP")
                 dateFormatter.dateFormat = "yyyy年MM月dd日"
 
@@ -334,6 +336,7 @@ extension JapaneseDateConverter {
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .gregorian)
             dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+            dateFormatter.calendar.timeZone = dateFormatter.timeZone
             dateFormatter.locale = Locale(identifier: "ja_JP")
             dateFormatter.dateFormat = "yyyy年MM月dd日"
             let weekdayOfSpecifiedDay = 1
@@ -347,6 +350,7 @@ extension JapaneseDateConverter {
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .gregorian)
             dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+            dateFormatter.calendar.timeZone = dateFormatter.timeZone
             dateFormatter.locale = Locale(identifier: "ja_JP")
             dateFormatter.dateFormat = "yyyy年MM月dd日"
             let weekdayOfSpecifiedDay = 2
@@ -360,6 +364,7 @@ extension JapaneseDateConverter {
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .gregorian)
             dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+            dateFormatter.calendar.timeZone = dateFormatter.timeZone
             dateFormatter.locale = Locale(identifier: "ja_JP")
             dateFormatter.dateFormat = "yyyy年MM月dd日"
             let weekdayOfSpecifiedDay = 3
@@ -373,6 +378,7 @@ extension JapaneseDateConverter {
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .gregorian)
             dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+            dateFormatter.calendar.timeZone = dateFormatter.timeZone
             dateFormatter.locale = Locale(identifier: "ja_JP")
             dateFormatter.dateFormat = "yyyy年MM月dd日"
             let weekdayOfSpecifiedDay = 4
@@ -386,6 +392,7 @@ extension JapaneseDateConverter {
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .gregorian)
             dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+            dateFormatter.calendar.timeZone = dateFormatter.timeZone
             dateFormatter.locale = Locale(identifier: "ja_JP")
             dateFormatter.dateFormat = "yyyy年MM月dd日"
             let weekdayOfSpecifiedDay = 5
@@ -399,6 +406,7 @@ extension JapaneseDateConverter {
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .gregorian)
             dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+            dateFormatter.calendar.timeZone = dateFormatter.timeZone
             dateFormatter.locale = Locale(identifier: "ja_JP")
             dateFormatter.dateFormat = "yyyy年MM月dd日"
             let weekdayOfSpecifiedDay = 6
@@ -412,6 +420,7 @@ extension JapaneseDateConverter {
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .gregorian)
             dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+            dateFormatter.calendar.timeZone = dateFormatter.timeZone
             dateFormatter.locale = Locale(identifier: "ja_JP")
             dateFormatter.dateFormat = "yyyy年MM月dd日"
             let weekdayOfSpecifiedDay = 7
@@ -544,6 +553,7 @@ extension JapaneseDateConverter {
         let dateFormatter = DateFormatter()
         dateFormatter.calendar = Calendar(identifier: .gregorian)
         dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+        dateFormatter.calendar.timeZone = dateFormatter.timeZone
         dateFormatter.locale = Locale(identifier: "ja_JP")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
@@ -566,6 +576,7 @@ extension JapaneseDateConverter {
         let dateFormatter = DateFormatter()
         dateFormatter.calendar = Calendar(identifier: .gregorian)
         dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+        dateFormatter.calendar.timeZone = dateFormatter.timeZone
         dateFormatter.locale = Locale(identifier: "ja_JP")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
@@ -587,6 +598,7 @@ extension JapaneseDateConverter {
         let dateFormatter = DateFormatter()
         dateFormatter.calendar = Calendar(identifier: .gregorian)
         dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+        dateFormatter.calendar.timeZone = dateFormatter.timeZone
         dateFormatter.locale = Locale(identifier: "ja_JP")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
@@ -607,6 +619,7 @@ extension JapaneseDateConverter {
         let dateFormatter = DateFormatter()
         dateFormatter.calendar = Calendar(identifier: .gregorian)
         dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+        dateFormatter.calendar.timeZone = dateFormatter.timeZone
         dateFormatter.locale = Locale(identifier: "ja_JP")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
@@ -628,6 +641,7 @@ extension JapaneseDateConverter {
         let dateFormatter = DateFormatter()
         dateFormatter.calendar = Calendar(identifier: .gregorian)
         dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+        dateFormatter.calendar.timeZone = dateFormatter.timeZone
         dateFormatter.locale = Locale(identifier: "ja_JP")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
@@ -649,6 +663,7 @@ extension JapaneseDateConverter {
         let dateFormatter = DateFormatter()
         dateFormatter.calendar = Calendar(identifier: .gregorian)
         dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+        dateFormatter.calendar.timeZone = dateFormatter.timeZone
         dateFormatter.locale = Locale(identifier: "ja_JP")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
@@ -669,6 +684,7 @@ extension JapaneseDateConverter {
         let dateFormatter = DateFormatter()
         dateFormatter.calendar = Calendar(identifier: .gregorian)
         dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+        dateFormatter.calendar.timeZone = dateFormatter.timeZone
         dateFormatter.locale = Locale(identifier: "ja_JP")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
@@ -689,6 +705,7 @@ extension JapaneseDateConverter {
         let dateFormatter = DateFormatter()
         dateFormatter.calendar = Calendar(identifier: .gregorian)
         dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+        dateFormatter.calendar.timeZone = dateFormatter.timeZone
         dateFormatter.locale = Locale(identifier: "ja_JP")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
@@ -710,6 +727,7 @@ extension JapaneseDateConverter {
         let dateFormatter = DateFormatter()
         dateFormatter.calendar = Calendar(identifier: .gregorian)
         dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+        dateFormatter.calendar.timeZone = dateFormatter.timeZone
         dateFormatter.locale = Locale(identifier: "ja_JP")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
@@ -729,6 +747,7 @@ extension JapaneseDateConverter {
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .gregorian)
             dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+            dateFormatter.calendar.timeZone = dateFormatter.timeZone
             dateFormatter.locale = Locale(identifier: "ja_JP")
             var day = dateFormatter.calendar.date(byAdding: .hour, value: Int(times[0])!, to: Date())
             day = dateFormatter.calendar.date(byAdding: .minute, value: Int(times[1])!, to: day!)
@@ -747,6 +766,7 @@ extension JapaneseDateConverter {
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .gregorian)
             dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+            dateFormatter.calendar.timeZone = dateFormatter.timeZone
             dateFormatter.locale = Locale(identifier: "ja_JP")
             var day = dateFormatter.calendar.date(byAdding: .hour, value: time, to: Date())
             day = dateFormatter.calendar.date(byAdding: .minute, value: 30, to: day!)
@@ -765,6 +785,7 @@ extension JapaneseDateConverter {
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .gregorian)
             dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+            dateFormatter.calendar.timeZone = dateFormatter.timeZone
             dateFormatter.locale = Locale(identifier: "ja_JP")
             let day = dateFormatter.calendar.date(byAdding: .hour, value: time, to: Date())!
             dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分ss秒"
@@ -782,6 +803,7 @@ extension JapaneseDateConverter {
             let dateFormatter = DateFormatter()
             dateFormatter.calendar = Calendar(identifier: .gregorian)
             dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+            dateFormatter.calendar.timeZone = dateFormatter.timeZone
             dateFormatter.locale = Locale(identifier: "ja_JP")
             let day = dateFormatter.calendar.date(byAdding: .minute, value: time, to: Date())!
             dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分ss秒"

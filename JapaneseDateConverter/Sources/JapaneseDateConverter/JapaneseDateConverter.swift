@@ -6,6 +6,7 @@ public class JapaneseDateConverter {
         dateFormatter = DateFormatter()
         dateFormatter.calendar = Calendar(identifier: .gregorian)
         dateFormatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+        dateFormatter.calendar.timeZone = dateFormatter.timeZone
         dateFormatter.locale = Locale(identifier: "ja_JP")
     }
     
