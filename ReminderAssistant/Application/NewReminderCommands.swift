@@ -15,5 +15,11 @@ struct NewReminderCommands: Commands {
 }
 
 extension FocusedValues {
-    @Entry var presentCreateReminderSheetAction: (() -> Void)? = nil
+    @Entry var presentCreateReminderSheetAction: PresentCreateReminderSheetAction? = nil
+}
+
+struct PresentCreateReminderSheetAction {
+    let reminderEditorMode: Binding<ReminderEditorMode?>
+    
+    func callAsFunction() { reminderEditorMode.wrappedValue = .create }
 }
