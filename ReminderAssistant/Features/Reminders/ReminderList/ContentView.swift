@@ -108,13 +108,13 @@ struct ContentView<ReminderRepositoryType: ReminderRepositoryProtocol>: View {
         reminderSections.allSatisfy { $0.reminders.isEmpty }
     }
     
-    var presentCreateReminderSheetAction: (() -> Void)? {
+    var presentCreateReminderSheetAction: PresentCreateReminderSheetAction? {
         guard isPlaceholder == false,
               viewModel.editableLists.isEmpty == false,
               isSettingsViewPresented == false,
               reminderEditorMode == nil else { return nil }
         
-        return { reminderEditorMode = .create }
+        return .init(reminderEditorMode: $reminderEditorMode)
     }
     
     var body: some View {
