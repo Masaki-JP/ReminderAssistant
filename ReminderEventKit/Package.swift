@@ -24,7 +24,7 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../ReminderCore"),
-        .package(path: "../JDC"),
+        .package(path: "../JapaneseDateConverter"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -33,7 +33,7 @@ let package = Package(
             name: "ReminderEventKit",
             dependencies: [
                 .product(name: "ReminderCore", package: "ReminderCore"),
-                .product(name: "JDC", package: "JDC"),
+                .product(name: "JapaneseDateConverter", package: "JapaneseDateConverter"),
             ],
             swiftSettings: swiftSettings,
         ),

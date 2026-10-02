@@ -1,5 +1,5 @@
 import SwiftUI
-import JDC
+import JapaneseDateConverter
 import ReminderCore
 
 struct ReminderFormView: View {
