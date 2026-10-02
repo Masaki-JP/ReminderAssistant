@@ -1,5 +1,5 @@
 import Foundation
-import JapaneseDateConverter
+import JDC
 import ReminderCore
 
 actor FakeReminderRepository: ReminderRepositoryProtocol {

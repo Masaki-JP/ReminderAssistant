@@ -12,7 +12,7 @@
 		4C57A4663044F89000DA18DF /* RAWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4C57A4563044F89000DA18DF /* RAWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4C5B71CA30584007006A238F /* ReminderCore in Frameworks */ = {isa = PBXBuildFile; productRef = 4C5B71C930584007006A238F /* ReminderCore */; };
 		4C5B71CD3058431A006A238F /* ReminderEventKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4C5B71CC3058431A006A238F /* ReminderEventKit */; };
-		4C65D9BB3045645800EA9247 /* JapaneseDateConverter in Frameworks */ = {isa = PBXBuildFile; productRef = 4C65D9BA3045645800EA9247 /* JapaneseDateConverter */; };
+		4C65D9BB3045645800EA9247 /* JDC in Frameworks */ = {isa = PBXBuildFile; productRef = 4C65D9BA3045645800EA9247 /* JDC */; };
 		4C7B22AA306E161E0088D3C6 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = 4C7B22A9306E161E0088D3C6 /* OrderedCollections */; };
 /* End PBXBuildFile section */
 
@@ -100,7 +100,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4C65D9BB3045645800EA9247 /* JapaneseDateConverter in Frameworks */,
+				4C65D9BB3045645800EA9247 /* JDC in Frameworks */,
 				4C5B71CA30584007006A238F /* ReminderCore in Frameworks */,
 				4C7B22AA306E161E0088D3C6 /* OrderedCollections in Frameworks */,
 				4C5B71CD3058431A006A238F /* ReminderEventKit in Frameworks */,
@@ -185,7 +185,7 @@
 			);
 			name = ReminderAssistant;
 			packageProductDependencies = (
-				4C65D9BA3045645800EA9247 /* JapaneseDateConverter */,
+				4C65D9BA3045645800EA9247 /* JDC */,
 				4C5B71C930584007006A238F /* ReminderCore */,
 				4C5B71CC3058431A006A238F /* ReminderEventKit */,
 				4C7B22A9306E161E0088D3C6 /* OrderedCollections */,
@@ -222,7 +222,6 @@
 			mainGroup = 4CADDAE730447DFE003808B3;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				4C65D9B93045645800EA9247 /* XCRemoteSwiftPackageReference "JapaneseDateConverter" */,
 				4C7B22A8306E161E0088D3C6 /* XCRemoteSwiftPackageReference "swift-collections" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -573,14 +572,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		4C65D9B93045645800EA9247 /* XCRemoteSwiftPackageReference "JapaneseDateConverter" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Masaki-JP/JapaneseDateConverter";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
 		4C7B22A8306E161E0088D3C6 /* XCRemoteSwiftPackageReference "swift-collections" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-collections.git";
@@ -600,10 +591,9 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = ReminderEventKit;
 		};
-		4C65D9BA3045645800EA9247 /* JapaneseDateConverter */ = {
+		4C65D9BA3045645800EA9247 /* JDC */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4C65D9B93045645800EA9247 /* XCRemoteSwiftPackageReference "JapaneseDateConverter" */;
-			productName = JapaneseDateConverter;
+			productName = JDC;
 		};
 		4C7B22A9306E161E0088D3C6 /* OrderedCollections */ = {
 			isa = XCSwiftPackageProductDependency;
