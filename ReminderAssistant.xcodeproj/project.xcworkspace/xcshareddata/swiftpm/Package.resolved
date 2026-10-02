@@ -1,15 +1,6 @@
 {
-  "originHash" : "18c360c5fa452d8f818a13d045673dfe22dae5668bd34720d61b4e5fad9d30a5",
+  "originHash" : "b437a8de92bb0b1baf6ddd238be00a683adc9f9deb6026abc504738b48ecde5a",
   "pins" : [
-    {
-      "identity" : "japanesedateconverter",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Masaki-JP/JapaneseDateConverter",
-      "state" : {
-        "revision" : "5a6d4a71c11f1ac8a8f9ac6ff076cf38de4a1920",
-        "version" : "1.0.0"
-      }
-    },
     {
       "identity" : "swift-collections",
       "kind" : "remoteSourceControl",

@@ -24,10 +24,7 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../ReminderCore"),
-        .package(
-            url: "https://github.com/Masaki-JP/JapaneseDateConverter",
-            from: "1.0.0"
-        ),
+        .package(path: "../JapaneseDateConverter"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
