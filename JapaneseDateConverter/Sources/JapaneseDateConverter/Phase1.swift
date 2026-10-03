@@ -267,10 +267,6 @@ extension JapaneseDateConverter {
         for i in 0 ... 6 {
             guard !str.contains(specifications[i]) else {
 
-                let dateFormatter = DateFormatter()
-                dateFormatter.calendar = Calendar(identifier: .gregorian)
-                dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
-                dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
                 dateFormatter.dateFormat = "yyyy年MM月dd日"
 
                 let sevenDaysLater = dateFormatter.calendar.date(byAdding: .day, value: 7, to: Date())!
@@ -296,10 +292,6 @@ extension JapaneseDateConverter {
         for i in 0 ... 6 {
             guard !str.contains(specifications[i]) else {
 
-                let dateFormatter = DateFormatter()
-                dateFormatter.calendar = Calendar(identifier: .gregorian)
-                dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
-                dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
                 dateFormatter.dateFormat = "yyyy年MM月dd日"
 
                 let weekdayOfSpecification = i + 1
@@ -331,10 +323,6 @@ extension JapaneseDateConverter {
     
     func 〇曜をyyyy年MM月dd日に変換(_ str: String) -> String {
         guard !str.contains("日曜") else {
-            let dateFormatter = DateFormatter()
-            dateFormatter.calendar = Calendar(identifier: .gregorian)
-            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
-            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
             dateFormatter.dateFormat = "yyyy年MM月dd日"
             let weekdayOfSpecifiedDay = 1
             let weekdayOfToday = dateFormatter.calendar.component(.weekday, from: Date())
@@ -344,10 +332,6 @@ extension JapaneseDateConverter {
         }
 
         guard !str.contains("月曜") else {
-            let dateFormatter = DateFormatter()
-            dateFormatter.calendar = Calendar(identifier: .gregorian)
-            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
-            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
             dateFormatter.dateFormat = "yyyy年MM月dd日"
             let weekdayOfSpecifiedDay = 2
             let weekdayOfToday = dateFormatter.calendar.component(.weekday, from: Date())
@@ -357,10 +341,6 @@ extension JapaneseDateConverter {
         }
 
         guard !str.contains("火曜") else {
-            let dateFormatter = DateFormatter()
-            dateFormatter.calendar = Calendar(identifier: .gregorian)
-            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
-            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
             dateFormatter.dateFormat = "yyyy年MM月dd日"
             let weekdayOfSpecifiedDay = 3
             let weekdayOfToday = dateFormatter.calendar.component(.weekday, from: Date())
@@ -370,10 +350,6 @@ extension JapaneseDateConverter {
         }
 
         guard !str.contains("水曜") else {
-            let dateFormatter = DateFormatter()
-            dateFormatter.calendar = Calendar(identifier: .gregorian)
-            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
-            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
             dateFormatter.dateFormat = "yyyy年MM月dd日"
             let weekdayOfSpecifiedDay = 4
             let weekdayOfToday = dateFormatter.calendar.component(.weekday, from: Date())
@@ -383,10 +359,6 @@ extension JapaneseDateConverter {
         }
 
         guard !str.contains("木曜") else {
-            let dateFormatter = DateFormatter()
-            dateFormatter.calendar = Calendar(identifier: .gregorian)
-            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
-            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
             dateFormatter.dateFormat = "yyyy年MM月dd日"
             let weekdayOfSpecifiedDay = 5
             let weekdayOfToday = dateFormatter.calendar.component(.weekday, from: Date())
@@ -396,10 +368,6 @@ extension JapaneseDateConverter {
         }
 
         guard !str.contains("金曜") else {
-            let dateFormatter = DateFormatter()
-            dateFormatter.calendar = Calendar(identifier: .gregorian)
-            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
-            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
             dateFormatter.dateFormat = "yyyy年MM月dd日"
             let weekdayOfSpecifiedDay = 6
             let weekdayOfToday = dateFormatter.calendar.component(.weekday, from: Date())
@@ -409,10 +377,6 @@ extension JapaneseDateConverter {
         }
 
         guard !str.contains("土曜") else {
-            let dateFormatter = DateFormatter()
-            dateFormatter.calendar = Calendar(identifier: .gregorian)
-            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
-            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
             dateFormatter.dateFormat = "yyyy年MM月dd日"
             let weekdayOfSpecifiedDay = 7
             let weekdayOfToday = dateFormatter.calendar.component(.weekday, from: Date())
@@ -541,10 +505,6 @@ extension JapaneseDateConverter {
         let years = Int(dateSpecificationArray[0])!
         let months = Int(dateSpecificationArray[1].replacingOccurrences(of: "ヶ月後", with: ""))!
 
-        let dateFormatter = DateFormatter()
-        dateFormatter.calendar = Calendar(identifier: .gregorian)
-        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
-        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
         var day = dateFormatter.calendar.date(byAdding: .year, value: years, to: Date())!
@@ -563,10 +523,6 @@ extension JapaneseDateConverter {
         let years = Int(dateSpecification.replacingOccurrences(of: "年半後", with: ""))!
         let months = 6
 
-        let dateFormatter = DateFormatter()
-        dateFormatter.calendar = Calendar(identifier: .gregorian)
-        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
-        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
         var day = dateFormatter.calendar.date(byAdding: .year, value: years, to: Date())!
@@ -584,10 +540,6 @@ extension JapaneseDateConverter {
 
         let year = Int(dateSpecification.replacingOccurrences(of: "年後", with: ""))!
 
-        let dateFormatter = DateFormatter()
-        dateFormatter.calendar = Calendar(identifier: .gregorian)
-        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
-        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
         let day = dateFormatter.calendar.date(byAdding: .year, value: year, to: Date())!
@@ -604,10 +556,6 @@ extension JapaneseDateConverter {
 
         let months = 6
 
-        let dateFormatter = DateFormatter()
-        dateFormatter.calendar = Calendar(identifier: .gregorian)
-        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
-        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
         let day = dateFormatter.calendar.date(byAdding: .month, value: months, to: Date())!
@@ -625,10 +573,6 @@ extension JapaneseDateConverter {
         let months = Int(dateSpecification.replacingOccurrences(of: "ヶ月半後", with: ""))!
         let days = 15
 
-        let dateFormatter = DateFormatter()
-        dateFormatter.calendar = Calendar(identifier: .gregorian)
-        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
-        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
         var day = dateFormatter.calendar.date(byAdding: .month, value: months, to: Date())!
@@ -646,10 +590,6 @@ extension JapaneseDateConverter {
 
         let months = Int(dateSpecification.replacingOccurrences(of: "ヶ月後", with: ""))!
 
-        let dateFormatter = DateFormatter()
-        dateFormatter.calendar = Calendar(identifier: .gregorian)
-        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
-        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
         let day = dateFormatter.calendar.date(byAdding: .month, value: months, to: Date())!
@@ -666,10 +606,6 @@ extension JapaneseDateConverter {
 
         let days = 15
 
-        let dateFormatter = DateFormatter()
-        dateFormatter.calendar = Calendar(identifier: .gregorian)
-        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
-        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
         let day = dateFormatter.calendar.date(byAdding: .day, value: days, to: Date())!
@@ -686,10 +622,6 @@ extension JapaneseDateConverter {
 
         let days = 7 * Int(dateSpecification.replacingOccurrences(of: "週間後", with: ""))!
 
-        let dateFormatter = DateFormatter()
-        dateFormatter.calendar = Calendar(identifier: .gregorian)
-        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
-        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
         let day = dateFormatter.calendar.date(byAdding: .day, value: days, to: Date())!
@@ -707,10 +639,6 @@ extension JapaneseDateConverter {
 
         let days = Int(dateSpecification.replacingOccurrences(of: "日後", with: ""))!
 
-        let dateFormatter = DateFormatter()
-        dateFormatter.calendar = Calendar(identifier: .gregorian)
-        dateFormatter.timeZone = TimeZone(identifier: "jp_JP")
-        dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
         dateFormatter.dateFormat = "yyyy年MM月dd日"
 
         let day = dateFormatter.calendar.date(byAdding: .day, value: days, to: Date())!
@@ -726,10 +654,6 @@ extension JapaneseDateConverter {
         if 文字列が正規表現に当てはまるか(str: str, regex: "^[1-9][0-9]{0,3}時間[1-9][0-9]{0,3}分後$") {
             let newStr = str.replacingOccurrences(of: "分後", with: "")
             let times = newStr.components(separatedBy: "時間")
-            let dateFormatter = DateFormatter()
-            dateFormatter.calendar = Calendar(identifier: .gregorian)
-            dateFormatter.timeZone = TimeZone(identifier: "ja_Jp")
-            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
             var day = dateFormatter.calendar.date(byAdding: .hour, value: Int(times[0])!, to: Date())
             day = dateFormatter.calendar.date(byAdding: .minute, value: Int(times[1])!, to: day!)
             dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分ss秒"
@@ -744,10 +668,6 @@ extension JapaneseDateConverter {
     func 〇時間半後をyyyy年MM月HH時mm分ss秒に変換(_ str: String) -> String {
         if 文字列が正規表現に当てはまるか(str: str, regex: "^[1-9][0-9]{0,3}時間半後$") {
             let time = Int(str.replacingOccurrences(of: "時間半後", with: ""))!
-            let dateFormatter = DateFormatter()
-            dateFormatter.calendar = Calendar(identifier: .gregorian)
-            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
-            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
             var day = dateFormatter.calendar.date(byAdding: .hour, value: time, to: Date())
             day = dateFormatter.calendar.date(byAdding: .minute, value: 30, to: day!)
             dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分ss秒"
@@ -762,10 +682,6 @@ extension JapaneseDateConverter {
     func 〇時間後からyyyy年MM月dd日HH時mm分ss秒(_ str: String) -> String {
         if 文字列が正規表現に当てはまるか(str: str, regex: "^[1-9][0-9]{0,3}時間後$") {
             let time = Int(str.replacingOccurrences(of: "時間後", with: ""))!
-            let dateFormatter = DateFormatter()
-            dateFormatter.calendar = Calendar(identifier: .gregorian)
-            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
-            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
             let day = dateFormatter.calendar.date(byAdding: .hour, value: time, to: Date())!
             dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分ss秒"
             return dateFormatter.string(from: day)
@@ -779,10 +695,6 @@ extension JapaneseDateConverter {
     func 〇分後からyyyy年MM月dd日HH時mm分ss秒(_ str: String) -> String { // FIXME: dateFormatter
         if 文字列が正規表現に当てはまるか(str: str, regex: "^[1-9][0-9]{0,3}分後$") {
             let time = Int(str.replacingOccurrences(of: "分後", with: ""))!
-            let dateFormatter = DateFormatter()
-            dateFormatter.calendar = Calendar(identifier: .gregorian)
-            dateFormatter.timeZone = TimeZone(identifier: "ja_JP")
-            dateFormatter.locale = Locale(identifier: "Asia/Tokyo")
             let day = dateFormatter.calendar.date(byAdding: .minute, value: time, to: Date())!
             dateFormatter.dateFormat = "yyyy年MM月dd日HH時mm分ss秒"
             return dateFormatter.string(from: day)
